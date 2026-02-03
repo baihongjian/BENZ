@@ -2,6 +2,25 @@
 
 import { useState, useCallback } from "react";
 
+// 发音函数
+const speak = (text: string) => {
+  if (typeof window === "undefined") return;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "de-DE"; // 德语
+  utterance.rate = 0.8; // 稍慢一点
+  utterance.pitch = 1;
+
+  // 尝试选择德语语音
+  const voices = speechSynthesis.getVoices();
+  const germanVoice = voices.find(v => v.lang.includes("de"));
+  if (germanVoice) {
+    utterance.voice = germanVoice;
+  }
+
+  speechSynthesis.speak(utterance);
+};
+
 // 播放音效
 const playSound = (type: "correct" | "wrong") => {
   if (typeof window === "undefined") return;
@@ -276,7 +295,16 @@ export default function GermanLearning() {
               {/* 德语单词显示 */}
               <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
                 <span className="text-sm text-gray-400 mb-2 block">请选择对应的中文翻译</span>
-                <h2 className="text-4xl font-bold text-blue-800">{quizWord.german}</h2>
+                <div className="flex items-center justify-center gap-4">
+                  <h2 className="text-4xl font-bold text-blue-800">{quizWord.german}</h2>
+                  <button
+                    onClick={() => speak(quizWord.german)}
+                    className="p-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
+                    title="发音"
+                  >
+                    🔊
+                  </button>
+                </div>
               </div>
 
               {/* 选项列表 */}
@@ -365,9 +393,18 @@ export default function GermanLearning() {
             <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${isFlipped ? "rotate-y-180" : ""}`}>
               {/* 正面 - 德语 */}
               <div className="absolute w-full h-full backface-hidden bg-white rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 border-2 border-blue-100">
-                <span className="text-sm text-gray-400 mb-4">德语</span>
+                <span className="text-sm text-gray-400 mb-2">德语</span>
                 <h2 className="text-5xl font-bold text-blue-800 mb-4">{currentWord?.german}</h2>
-                <span className="text-gray-500">点击查看释义 →</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    currentWord && speak(currentWord.german);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition"
+                >
+                  🔊 发音
+                </button>
+                <span className="text-gray-400 text-sm mt-3">点击卡片查看释义</span>
               </div>
 
               {/* 背面 - 中文和发音 */}
