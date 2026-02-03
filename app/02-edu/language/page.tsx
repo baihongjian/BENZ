@@ -1,6 +1,41 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useCallback } from "react";
+
+// 播放音效
+const playSound = (type: "correct" | "wrong") => {
+  if (typeof window === "undefined") return;
+
+  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContext) return;
+
+  const ctx = new AudioContext();
+  const oscillator = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+  if (type === "correct") {
+    // 正确：清脆的"叮"声，音调上升
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+    oscillator.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1); // C6
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.3);
+  } else {
+    // 错误：低沉的"咚"声
+    oscillator.type = "sawtooth";
+    oscillator.frequency.setValueAtTime(150, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.3);
+  }
+};
 
 interface Word {
   german: string;
@@ -132,8 +167,10 @@ export default function GermanLearning() {
     if (quizOptions[index].isCorrect) {
       setQuizResult("correct");
       setScore(prev => ({ ...prev, correct: prev.correct + 1 }));
+      playSound("correct");
     } else {
       setQuizResult("wrong");
+      playSound("wrong");
     }
   };
 
