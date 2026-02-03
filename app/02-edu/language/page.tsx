@@ -268,64 +268,77 @@ export default function GermanLearning() {
           ))}
         </div>
 
-        {/* 答题模式：题目区域 */}
+        {/* 答题模式：左右布局 */}
         {mode === "quiz" && quizWord && (
-          <div className="mb-8">
-            {/* 德语单词显示 */}
-            <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6 border-2 border-amber-100">
-              <span className="text-sm text-gray-400 mb-4 block">请选择对应的中文翻译</span>
-              <h2 className="text-5xl font-bold text-blue-800 mb-4">{quizWord.german}</h2>
-              <p className="text-gray-500">选择正确的答案</p>
-            </div>
-
-            {/* 选项列表 */}
-            <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
-              {quizOptions.map((option, idx) => {
-                let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
-                let disabled = false;
-
-                if (selectedOption !== null) {
-                  disabled = true;
-                  if (option.isCorrect) {
-                    buttonClass += "bg-green-100 border-green-500 text-green-800";
-                  } else if (idx === selectedOption && !option.isCorrect) {
-                    buttonClass += "bg-red-100 border-red-500 text-red-800";
-                  } else {
-                    buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
-                  }
-                } else {
-                  buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-700";
-                }
-
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleOptionSelect(idx)}
-                    disabled={disabled}
-                    className={buttonClass}
-                  >
-                    {option.word.chinese}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* 结果和下一题 */}
-            {selectedOption !== null && (
-              <div className="text-center mt-6">
-                <p className={`text-xl font-bold mb-4 ${
-                  quizResult === "correct" ? "text-green-600" : "text-red-600"
-                }`}>
-                  {quizResult === "correct" ? "✅ 回答正确！" : `❌ 回答错误！正确答案是：${quizOptions.find(o => o.isCorrect)?.word.chinese}`}
-                </p>
-                <button
-                  onClick={nextQuiz}
-                  className="px-8 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
-                >
-                  下一题 →
-                </button>
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* 左侧：题目和选项 */}
+            <div className="flex-1">
+              {/* 德语单词显示 */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
+                <span className="text-sm text-gray-400 mb-2 block">请选择对应的中文翻译</span>
+                <h2 className="text-4xl font-bold text-blue-800">{quizWord.german}</h2>
               </div>
-            )}
+
+              {/* 选项列表 */}
+              <div className="grid grid-cols-1 gap-3">
+                {quizOptions.map((option, idx) => {
+                  let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
+                  let disabled = false;
+
+                  if (selectedOption !== null) {
+                    disabled = true;
+                    if (option.isCorrect) {
+                      buttonClass += "bg-green-100 border-green-500 text-green-800";
+                    } else if (idx === selectedOption && !option.isCorrect) {
+                      buttonClass += "bg-red-100 border-red-500 text-red-800";
+                    } else {
+                      buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                    }
+                  } else {
+                    buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-700";
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleOptionSelect(idx)}
+                      disabled={disabled}
+                      className={buttonClass}
+                    >
+                      {option.word.chinese}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 右侧：结果和下一题 */}
+            <div className="lg:w-48 flex-shrink-0">
+              {selectedOption !== null ? (
+                <div className="bg-white rounded-2xl shadow-lg p-6 text-center sticky top-4">
+                  <p className={`text-2xl font-bold mb-4 ${
+                    quizResult === "correct" ? "text-green-600" : "text-red-600"
+                  }`}>
+                    {quizResult === "correct" ? "✅ 正确" : "❌ 错误"}
+                  </p>
+                  {quizResult === "wrong" && (
+                    <p className="text-gray-600 mb-4">
+                      正确：{quizOptions.find(o => o.isCorrect)?.word.chinese}
+                    </p>
+                  )}
+                  <button
+                    onClick={nextQuiz}
+                    className="w-full py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
+                  >
+                    下一题 →
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-gray-100 rounded-2xl p-6 text-center text-gray-400">
+                  选择答案...
+                </div>
+              )}
+            </div>
           </div>
         )}
 
