@@ -112,7 +112,6 @@ export default function GermanLearning() {
   const [quizOptions, setQuizOptions] = useState<QuizOption[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
-  const [score, setScore] = useState({ correct: 0, total: 0 });
 
   const filteredWords = selectedCategory === "all"
     ? words
@@ -162,11 +161,9 @@ export default function GermanLearning() {
     if (selectedOption !== null) return; // 已选择过
 
     setSelectedOption(index);
-    setScore(prev => ({ ...prev, total: prev.total + 1 }));
 
     if (quizOptions[index].isCorrect) {
       setQuizResult("correct");
-      setScore(prev => ({ ...prev, correct: prev.correct + 1 }));
       playSound("correct");
     } else {
       setQuizResult("wrong");
@@ -228,7 +225,7 @@ export default function GermanLearning() {
           </button>
         </div>
 
-        {/* 答题模式：难度选择和得分 */}
+        {/* 答题模式：难度选择 */}
         {mode === "quiz" && (
           <div className="flex flex-wrap justify-center items-center gap-4 mb-6">
             <span className="text-gray-700 font-medium">难度：</span>
@@ -237,7 +234,6 @@ export default function GermanLearning() {
                 key={num}
                 onClick={() => {
                   setQuizDifficulty(num as 2 | 3 | 4);
-                  setScore({ correct: 0, total: 0 });
                 }}
                 className={`w-10 h-10 rounded-full font-bold transition ${
                   quizDifficulty === num
@@ -248,9 +244,6 @@ export default function GermanLearning() {
                 {num}
               </button>
             ))}
-            <span className="text-gray-500 ml-4">
-              得分：<span className="font-bold text-green-600">{score.correct}</span> / {score.total}
-            </span>
           </div>
         )}
 
