@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 interface Word {
   german: string;
   chinese: string;
   pronunciation: string;
   category: string;
+}
+
+interface QuizOption {
+  word: Word;
+  isCorrect: boolean;
 }
 
 const words: Word[] = [
@@ -66,12 +71,76 @@ export default function GermanLearning() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [mode, setMode] = useState<"learn" | "quiz">("learn");
+  const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(3);
+  const [quizWord, setQuizWord] = useState<Word | null>(null);
+  const [quizOptions, setQuizOptions] = useState<QuizOption[]>([]);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
+  const [score, setScore] = useState({ correct: 0, total: 0 });
 
   const filteredWords = selectedCategory === "all"
     ? words
     : words.filter(w => w.category === selectedCategory);
 
   const currentWord = filteredWords[currentIndex];
+
+  // 生成随机题目
+  const generateQuiz = () => {
+    if (filteredWords.length < 2) return;
+
+    // 随机选择正确答案
+    const correctIndex = Math.floor(Math.random() * filteredWords.length);
+    const correctWord = filteredWords[correctIndex];
+
+    // 获取干扰项（排除正确答案）
+    const otherWords = filteredWords.filter((_, idx) => idx !== correctIndex);
+    const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
+
+    // 根据难度选择干扰项数量
+    const wrongCount = quizDifficulty - 1;
+    const wrongWords = shuffledOthers.slice(0, wrongCount);
+
+    // 合并并打乱选项
+    const options: QuizOption[] = [
+      { word: correctWord, isCorrect: true },
+      ...wrongWords.map(w => ({ word: w, isCorrect: false })),
+    ];
+    const shuffledOptions = options.sort(() => Math.random() - 0.5);
+
+    setQuizWord(correctWord);
+    setQuizOptions(shuffledOptions);
+    setSelectedOption(null);
+    setQuizResult(null);
+  };
+
+  // 切换到答题模式时生成第一道题
+  const handleModeChange = (newMode: "learn" | "quiz") => {
+    setMode(newMode);
+    if (newMode === "quiz") {
+      generateQuiz();
+    }
+  };
+
+  // 选择答案
+  const handleOptionSelect = (index: number) => {
+    if (selectedOption !== null) return; // 已选择过
+
+    setSelectedOption(index);
+    setScore(prev => ({ ...prev, total: prev.total + 1 }));
+
+    if (quizOptions[index].isCorrect) {
+      setQuizResult("correct");
+      setScore(prev => ({ ...prev, correct: prev.correct + 1 }));
+    } else {
+      setQuizResult("wrong");
+    }
+  };
+
+  // 下一题
+  const nextQuiz = () => {
+    generateQuiz();
+  };
 
   const nextWord = () => {
     setIsFlipped(false);
@@ -93,8 +162,60 @@ export default function GermanLearning() {
         {/* 标题 */}
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-blue-800 mb-2">🇩🇪 德语学习</h1>
-          <p className="text-gray-600">点击卡片查看释义和发音</p>
+          <p className="text-gray-600">
+            {mode === "learn" ? "点击卡片查看释义和发音" : "选择正确的中文翻译"}
+          </p>
         </header>
+
+        {/* 模式切换 */}
+        <div className="flex justify-center gap-4 mb-8">
+          <button
+            onClick={() => handleModeChange("learn")}
+            className={`px-6 py-2 rounded-full font-medium transition ${
+              mode === "learn"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-blue-50"
+            }`}
+          >
+            📖 学习模式
+          </button>
+          <button
+            onClick={() => handleModeChange("quiz")}
+            className={`px-6 py-2 rounded-full font-medium transition ${
+              mode === "quiz"
+                ? "bg-amber-500 text-white"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-amber-50"
+            }`}
+          >
+            🎯 答题模式
+          </button>
+        </div>
+
+        {/* 答题模式：难度选择和得分 */}
+        {mode === "quiz" && (
+          <div className="flex flex-wrap justify-center items-center gap-4 mb-6">
+            <span className="text-gray-700 font-medium">难度：</span>
+            {[2, 3, 4].map(num => (
+              <button
+                key={num}
+                onClick={() => {
+                  setQuizDifficulty(num as 2 | 3 | 4);
+                  setScore({ correct: 0, total: 0 });
+                }}
+                className={`w-10 h-10 rounded-full font-bold transition ${
+                  quizDifficulty === num
+                    ? "bg-amber-500 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-amber-50"
+                }`}
+              >
+                {num}
+              </button>
+            ))}
+            <span className="text-gray-500 ml-4">
+              得分：<span className="font-bold text-green-600">{score.correct}</span> / {score.total}
+            </span>
+          </div>
+        )}
 
         {/* 分类筛选 */}
         <div className="flex flex-wrap justify-center gap-2 mb-8">
@@ -117,6 +238,70 @@ export default function GermanLearning() {
           ))}
         </div>
 
+        {/* 答题模式：题目区域 */}
+        {mode === "quiz" && quizWord && (
+          <div className="mb-8">
+            {/* 德语单词显示 */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6 border-2 border-amber-100">
+              <span className="text-sm text-gray-400 mb-4 block">请选择对应的中文翻译</span>
+              <h2 className="text-5xl font-bold text-blue-800 mb-4">{quizWord.german}</h2>
+              <p className="text-gray-500">选择正确的答案</p>
+            </div>
+
+            {/* 选项列表 */}
+            <div className="grid grid-cols-1 gap-3 max-w-md mx-auto">
+              {quizOptions.map((option, idx) => {
+                let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
+                let disabled = false;
+
+                if (selectedOption !== null) {
+                  disabled = true;
+                  if (option.isCorrect) {
+                    buttonClass += "bg-green-100 border-green-500 text-green-800";
+                  } else if (idx === selectedOption && !option.isCorrect) {
+                    buttonClass += "bg-red-100 border-red-500 text-red-800";
+                  } else {
+                    buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                  }
+                } else {
+                  buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-700";
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleOptionSelect(idx)}
+                    disabled={disabled}
+                    className={buttonClass}
+                  >
+                    {option.word.chinese}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 结果和下一题 */}
+            {selectedOption !== null && (
+              <div className="text-center mt-6">
+                <p className={`text-xl font-bold mb-4 ${
+                  quizResult === "correct" ? "text-green-600" : "text-red-600"
+                }`}>
+                  {quizResult === "correct" ? "✅ 回答正确！" : `❌ 回答错误！正确答案是：${quizOptions.find(o => o.isCorrect)?.word.chinese}`}
+                </p>
+                <button
+                  onClick={nextQuiz}
+                  className="px-8 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
+                >
+                  下一题 →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 学习模式：单词卡片 */}
+        {mode === "learn" && (
+          <>
         {/* 单词卡片 */}
         <div className="mb-6 text-center text-gray-600">
           {filteredWords.length} 个单词
@@ -199,6 +384,8 @@ export default function GermanLearning() {
         <div className="text-center mt-8">
           <a href="/" className="text-blue-600 hover:underline">← 返回首页</a>
         </div>
+          </>
+        )}
       </div>
 
       <style jsx global>{`
