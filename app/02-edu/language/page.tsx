@@ -127,10 +127,13 @@ export default function GermanLearning() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(3);
+  const [quizCount, setQuizCount] = useState(10); // 答题数量
+  const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
   const [quizOptions, setQuizOptions] = useState<QuizOption[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
+  const [quizFinished, setQuizFinished] = useState(false); // 是否完成
 
   const filteredWords = selectedCategory === "all"
     ? words
@@ -171,6 +174,8 @@ export default function GermanLearning() {
   const handleModeChange = (newMode: "learn" | "quiz") => {
     setMode(newMode);
     if (newMode === "quiz") {
+      setCurrentQuizNumber(1);
+      setQuizFinished(false);
       generateQuiz();
     }
   };
@@ -192,6 +197,18 @@ export default function GermanLearning() {
 
   // 下一题
   const nextQuiz = () => {
+    if (currentQuizNumber >= quizCount) {
+      setQuizFinished(true);
+    } else {
+      setCurrentQuizNumber(prev => prev + 1);
+      generateQuiz();
+    }
+  };
+
+  // 重新开始
+  const restartQuiz = () => {
+    setCurrentQuizNumber(1);
+    setQuizFinished(false);
     generateQuiz();
   };
 
@@ -244,25 +261,49 @@ export default function GermanLearning() {
           </button>
         </div>
 
-        {/* 答题模式：难度选择 */}
-        {mode === "quiz" && (
-          <div className="flex flex-wrap justify-center items-center gap-4 mb-6">
-            <span className="text-gray-700 font-medium">难度：</span>
-            {[2, 3, 4].map(num => (
-              <button
-                key={num}
-                onClick={() => {
-                  setQuizDifficulty(num as 2 | 3 | 4);
-                }}
-                className={`w-10 h-10 rounded-full font-bold transition ${
-                  quizDifficulty === num
-                    ? "bg-amber-500 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-amber-50"
-                }`}
-              >
-                {num}
-              </button>
-            ))}
+        {/* 答题模式：设置 */}
+        {mode === "quiz" && !quizFinished && (
+          <div className="flex flex-wrap justify-center items-center gap-6 mb-6">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 font-medium">题数：</span>
+              {[5, 10, 15, 20].map(num => (
+                <button
+                  key={num}
+                  onClick={() => {
+                    setQuizCount(num);
+                    setCurrentQuizNumber(1);
+                  }}
+                  className={`px-4 py-2 rounded-full font-medium transition ${
+                    quizCount === num
+                      ? "bg-amber-500 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-amber-50"
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 font-medium">难度：</span>
+              {[2, 3, 4].map(num => (
+                <button
+                  key={num}
+                  onClick={() => {
+                    setQuizDifficulty(num as 2 | 3 | 4);
+                  }}
+                  className={`w-10 h-10 rounded-full font-bold transition ${
+                    quizDifficulty === num
+                      ? "bg-amber-500 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-amber-50"
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+            <span className="text-gray-500">
+              第 <span className="font-bold text-amber-600">{currentQuizNumber}</span> / {quizCount} 题
+            </span>
           </div>
         )}
 
@@ -287,8 +328,29 @@ export default function GermanLearning() {
           ))}
         </div>
 
+        {/* 答题模式：完成界面 */}
+        {mode === "quiz" && quizFinished && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md mx-auto">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">答题完成！</h2>
+            <p className="text-gray-600 mb-6">共 {quizCount} 道题</p>
+            <button
+              onClick={restartQuiz}
+              className="px-8 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
+            >
+              再来一轮 →
+            </button>
+            <button
+              onClick={() => setMode("learn")}
+              className="block mx-auto mt-4 text-gray-500 hover:text-gray-700"
+            >
+              返回学习模式
+            </button>
+          </div>
+        )}
+
         {/* 答题模式：左右布局 */}
-        {mode === "quiz" && quizWord && (
+        {mode === "quiz" && quizWord && !quizFinished && (
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* 左侧：题目和选项 */}
             <div className="flex-1">
