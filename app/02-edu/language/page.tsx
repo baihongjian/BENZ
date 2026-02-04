@@ -98,6 +98,14 @@ interface QuizRecord {
   selected: string | null;
   isCorrect: boolean;
   isTimeout: boolean;
+  gender?: string;
+}
+
+interface WrongQuestion {
+  german: string;
+  chinese: string;
+  gender?: string;
+  addedAt: number; // 添加时间戳
 }
 
 const words: Word[] = [
@@ -178,6 +186,8 @@ export default function GermanLearning() {
   const [quizTimeout, setQuizTimeout] = useState(false); // 是否超时未作答
   const [quizStarted, setQuizStarted] = useState(false); // 是否已开始答题
   const [quizRecords, setQuizRecords] = useState<QuizRecord[]>([]); // 答题记录
+  const [wrongBook, setWrongBook] = useState<WrongQuestion[]>([]); // 错题本
+  const [showWrongBook, setShowWrongBook] = useState(false); // 是否显示错题本
   const [usedWordIndices, setUsedWordIndices] = useState<number[]>([]); // 已出过的题目索引
   const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
   const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
@@ -207,7 +217,8 @@ export default function GermanLearning() {
             chinese: quizWord!.chinese,
             selected: null,
             isCorrect: false,
-            isTimeout: true
+            isTimeout: true,
+            gender: quizWord!.gender
           }]);
           return 0;
         }
@@ -307,7 +318,8 @@ export default function GermanLearning() {
         chinese: quizWord!.chinese,
         selected: quizOptions[index].word.chinese,
         isCorrect: true,
-        isTimeout: false
+        isTimeout: false,
+        gender: quizWord!.gender
       }]);
     } else {
       setQuizResult("wrong");
@@ -318,7 +330,8 @@ export default function GermanLearning() {
         chinese: quizWord!.chinese,
         selected: quizOptions[index].word.chinese,
         isCorrect: false,
-        isTimeout: false
+        isTimeout: false,
+        gender: quizWord!.gender
       }]);
     }
   };
@@ -357,6 +370,29 @@ export default function GermanLearning() {
     setQuizTimeout(false);
     setQuizRecords([]);
     setUsedWordIndices([]);
+  };
+
+  // 添加到错题本
+  const addToWrongBook = () => {
+    if (!quizWord) return;
+
+    const newQuestion: WrongQuestion = {
+      german: quizWord.german,
+      chinese: quizWord.chinese,
+      gender: quizWord.gender,
+      addedAt: Date.now(),
+    };
+
+    // 检查是否已存在
+    const exists = wrongBook.some(q => q.german === quizWord.german);
+    if (!exists) {
+      setWrongBook(prev => [...prev, newQuestion]);
+    }
+  };
+
+  // 从错题本移除
+  const removeFromWrongBook = (german: string) => {
+    setWrongBook(prev => prev.filter(q => q.german !== german));
   };
 
   const nextWord = () => {
@@ -406,7 +442,94 @@ export default function GermanLearning() {
           >
             🎯 答题模式
           </button>
+          <button
+            onClick={() => setShowWrongBook(true)}
+            className="px-6 py-2 rounded-full font-medium transition bg-white text-gray-700 border border-gray-300 hover:bg-red-50 relative"
+          >
+            📝 错题本
+            {wrongBook.length > 0 && (
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                {wrongBook.length}
+              </span>
+            )}
+          </button>
         </div>
+
+        {/* 错题本弹窗 */}
+        {showWrongBook && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+              {/* 头部 */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <h2 className="text-xl font-bold text-gray-800">📝 错题本</h2>
+                <button
+                  onClick={() => setShowWrongBook(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* 内容 */}
+              <div className="p-4 overflow-y-auto max-h-[60vh]">
+                {wrongBook.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <div className="text-4xl mb-4">📭</div>
+                    <p>错题本是空的</p>
+                    <p className="text-sm">答错题目时可以点击"加入错题本"</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {wrongBook.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-100"
+                      >
+                        <div className="flex items-center gap-3">
+                          {item.gender && (
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              item.gender === "der" ? "bg-blue-100 text-blue-700" :
+                              item.gender === "die" ? "bg-red-100 text-red-700" :
+                              "bg-green-100 text-green-700"
+                            }`}>
+                              {item.gender}
+                            </span>
+                          )}
+                          <div>
+                            <div className="font-bold text-blue-800">{item.german}</div>
+                            <div className="text-gray-600">{item.chinese}</div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeFromWrongBook(item.german)}
+                          className="p-2 text-red-500 hover:bg-red-100 rounded-full"
+                          title="从错题本移除"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 底部 */}
+              {wrongBook.length > 0 && (
+                <div className="p-4 border-t bg-gray-50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">共 {wrongBook.length} 个错题</span>
+                    <button
+                      onClick={() => setWrongBook([])}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition"
+                    >
+                      清空错题本
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* 答题模式：开始界面 */}
         {mode === "quiz" && !quizStarted && !quizFinished && (
@@ -599,43 +722,68 @@ export default function GermanLearning() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">答题详情</h3>
               <div className="space-y-3">
-                {quizRecords.map((record, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-4 rounded-xl border-2 ${
-                      record.isCorrect
-                        ? "bg-green-50 border-green-200"
-                        : "bg-red-50 border-red-200"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-blue-800 text-lg">
-                          {record.german}
+                {quizRecords.map((record, idx) => {
+                  const isInWrongBook = wrongBook.some(q => q.german === record.german);
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-4 rounded-xl border-2 ${
+                        record.isCorrect
+                          ? "bg-green-50 border-green-200"
+                          : "bg-red-50 border-red-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-blue-800 text-lg">
+                            {record.german}
+                          </div>
+                          <div className="text-gray-600">
+                            正确答案：{record.chinese}
+                          </div>
                         </div>
-                        <div className="text-gray-600">
-                          正确答案：{record.chinese}
+                        <div className="flex items-center gap-3">
+                          {record.isCorrect ? (
+                            <span className="text-green-600 font-medium">
+                              ✅ 正确
+                              {record.selected && `（选择了 ${record.selected}）`}
+                            </span>
+                          ) : record.isTimeout ? (
+                            <span className="text-red-600 font-medium">
+                              ⏱️ 超时
+                            </span>
+                          ) : (
+                            <span className="text-red-600 font-medium">
+                              ❌ 错误（选择了 {record.selected}）
+                            </span>
+                          )}
+                          {/* 加入错题本按钮 */}
+                          <button
+                            onClick={() => {
+                              const exists = wrongBook.some(q => q.german === record.german);
+                              if (!exists) {
+                                setWrongBook(prev => [...prev, {
+                                  german: record.german,
+                                  chinese: record.chinese,
+                                  gender: record.gender,
+                                  addedAt: Date.now()
+                                }]);
+                              }
+                            }}
+                            className={`p-2 rounded-full transition ${
+                              isInWrongBook
+                                ? "bg-green-100 text-green-600"
+                                : "bg-red-100 text-red-600 hover:bg-red-200"
+                            }`}
+                            title={isInWrongBook ? "已加入错题本" : "加入错题本"}
+                          >
+                            {isInWrongBook ? "✓" : "+"}
+                          </button>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        {record.isCorrect ? (
-                          <span className="text-green-600 font-medium">
-                            ✅ 正确
-                            {record.selected && `（选择了 ${record.selected}）`}
-                          </span>
-                        ) : record.isTimeout ? (
-                          <span className="text-red-600 font-medium">
-                            ⏱️ 超时
-                          </span>
-                        ) : (
-                          <span className="text-red-600 font-medium">
-                            ❌ 错误（选择了 {record.selected}）
-                          </span>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -713,19 +861,33 @@ export default function GermanLearning() {
             </div>
 
             {/* 右侧：结果和下一题 */}
-            <div className="lg:w-48 flex-shrink-0">
+            <div className="lg:w-56 flex-shrink-0">
               {selectedOption !== null || quizTimeout ? (
                 <div className="bg-white rounded-2xl shadow-lg p-6 text-center sticky top-4">
                   <p className={`text-2xl font-bold mb-4 ${
                     quizResult === "correct" ? "text-green-600" : "text-red-600"
                   }`}>
-                    {quizResult === "correct" ? "✅ 正确" : "❌ 超时"}
+                    {quizResult === "correct" ? "✅ 正确" : "❌ 错误"}
                   </p>
                   {quizResult === "wrong" && (
                     <p className="text-gray-600 mb-4">
                       正确：{quizOptions.find(o => o.isCorrect)?.word.chinese}
                     </p>
                   )}
+
+                  {/* 错题本按钮 - 答错时显示 */}
+                  {quizResult !== "correct" && (
+                    <button
+                      onClick={addToWrongBook}
+                      className="w-full py-2 mb-3 bg-red-100 text-red-700 rounded-full font-medium hover:bg-red-200 transition flex items-center justify-center gap-2"
+                    >
+                      <span>📝</span>
+                      {wrongBook.some(q => q.german === quizWord?.german)
+                        ? "已加入错题本"
+                        : "加入错题本"}
+                    </button>
+                  )}
+
                   <button
                     onClick={nextQuiz}
                     className="w-full py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
