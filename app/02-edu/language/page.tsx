@@ -84,6 +84,7 @@ interface Word {
   chinese: string;
   pronunciation: string;
   category: string;
+  gender?: "der" | "die" | "das"; // 词性（仅名词需要）
 }
 
 interface QuizOption {
@@ -134,14 +135,14 @@ const words: Word[] = [
   { german: "Lila", chinese: "紫色", pronunciation: "里拉", category: "color" },
 
   // 家庭
-  { german: "Mutter", chinese: "妈妈", pronunciation: "穆特", category: "family" },
-  { german: "Vater", chinese: "爸爸", pronunciation: "法特", category: "family" },
-  { german: "Eltern", chinese: "父母", pronunciation: "埃尔滕", category: "family" },
-  { german: "Bruder", chinese: "兄弟/哥哥", pronunciation: "布鲁德", category: "family" },
-  { german: "Schwester", chinese: "姐妹/姐姐", pronunciation: "施韦斯特", category: "family" },
-  { german: "Kind", chinese: "孩子", pronunciation: "金特", category: "family" },
-  { german: "Sohn", chinese: "儿子", pronunciation: "佐恩", category: "family" },
-  { german: "Tochter", chinese: "女儿", pronunciation: "托赫特", category: "family" },
+  { german: "Mutter", chinese: "妈妈", pronunciation: "穆特", category: "family", gender: "die" },
+  { german: "Vater", chinese: "爸爸", pronunciation: "法特", category: "family", gender: "der" },
+  { german: "Eltern", chinese: "父母", pronunciation: "埃尔滕", category: "family", gender: "die" },
+  { german: "Bruder", chinese: "兄弟/哥哥", pronunciation: "布鲁德", category: "family", gender: "der" },
+  { german: "Schwester", chinese: "姐妹/姐姐", pronunciation: "施韦斯特", category: "family", gender: "die" },
+  { german: "Kind", chinese: "孩子", pronunciation: "金特", category: "family", gender: "das" },
+  { german: "Sohn", chinese: "儿子", pronunciation: "佐恩", category: "family", gender: "der" },
+  { german: "Tochter", chinese: "女儿", pronunciation: "托赫特", category: "family", gender: "die" },
 ];
 
 const categories = [
@@ -587,6 +588,15 @@ export default function GermanLearning() {
               <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
                 <span className="text-sm text-gray-400 mb-2 block">请选择对应的中文翻译</span>
                 <div className="flex items-center justify-center gap-4">
+                  {quizWord.gender && (
+                    <span className={`px-3 py-1 rounded-full text-xl font-bold ${
+                      quizWord.gender === "der" ? "bg-blue-100 text-blue-700" :
+                      quizWord.gender === "die" ? "bg-red-100 text-red-700" :
+                      "bg-green-100 text-green-700"
+                    }`}>
+                      {quizWord.gender}
+                    </span>
+                  )}
                   <h2 className="text-4xl font-bold text-blue-800">{quizWord.german}</h2>
                   <button
                     onClick={() => speak(quizWord.german)}
@@ -694,7 +704,18 @@ export default function GermanLearning() {
               {/* 正面 - 德语 */}
               <div className="absolute w-full h-full backface-hidden bg-white rounded-2xl shadow-lg flex flex-col items-center justify-center p-6 border-2 border-blue-100">
                 <span className="text-sm text-gray-400 mb-2">德语</span>
-                <h2 className="text-5xl font-bold text-blue-800 mb-4">{currentWord?.german}</h2>
+                <div className="flex items-center gap-3 mb-4">
+                  {currentWord?.gender && (
+                    <span className={`px-3 py-1 rounded-full text-lg font-bold ${
+                      currentWord.gender === "der" ? "bg-blue-100 text-blue-700" :
+                      currentWord.gender === "die" ? "bg-red-100 text-red-700" :
+                      "bg-green-100 text-green-700"
+                    }`}>
+                      {currentWord.gender}
+                    </span>
+                  )}
+                  <h2 className="text-5xl font-bold text-blue-800">{currentWord?.german}</h2>
+                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -753,7 +774,18 @@ export default function GermanLearning() {
                     : "bg-gray-50 hover:bg-gray-100 border-2 border-transparent"
                 }`}
               >
-                <div className="font-bold text-blue-800">{word.german}</div>
+                <div className="flex items-center gap-2">
+                  {word.gender && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      word.gender === "der" ? "bg-blue-100 text-blue-700" :
+                      word.gender === "die" ? "bg-red-100 text-red-700" :
+                      "bg-green-100 text-green-700"
+                    }`}>
+                      {word.gender}
+                    </span>
+                  )}
+                  <span className="font-bold text-blue-800">{word.german}</span>
+                </div>
                 <div className="text-sm text-gray-600">{word.chinese}</div>
               </div>
             ))}
