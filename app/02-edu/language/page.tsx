@@ -178,6 +178,7 @@ export default function GermanLearning() {
   const [quizTimeout, setQuizTimeout] = useState(false); // 是否超时未作答
   const [quizStarted, setQuizStarted] = useState(false); // 是否已开始答题
   const [quizRecords, setQuizRecords] = useState<QuizRecord[]>([]); // 答题记录
+  const [usedWordIndices, setUsedWordIndices] = useState<number[]>([]); // 已出过的题目索引
   const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
   const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
 
@@ -221,20 +222,31 @@ export default function GermanLearning() {
     return () => clearInterval(timer);
   }, [timerActive, quizTimer, selectedOption, quizWord]);
 
-  // 生成随机题目
+  // 生成随机题目（不重复）
   const generateQuiz = () => {
     if (filteredWords.length < 2) return;
 
+    // 获取未出过的题目索引
+    const availableIndices = filteredWords
+      .map((_, idx) => idx)
+      .filter(idx => !usedWordIndices.includes(idx));
+
+    // 如果所有题目都出过了，不再生成新题目（由 nextQuiz 处理结束）
+    if (availableIndices.length === 0) return;
+
     // 随机选择正确答案
-    const correctIndex = Math.floor(Math.random() * filteredWords.length);
+    const randomIdx = Math.floor(Math.random() * availableIndices.length);
+    const correctIndex = availableIndices[randomIdx];
     const correctWord = filteredWords[correctIndex];
 
-    // 获取干扰项（排除正确答案）
-    const otherWords = filteredWords.filter((_, idx) => idx !== correctIndex);
+    // 获取干扰项（排除正确答案和已出过的题目）
+    const otherWords = filteredWords.filter((_, idx) =>
+      idx !== correctIndex && !usedWordIndices.includes(idx)
+    );
     const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
 
     // 根据难度选择干扰项数量
-    const wrongCount = quizDifficulty - 1;
+    const wrongCount = Math.min(quizDifficulty - 1, otherWords.length);
     const wrongWords = shuffledOthers.slice(0, wrongCount);
 
     // 合并并打乱选项
@@ -249,6 +261,7 @@ export default function GermanLearning() {
     setSelectedOption(null);
     setQuizResult(null);
     setQuizTimeout(false);
+    setUsedWordIndices(prev => [...prev, correctIndex]);
     setTimeLeft(quizTimer);
     setTimerActive(quizTimer > 0);
   };
@@ -275,6 +288,7 @@ export default function GermanLearning() {
     setQuizFinished(false);
     setQuizTimeout(false);
     setQuizRecords([]); // 清空答题记录
+    setUsedWordIndices([]); // 清空已出题目记录
     generateQuiz();
   };
 
@@ -312,14 +326,22 @@ export default function GermanLearning() {
   // 下一题
   const nextQuiz = () => {
     if (currentQuizNumber >= quizCount) {
+      // 达到设定的题数，结束答题
       setQuizFinished(true);
       setTimerActive(false);
     } else {
-      setCurrentQuizNumber(prev => prev + 1);
-      setQuizTimeout(false);
-      setTimeLeft(quizTimer);
-      setTimerActive(quizTimer > 0);
-      generateQuiz();
+      // 检查是否还有未出的题目
+      const availableCount = filteredWords.length - usedWordIndices.length;
+      if (availableCount <= 0) {
+        setQuizFinished(true);
+        setTimerActive(false);
+      } else {
+        setCurrentQuizNumber(prev => prev + 1);
+        setQuizTimeout(false);
+        setTimeLeft(quizTimer);
+        setTimerActive(quizTimer > 0);
+        generateQuiz();
+      }
     }
   };
 
@@ -333,6 +355,8 @@ export default function GermanLearning() {
     setSelectedOption(null);
     setQuizResult(null);
     setQuizTimeout(false);
+    setQuizRecords([]);
+    setUsedWordIndices([]);
   };
 
   const nextWord = () => {
