@@ -477,9 +477,39 @@ export default function GermanLearning() {
               }`}
             >
               {cat.name}
+              {cat.id !== "all" && (
+                <span className="ml-1 text-xs opacity-70">
+                  ({words.filter(w => w.category === cat.id).length})
+                </span>
+              )}
             </button>
           ))}
         </div>
+
+        {/* 学习模式：词汇统计 */}
+        {mode === "learn" && (
+          <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
+            <h3 className="font-bold text-gray-800 mb-3">📊 词汇统计</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {categories.map((cat) => {
+                const count = cat.id === "all"
+                  ? words.length
+                  : words.filter(w => w.category === cat.id).length;
+                return (
+                  <div
+                    key={cat.id}
+                    className={`text-center p-2 rounded-lg ${
+                      selectedCategory === cat.id ? "bg-blue-100" : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="text-2xl font-bold text-blue-600">{count}</div>
+                    <div className="text-sm text-gray-600">{cat.name}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 答题模式：完成界面 */}
         {mode === "quiz" && quizFinished && (
