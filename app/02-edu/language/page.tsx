@@ -138,11 +138,19 @@ const words: Word[] = [
   { german: "Mutter", chinese: "妈妈", pronunciation: "穆特", category: "family", gender: "die" },
   { german: "Vater", chinese: "爸爸", pronunciation: "法特", category: "family", gender: "der" },
   { german: "Eltern", chinese: "父母", pronunciation: "埃尔滕", category: "family", gender: "die" },
-  { german: "Bruder", chinese: "兄弟/哥哥", pronunciation: "布鲁德", category: "family", gender: "der" },
-  { german: "Schwester", chinese: "姐妹/姐姐", pronunciation: "施韦斯特", category: "family", gender: "die" },
+  { german: "Bruder", chinese: "兄弟", pronunciation: "布鲁德", category: "family", gender: "der" },
+  { german: "Schwester", chinese: "姐妹", pronunciation: "施韦斯特", category: "family", gender: "die" },
   { german: "Kind", chinese: "孩子", pronunciation: "金特", category: "family", gender: "das" },
   { german: "Sohn", chinese: "儿子", pronunciation: "佐恩", category: "family", gender: "der" },
   { german: "Tochter", chinese: "女儿", pronunciation: "托赫特", category: "family", gender: "die" },
+  { german: "Familie", chinese: "家庭", pronunciation: "法米利", category: "family", gender: "die" },
+  { german: "Frau", chinese: "女人/妻子", pronunciation: "弗劳", category: "family", gender: "die" },
+  { german: "Mann", chinese: "男人/丈夫", pronunciation: "曼恩", category: "family", gender: "der" },
+  { german: "Geschwister", chinese: "兄弟姐妹", pronunciation: "盖施维斯特", category: "family", gender: "die" },
+  { german: "Tante", chinese: "姑母/姨母", pronunciation: "坦特", category: "family", gender: "die" },
+  { german: "Onkel", chinese: "叔叔/舅舅", pronunciation: "昂克尔", category: "family", gender: "der" },
+  { german: "Mädchen", chinese: "女孩", pronunciation: "梅德欣", category: "family", gender: "das" },
+  { german: "Junge", chinese: "男孩", pronunciation: "永格", category: "family", gender: "der" },
 ];
 
 const categories = [
