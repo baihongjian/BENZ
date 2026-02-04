@@ -91,6 +91,14 @@ interface QuizOption {
   isCorrect: boolean;
 }
 
+interface QuizRecord {
+  german: string;
+  chinese: string;
+  selected: string | null;
+  isCorrect: boolean;
+  isTimeout: boolean;
+}
+
 const words: Word[] = [
   // 问候语
   { german: "Hallo", chinese: "你好", pronunciation: "哈喽", category: "greeting" },
@@ -160,6 +168,7 @@ export default function GermanLearning() {
   const [quizFinished, setQuizFinished] = useState(false); // 是否完成
   const [quizTimeout, setQuizTimeout] = useState(false); // 是否超时未作答
   const [quizStarted, setQuizStarted] = useState(false); // 是否已开始答题
+  const [quizRecords, setQuizRecords] = useState<QuizRecord[]>([]); // 答题记录
   const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
   const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
 
@@ -182,6 +191,14 @@ export default function GermanLearning() {
           setQuizTimeout(true);
           setQuizResult("wrong");
           playSound("wrong");
+          // 记录超时未答题
+          setQuizRecords(prev => [...prev, {
+            german: quizWord!.german,
+            chinese: quizWord!.chinese,
+            selected: null,
+            isCorrect: false,
+            isTimeout: true
+          }]);
           return 0;
         }
         // 最后3秒播放滴滴声
@@ -193,7 +210,7 @@ export default function GermanLearning() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timerActive, quizTimer, selectedOption]);
+  }, [timerActive, quizTimer, selectedOption, quizWord]);
 
   // 生成随机题目
   const generateQuiz = () => {
@@ -248,6 +265,7 @@ export default function GermanLearning() {
     setCurrentQuizNumber(1);
     setQuizFinished(false);
     setQuizTimeout(false);
+    setQuizRecords([]); // 清空答题记录
     generateQuiz();
   };
 
@@ -260,9 +278,25 @@ export default function GermanLearning() {
     if (quizOptions[index].isCorrect) {
       setQuizResult("correct");
       playSound("correct");
+      // 记录正确答题
+      setQuizRecords(prev => [...prev, {
+        german: quizWord!.german,
+        chinese: quizWord!.chinese,
+        selected: quizOptions[index].word.chinese,
+        isCorrect: true,
+        isTimeout: false
+      }]);
     } else {
       setQuizResult("wrong");
       playSound("wrong");
+      // 记录错误答题
+      setQuizRecords(prev => [...prev, {
+        german: quizWord!.german,
+        chinese: quizWord!.chinese,
+        selected: quizOptions[index].word.chinese,
+        isCorrect: false,
+        isTimeout: false
+      }]);
     }
   };
 
@@ -448,22 +482,99 @@ export default function GermanLearning() {
 
         {/* 答题模式：完成界面 */}
         {mode === "quiz" && quizFinished && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md mx-auto">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">答题完成！</h2>
-            <p className="text-gray-600 mb-6">共 {quizCount} 道题</p>
-            <button
-              onClick={restartQuiz}
-              className="px-8 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
-            >
-              再来一轮 →
-            </button>
-            <button
-              onClick={() => setMode("learn")}
-              className="block mx-auto mt-4 text-gray-500 hover:text-gray-700"
-            >
-              返回学习模式
-            </button>
+          <div className="max-w-2xl mx-auto">
+            {/* 统计信息 */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">答题完成！</h2>
+
+              <div className="flex justify-center gap-8 mb-6">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-green-600">
+                    {quizRecords.filter(r => r.isCorrect).length}
+                  </div>
+                  <div className="text-gray-500">正确</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-red-600">
+                    {quizRecords.filter(r => !r.isCorrect).length}
+                  </div>
+                  <div className="text-gray-500">错误</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-gray-800">
+                    {quizCount}
+                  </div>
+                  <div className="text-gray-500">总计</div>
+                </div>
+              </div>
+
+              <div className="text-lg text-gray-600 mb-4">
+                正确率：
+                <span className="font-bold text-amber-600">
+                  {Math.round((quizRecords.filter(r => r.isCorrect).length / quizCount) * 100)}%
+                </span>
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={restartQuiz}
+                  className="px-6 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
+                >
+                  再来一轮 →
+                </button>
+                <button
+                  onClick={() => setMode("learn")}
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition"
+                >
+                  返回学习
+                </button>
+              </div>
+            </div>
+
+            {/* 答题记录列表 */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">答题详情</h3>
+              <div className="space-y-3">
+                {quizRecords.map((record, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-xl border-2 ${
+                      record.isCorrect
+                        ? "bg-green-50 border-green-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-blue-800 text-lg">
+                          {record.german}
+                        </div>
+                        <div className="text-gray-600">
+                          正确答案：{record.chinese}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {record.isCorrect ? (
+                          <span className="text-green-600 font-medium">
+                            ✅ 正确
+                            {record.selected && `（选择了 ${record.selected}）`}
+                          </span>
+                        ) : record.isTimeout ? (
+                          <span className="text-red-600 font-medium">
+                            ⏱️ 超时
+                          </span>
+                        ) : (
+                          <span className="text-red-600 font-medium">
+                            ❌ 错误（选择了 {record.selected}）
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
