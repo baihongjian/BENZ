@@ -56,6 +56,29 @@ const playSound = (type: "correct" | "wrong") => {
   }
 };
 
+// 倒计时滴滴声
+const playTickSound = () => {
+  if (typeof window === "undefined") return;
+
+  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContext) return;
+
+  const ctx = new AudioContext();
+  const oscillator = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+  gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+  oscillator.start(ctx.currentTime);
+  oscillator.stop(ctx.currentTime + 0.1);
+};
+
 interface Word {
   german: string;
   chinese: string;
@@ -159,6 +182,10 @@ export default function GermanLearning() {
             playSound("wrong");
           }
           return 0;
+        }
+        // 最后3秒播放滴滴声
+        if (prev <= 4) {
+          playTickSound();
         }
         return prev - 1;
       });
