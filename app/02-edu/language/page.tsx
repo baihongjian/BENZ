@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 // 发音函数
 const speak = (text: string) => {
@@ -128,18 +128,44 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(3);
   const [quizCount, setQuizCount] = useState(10); // 答题数量
+  const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
   const [quizOptions, setQuizOptions] = useState<QuizOption[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [quizFinished, setQuizFinished] = useState(false); // 是否完成
+  const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
+  const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
 
   const filteredWords = selectedCategory === "all"
     ? words
     : words.filter(w => w.category === selectedCategory);
 
   const currentWord = filteredWords[currentIndex];
+
+  // 倒计时逻辑
+  useEffect(() => {
+    if (!timerActive || quizTimer === 0 || selectedOption !== null) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // 时间到，自动判定失败
+          clearInterval(timer);
+          setTimerActive(false);
+          if (selectedOption === null) {
+            setQuizResult("wrong");
+            playSound("wrong");
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timerActive, quizTimer, selectedOption]);
 
   // 生成随机题目
   const generateQuiz = () => {
@@ -168,6 +194,8 @@ export default function GermanLearning() {
     setQuizOptions(shuffledOptions);
     setSelectedOption(null);
     setQuizResult(null);
+    setTimeLeft(quizTimer);
+    setTimerActive(quizTimer > 0);
   };
 
   // 切换到答题模式时生成第一道题
@@ -199,8 +227,11 @@ export default function GermanLearning() {
   const nextQuiz = () => {
     if (currentQuizNumber >= quizCount) {
       setQuizFinished(true);
+      setTimerActive(false);
     } else {
       setCurrentQuizNumber(prev => prev + 1);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
       generateQuiz();
     }
   };
@@ -209,6 +240,8 @@ export default function GermanLearning() {
   const restartQuiz = () => {
     setCurrentQuizNumber(1);
     setQuizFinished(false);
+    setTimeLeft(quizTimer);
+    setTimerActive(quizTimer > 0);
     generateQuiz();
   };
 
@@ -301,6 +334,24 @@ export default function GermanLearning() {
                 </button>
               ))}
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 font-medium">倒计时：</span>
+              {[0, 5, 7, 10].map(num => (
+                <button
+                  key={num}
+                  onClick={() => {
+                    setQuizTimer(num as 0 | 5 | 7 | 10);
+                  }}
+                  className={`px-3 py-2 rounded-full font-medium transition ${
+                    quizTimer === num
+                      ? "bg-red-500 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-red-50"
+                  }`}
+                >
+                  {num === 0 ? "∞" : `${num}秒`}
+                </button>
+              ))}
+            </div>
             <span className="text-gray-500">
               第 <span className="font-bold text-amber-600">{currentQuizNumber}</span> / {quizCount} 题
             </span>
@@ -367,6 +418,14 @@ export default function GermanLearning() {
                     🔊
                   </button>
                 </div>
+                {/* 倒计时显示 */}
+                {quizTimer > 0 && (
+                  <div className={`mt-4 text-2xl font-bold ${
+                    timeLeft <= 3 ? "text-red-600 animate-pulse" : "text-red-500"
+                  }`}>
+                    ⏱️ {timeLeft} 秒
+                  </div>
+                )}
               </div>
 
               {/* 选项列表 */}
