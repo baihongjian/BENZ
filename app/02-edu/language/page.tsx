@@ -159,6 +159,7 @@ export default function GermanLearning() {
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [quizFinished, setQuizFinished] = useState(false); // 是否完成
   const [quizTimeout, setQuizTimeout] = useState(false); // 是否超时未作答
+  const [quizStarted, setQuizStarted] = useState(false); // 是否已开始答题
   const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
   const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
 
@@ -226,14 +227,28 @@ export default function GermanLearning() {
     setTimerActive(quizTimer > 0);
   };
 
-  // 切换到答题模式时生成第一道题
+  // 切换到答题模式
   const handleModeChange = (newMode: "learn" | "quiz") => {
     setMode(newMode);
     if (newMode === "quiz") {
-      setCurrentQuizNumber(1);
+      setQuizStarted(false);
       setQuizFinished(false);
-      generateQuiz();
+      setCurrentQuizNumber(1);
+      setQuizWord(null);
+      setQuizOptions([]);
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
     }
+  };
+
+  // 开始答题
+  const startQuiz = () => {
+    setQuizStarted(true);
+    setCurrentQuizNumber(1);
+    setQuizFinished(false);
+    setQuizTimeout(false);
+    generateQuiz();
   };
 
   // 选择答案
@@ -265,14 +280,16 @@ export default function GermanLearning() {
     }
   };
 
-  // 重新开始
+  // 重新开始（返回开始界面）
   const restartQuiz = () => {
-    setCurrentQuizNumber(1);
+    setQuizStarted(false);
     setQuizFinished(false);
+    setCurrentQuizNumber(1);
+    setQuizWord(null);
+    setQuizOptions([]);
+    setSelectedOption(null);
+    setQuizResult(null);
     setQuizTimeout(false);
-    setTimeLeft(quizTimer);
-    setTimerActive(quizTimer > 0);
-    generateQuiz();
   };
 
   const nextWord = () => {
@@ -324,64 +341,84 @@ export default function GermanLearning() {
           </button>
         </div>
 
-        {/* 答题模式：设置 */}
-        {mode === "quiz" && !quizFinished && (
-          <div className="flex flex-wrap justify-center items-center gap-6 mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium">题数：</span>
-              {[5, 10, 15, 20].map(num => (
-                <button
-                  key={num}
-                  onClick={() => {
-                    setQuizCount(num);
-                    setCurrentQuizNumber(1);
-                  }}
-                  className={`px-4 py-2 rounded-full font-medium transition ${
-                    quizCount === num
-                      ? "bg-amber-500 text-white"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-amber-50"
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
+        {/* 答题模式：开始界面 */}
+        {mode === "quiz" && !quizStarted && !quizFinished && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md mx-auto">
+            <div className="text-6xl mb-4">🎯</div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">德语单词测验</h2>
+
+            {/* 设置选项 */}
+            <div className="mb-6">
+              <div className="mb-4">
+                <span className="text-gray-700 font-medium block mb-2">题数</span>
+                <div className="flex justify-center gap-2">
+                  {[5, 10, 15, 20].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => setQuizCount(num)}
+                      className={`w-12 h-12 rounded-full font-bold transition ${
+                        quizCount === num
+                          ? "bg-amber-500 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-amber-50"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <span className="text-gray-700 font-medium block mb-2">难度</span>
+                <div className="flex justify-center gap-2">
+                  {[2, 3, 4].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => setQuizDifficulty(num as 2 | 3 | 4)}
+                      className={`w-12 h-12 rounded-full font-bold transition ${
+                        quizDifficulty === num
+                          ? "bg-amber-500 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-amber-50"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-gray-700 font-medium block mb-2">倒计时</span>
+                <div className="flex justify-center gap-2">
+                  {[0, 5, 7, 10].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => setQuizTimer(num as 0 | 5 | 7 | 10)}
+                      className={`w-14 h-10 rounded-full font-medium transition ${
+                        quizTimer === num
+                          ? "bg-red-500 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-red-50"
+                      }`}
+                    >
+                      {num === 0 ? "∞" : `${num}秒`}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium">难度：</span>
-              {[2, 3, 4].map(num => (
-                <button
-                  key={num}
-                  onClick={() => {
-                    setQuizDifficulty(num as 2 | 3 | 4);
-                  }}
-                  className={`w-10 h-10 rounded-full font-bold transition ${
-                    quizDifficulty === num
-                      ? "bg-amber-500 text-white"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-amber-50"
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-700 font-medium">倒计时：</span>
-              {[0, 5, 7, 10].map(num => (
-                <button
-                  key={num}
-                  onClick={() => {
-                    setQuizTimer(num as 0 | 5 | 7 | 10);
-                  }}
-                  className={`px-3 py-2 rounded-full font-medium transition ${
-                    quizTimer === num
-                      ? "bg-red-500 text-white"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-red-50"
-                  }`}
-                >
-                  {num === 0 ? "∞" : `${num}秒`}
-                </button>
-              ))}
-            </div>
+
+            <button
+              onClick={startQuiz}
+              className="px-8 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition text-lg"
+            >
+              开始答题 →
+            </button>
+          </div>
+        )}
+
+        {/* 答题模式：答题中显示进度 */}
+        {mode === "quiz" && quizStarted && !quizFinished && (
+          <div className="flex justify-center gap-4 mb-6">
             <span className="text-gray-500">
               第 <span className="font-bold text-amber-600">{currentQuizNumber}</span> / {quizCount} 题
             </span>
@@ -431,7 +468,7 @@ export default function GermanLearning() {
         )}
 
         {/* 答题模式：左右布局 */}
-        {mode === "quiz" && quizWord && !quizFinished && (
+        {mode === "quiz" && quizStarted && quizWord && !quizFinished && (
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* 左侧：题目和选项 */}
             <div className="flex-1">
