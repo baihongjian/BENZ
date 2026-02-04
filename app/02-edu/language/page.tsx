@@ -158,6 +158,7 @@ export default function GermanLearning() {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [quizFinished, setQuizFinished] = useState(false); // 是否完成
+  const [quizTimeout, setQuizTimeout] = useState(false); // 是否超时未作答
   const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
   const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
 
@@ -177,10 +178,9 @@ export default function GermanLearning() {
           // 时间到，自动判定失败
           clearInterval(timer);
           setTimerActive(false);
-          if (selectedOption === null) {
-            setQuizResult("wrong");
-            playSound("wrong");
-          }
+          setQuizTimeout(true);
+          setQuizResult("wrong");
+          playSound("wrong");
           return 0;
         }
         // 最后3秒播放滴滴声
@@ -221,6 +221,7 @@ export default function GermanLearning() {
     setQuizOptions(shuffledOptions);
     setSelectedOption(null);
     setQuizResult(null);
+    setQuizTimeout(false);
     setTimeLeft(quizTimer);
     setTimerActive(quizTimer > 0);
   };
@@ -257,6 +258,7 @@ export default function GermanLearning() {
       setTimerActive(false);
     } else {
       setCurrentQuizNumber(prev => prev + 1);
+      setQuizTimeout(false);
       setTimeLeft(quizTimer);
       setTimerActive(quizTimer > 0);
       generateQuiz();
@@ -267,6 +269,7 @@ export default function GermanLearning() {
   const restartQuiz = () => {
     setCurrentQuizNumber(1);
     setQuizFinished(false);
+    setQuizTimeout(false);
     setTimeLeft(quizTimer);
     setTimerActive(quizTimer > 0);
     generateQuiz();
@@ -461,7 +464,8 @@ export default function GermanLearning() {
                   let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
                   let disabled = false;
 
-                  if (selectedOption !== null) {
+                  // 有选择答案 或 超时未作答
+                  if (selectedOption !== null || quizTimeout) {
                     disabled = true;
                     if (option.isCorrect) {
                       buttonClass += "bg-green-100 border-green-500 text-green-800";
@@ -490,12 +494,12 @@ export default function GermanLearning() {
 
             {/* 右侧：结果和下一题 */}
             <div className="lg:w-48 flex-shrink-0">
-              {selectedOption !== null ? (
+              {selectedOption !== null || quizTimeout ? (
                 <div className="bg-white rounded-2xl shadow-lg p-6 text-center sticky top-4">
                   <p className={`text-2xl font-bold mb-4 ${
                     quizResult === "correct" ? "text-green-600" : "text-red-600"
                   }`}>
-                    {quizResult === "correct" ? "✅ 正确" : "❌ 错误"}
+                    {quizResult === "correct" ? "✅ 正确" : "❌ 超时"}
                   </p>
                   {quizResult === "wrong" && (
                     <p className="text-gray-600 mb-4">
