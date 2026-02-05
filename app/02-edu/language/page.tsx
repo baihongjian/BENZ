@@ -174,8 +174,8 @@ export default function GermanLearning() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
-  const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(3);
-  const [quizCount, setQuizCount] = useState(10); // 答题数量
+  const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
+  const [quizCount, setQuizCount] = useState(5); // 答题数量
   const [quizType, setQuizType] = useState<"chinese" | "gender">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
