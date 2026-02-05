@@ -176,7 +176,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "gender">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -308,7 +308,7 @@ export default function GermanLearning() {
         isCorrect: opt.isCorrect
       }));
     } else {
-      // 中文匹配题型（原有逻辑）
+      // 中文匹配或德中匹配题型
       const otherWords = wordsWithGender.filter((_, idx) =>
         filteredWords.indexOf(_) !== correctItem.originalIdx &&
         !usedWordIndices.includes(filteredWords.indexOf(_))
@@ -366,6 +366,11 @@ export default function GermanLearning() {
 
     setSelectedOption(index);
 
+    // 德中匹配题型选择显示的是德语
+    const selectedValue = quizType === "german"
+      ? quizOptions[index].word.german
+      : quizOptions[index].word.chinese;
+
     if (quizOptions[index].isCorrect) {
       setQuizResult("correct");
       playSound("correct");
@@ -373,7 +378,7 @@ export default function GermanLearning() {
       setQuizRecords(prev => [...prev, {
         german: quizWord!.german,
         chinese: quizWord!.chinese,
-        selected: quizOptions[index].word.chinese,
+        selected: selectedValue,
         isCorrect: true,
         isTimeout: false,
         gender: quizWord!.gender
@@ -385,7 +390,7 @@ export default function GermanLearning() {
       setQuizRecords(prev => [...prev, {
         german: quizWord!.german,
         chinese: quizWord!.chinese,
-        selected: quizOptions[index].word.chinese,
+        selected: selectedValue,
         isCorrect: false,
         isTimeout: false,
         gender: quizWord!.gender
@@ -473,7 +478,7 @@ export default function GermanLearning() {
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-blue-800 mb-2">🇩🇪 德语学习</h1>
           <p className="text-gray-600">
-            {mode === "learn" ? "点击卡片查看释义和发音" : "选择正确的中文翻译"}
+            {mode === "learn" ? "点击卡片查看释义和发音" : quizType === "german" ? "看中文选德语" : "选择正确的中文翻译"}
           </p>
         </header>
 
@@ -648,6 +653,16 @@ export default function GermanLearning() {
                     中德匹配
                   </button>
                   <button
+                    onClick={() => setQuizType("german")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "german"
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-green-50"
+                    }`}
+                  >
+                    德中匹配
+                  </button>
+                  <button
                     onClick={() => setQuizType("gender")}
                     className={`px-4 py-2 rounded-full font-medium transition ${
                       quizType === "gender"
@@ -807,6 +822,9 @@ export default function GermanLearning() {
               <div className="space-y-3">
                 {quizRecords.map((record, idx) => {
                   const isInWrongBook = wrongBook.some(q => q.german === record.german);
+                  // 德中匹配题型显示中文题目，中德匹配显示德语题目
+                  const questionText = quizType === "german" ? record.chinese : record.german;
+                  const answerText = quizType === "german" ? record.german : record.chinese;
                   return (
                     <div
                       key={idx}
@@ -819,10 +837,10 @@ export default function GermanLearning() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-bold text-blue-800 text-lg">
-                            {record.german}
+                            {questionText}
                           </div>
                           <div className="text-gray-600">
-                            正确答案：{record.chinese}
+                            正确答案：{answerText}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -877,10 +895,10 @@ export default function GermanLearning() {
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* 左侧：题目和选项 */}
             <div className="flex-1">
-              {/* 德语单词显示 */}
+              {/* 题目显示 */}
               <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
                 <span className="text-sm text-gray-400 mb-2 block">
-                  {quizType === "gender" ? "请选择对应的词性" : "请选择对应的中文翻译"}
+                  {quizType === "gender" ? "请选择对应的词性" : quizType === "german" ? "请选择对应的德语" : "请选择对应的中文翻译"}
                 </span>
                 <div className="flex items-center justify-center gap-4">
                   {quizType === "chinese" && quizWord.gender && (
@@ -892,7 +910,9 @@ export default function GermanLearning() {
                       {quizWord.gender}
                     </span>
                   )}
-                  <h2 className="text-4xl font-bold text-blue-800">{quizWord.german}</h2>
+                  <h2 className="text-4xl font-bold text-blue-800">
+                    {quizType === "german" ? quizWord.chinese : quizWord.german}
+                  </h2>
                   {quizType === "chinese" && (
                     <button
                       onClick={() => speak(quizWord.german)}
@@ -918,7 +938,8 @@ export default function GermanLearning() {
                 {quizOptions.map((option, idx) => {
                   let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
                   let disabled = false;
-                  let optionLabel = option.word.chinese;
+                  // 德中匹配显示德语，中德匹配和词性匹配显示中文/词性
+                  let optionLabel = quizType === "german" ? option.word.german : option.word.chinese;
 
                   // 词性匹配题型用不同颜色
                   if (quizType === "gender") {
@@ -933,7 +954,7 @@ export default function GermanLearning() {
                       buttonClass += " hover:bg-blue-100 hover:border-blue-400";
                     }
                   } else {
-                    // 中文匹配题型
+                    // 中文匹配或德中匹配题型
                     if (selectedOption !== null || quizTimeout) {
                       disabled = true;
                       if (option.isCorrect) {
@@ -973,7 +994,9 @@ export default function GermanLearning() {
                   </p>
                   {quizResult === "wrong" && (
                     <p className="text-gray-600 mb-4">
-                      正确：{quizOptions.find(o => o.isCorrect)?.word.chinese}
+                      正确：{quizType === "german"
+                        ? quizOptions.find(o => o.isCorrect)?.word.german
+                        : quizOptions.find(o => o.isCorrect)?.word.chinese}
                     </p>
                   )}
 
