@@ -193,6 +193,33 @@ export default function GermanLearning() {
   const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
   const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
 
+  // 从 localStorage 加载错题本（初始化时）
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const saved = localStorage.getItem("german-wrong-book");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setWrongBook(parsed);
+        }
+      }
+    } catch (e) {
+      console.error("Load wrong book error:", e);
+    }
+  }, []);
+
+  // 保存错题本到 localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("german-wrong-book", JSON.stringify(wrongBook));
+    } catch (e) {
+      console.error("Save wrong book error:", e);
+    }
+  }, [wrongBook]);
+
   const filteredWords = selectedCategory === "all"
     ? words
     : words.filter(w => w.category === selectedCategory);
