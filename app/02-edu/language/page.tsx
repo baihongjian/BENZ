@@ -176,6 +176,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(3);
   const [quizCount, setQuizCount] = useState(10); // 答题数量
+  const [quizType, setQuizType] = useState<"chinese" | "gender">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -235,44 +236,73 @@ export default function GermanLearning() {
 
   // 生成随机题目（不重复）
   const generateQuiz = () => {
-    if (filteredWords.length < 2) return;
+    // 词性匹配题型只能从有词性的单词中出题
+    const wordsWithGender = quizType === "gender"
+      ? filteredWords.filter(w => w.gender)
+      : filteredWords;
 
-    // 获取未出过的题目索引
-    const availableIndices = filteredWords
-      .map((_, idx) => idx)
-      .filter(idx => !usedWordIndices.includes(idx));
+    if (wordsWithGender.length < 2) return;
 
-    // 如果所有题目都出过了，不再生成新题目（由 nextQuiz 处理结束）
+    // 获取未出过的题目索引（在有词性的单词中）
+    const availableIndices = wordsWithGender
+      .map((w, idx) => ({ originalIdx: filteredWords.indexOf(w), word: w }))
+      .filter(item => !usedWordIndices.includes(item.originalIdx));
+
+    // 如果所有题目都出过了，不再生成新题目
     if (availableIndices.length === 0) return;
 
     // 随机选择正确答案
     const randomIdx = Math.floor(Math.random() * availableIndices.length);
-    const correctIndex = availableIndices[randomIdx];
-    const correctWord = filteredWords[correctIndex];
+    const correctItem = availableIndices[randomIdx];
+    const correctWord = correctItem.word;
 
-    // 获取干扰项（排除正确答案和已出过的题目）
-    const otherWords = filteredWords.filter((_, idx) =>
-      idx !== correctIndex && !usedWordIndices.includes(idx)
-    );
-    const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
+    // 生成选项
+    let options: QuizOption[];
 
-    // 根据难度选择干扰项数量
-    const wrongCount = Math.min(quizDifficulty - 1, otherWords.length);
-    const wrongWords = shuffledOthers.slice(0, wrongCount);
+    if (quizType === "gender") {
+      // 词性匹配题型
+      const genders: Array<"der" | "die" | "das"> = ["der", "die", "das"];
+      const correctGender = correctWord.gender as "der" | "die" | "das";
 
-    // 合并并打乱选项
-    const options: QuizOption[] = [
-      { word: correctWord, isCorrect: true },
-      ...wrongWords.map(w => ({ word: w, isCorrect: false })),
-    ];
-    const shuffledOptions = options.sort(() => Math.random() - 0.5);
+      // 获取其他错误的词性选项
+      const wrongGenders = genders.filter(g => g !== correctGender);
+      const shuffledWrongGenders = wrongGenders.sort(() => Math.random() - 0.5);
+      const selectedWrongGenders = shuffledWrongGenders.slice(0, quizDifficulty - 1);
+
+      // 正确选项和错误选项
+      const genderOptions: Array<{ gender: string; isCorrect: boolean }> = [
+        { gender: correctGender, isCorrect: true },
+        ...selectedWrongGenders.map(g => ({ gender: g, isCorrect: false })),
+      ];
+      const shuffledGenderOptions = genderOptions.sort(() => Math.random() - 0.5);
+
+      options = shuffledGenderOptions.map(opt => ({
+        word: { ...correctWord, chinese: opt.gender }, // 用词性作为选项显示
+        isCorrect: opt.isCorrect
+      }));
+    } else {
+      // 中文匹配题型（原有逻辑）
+      const otherWords = wordsWithGender.filter((_, idx) =>
+        filteredWords.indexOf(_) !== correctItem.originalIdx &&
+        !usedWordIndices.includes(filteredWords.indexOf(_))
+      );
+      const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
+      const wrongCount = Math.min(quizDifficulty - 1, otherWords.length);
+      const wrongWords = shuffledOthers.slice(0, wrongCount);
+
+      options = [
+        { word: correctWord, isCorrect: true },
+        ...wrongWords.map(w => ({ word: w, isCorrect: false })),
+      ];
+      options.sort(() => Math.random() - 0.5);
+    }
 
     setQuizWord(correctWord);
-    setQuizOptions(shuffledOptions);
+    setQuizOptions(options);
     setSelectedOption(null);
     setQuizResult(null);
     setQuizTimeout(false);
-    setUsedWordIndices(prev => [...prev, correctIndex]);
+    setUsedWordIndices(prev => [...prev, correctItem.originalIdx]);
     setTimeLeft(quizTimer);
     setTimerActive(quizTimer > 0);
   };
@@ -577,6 +607,32 @@ export default function GermanLearning() {
                 </div>
               </div>
 
+              <div className="mb-4">
+                <span className="text-gray-700 font-medium block mb-2">题型</span>
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => setQuizType("chinese")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "chinese"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-blue-50"
+                    }`}
+                  >
+                    中德匹配
+                  </button>
+                  <button
+                    onClick={() => setQuizType("gender")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "gender"
+                        ? "bg-purple-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-purple-50"
+                    }`}
+                  >
+                    词性匹配
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <span className="text-gray-700 font-medium block mb-2">倒计时</span>
                 <div className="flex justify-center gap-2">
@@ -796,9 +852,11 @@ export default function GermanLearning() {
             <div className="flex-1">
               {/* 德语单词显示 */}
               <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
-                <span className="text-sm text-gray-400 mb-2 block">请选择对应的中文翻译</span>
+                <span className="text-sm text-gray-400 mb-2 block">
+                  {quizType === "gender" ? "请选择对应的词性" : "请选择对应的中文翻译"}
+                </span>
                 <div className="flex items-center justify-center gap-4">
-                  {quizWord.gender && (
+                  {quizType === "chinese" && quizWord.gender && (
                     <span className={`px-3 py-1 rounded-full text-xl font-bold ${
                       quizWord.gender === "der" ? "bg-blue-100 text-blue-700" :
                       quizWord.gender === "die" ? "bg-red-100 text-red-700" :
@@ -808,13 +866,15 @@ export default function GermanLearning() {
                     </span>
                   )}
                   <h2 className="text-4xl font-bold text-blue-800">{quizWord.german}</h2>
-                  <button
-                    onClick={() => speak(quizWord.german)}
-                    className="p-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
-                    title="发音"
-                  >
-                    🔊
-                  </button>
+                  {quizType === "chinese" && (
+                    <button
+                      onClick={() => speak(quizWord.german)}
+                      className="p-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
+                      title="发音"
+                    >
+                      🔊
+                    </button>
+                  )}
                 </div>
                 {/* 倒计时显示 */}
                 {quizTimer > 0 && (
@@ -831,19 +891,34 @@ export default function GermanLearning() {
                 {quizOptions.map((option, idx) => {
                   let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
                   let disabled = false;
+                  let optionLabel = option.word.chinese;
 
-                  // 有选择答案 或 超时未作答
-                  if (selectedOption !== null || quizTimeout) {
-                    disabled = true;
-                    if (option.isCorrect) {
-                      buttonClass += "bg-green-100 border-green-500 text-green-800";
-                    } else if (idx === selectedOption && !option.isCorrect) {
-                      buttonClass += "bg-red-100 border-red-500 text-red-800";
-                    } else {
-                      buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                  // 词性匹配题型用不同颜色
+                  if (quizType === "gender") {
+                    if (optionLabel === "der") {
+                      buttonClass += "bg-blue-50 border-blue-300 text-blue-700";
+                    } else if (optionLabel === "die") {
+                      buttonClass += "bg-red-50 border-red-300 text-red-700";
+                    } else if (optionLabel === "das") {
+                      buttonClass += "bg-green-50 border-green-300 text-green-700";
+                    }
+                    if (selectedOption === null && !quizTimeout) {
+                      buttonClass += " hover:bg-blue-100 hover:border-blue-400";
                     }
                   } else {
-                    buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-700";
+                    // 中文匹配题型
+                    if (selectedOption !== null || quizTimeout) {
+                      disabled = true;
+                      if (option.isCorrect) {
+                        buttonClass += "bg-green-100 border-green-500 text-green-800";
+                      } else if (idx === selectedOption && !option.isCorrect) {
+                        buttonClass += "bg-red-100 border-red-500 text-red-800";
+                      } else {
+                        buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                      }
+                    } else {
+                      buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-amber-50 hover:border-amber-400 hover:text-amber-700";
+                    }
                   }
 
                   return (
@@ -853,7 +928,7 @@ export default function GermanLearning() {
                       disabled={disabled}
                       className={buttonClass}
                     >
-                      {option.word.chinese}
+                      {optionLabel}
                     </button>
                   );
                 })}
