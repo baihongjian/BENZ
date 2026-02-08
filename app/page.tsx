@@ -11,6 +11,12 @@ export default function Home() {
         >
           德语学习
         </Link>
+        <Link
+          href="/01-life/001-tv-guide"
+          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+        >
+          日本tv时间表
+        </Link>
       </div>
     </main>
   );
