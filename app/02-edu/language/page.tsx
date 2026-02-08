@@ -169,6 +169,66 @@ const categories = [
   { id: "family", name: "家庭" },
 ];
 
+// 生成拼写错误的单词
+const generateSpellingError = (word: string): string => {
+  if (word.length < 3) return word; // 太短的单词不处理
+
+  const errors: string[] = [];
+  const chars = word.split("");
+  const errorTypes = ["swap", "delete", "insert", "case"];
+
+  // 交换相邻字母
+  const swapError = () => {
+    const idx = Math.floor(Math.random() * (chars.length - 1));
+    const result = [...chars];
+    [result[idx], result[idx + 1]] = [result[idx + 1], result[idx]];
+    return result.join("");
+  };
+
+  // 删除一个字母
+  const deleteError = () => {
+    const idx = Math.floor(Math.random() * chars.length);
+    return chars.filter((_, i) => i !== idx).join("");
+  };
+
+  // 增加一个字母
+  const insertError = () => {
+    const idx = Math.floor(Math.random() * chars.length);
+    const letters = "abcdefghijklmnopqrstuvwxyz";
+    const letter = letters[Math.floor(Math.random() * letters.length)];
+    const result = [...chars];
+    result.splice(idx, 0, letter);
+    return result.join("");
+  };
+
+  // 大小写错误
+  const caseError = () => {
+    const idx = Math.floor(Math.random() * chars.length);
+    const result = [...chars];
+    if (/[a-z]/.test(result[idx])) {
+      result[idx] = result[idx].toUpperCase();
+    } else if (/[A-Z]/.test(result[idx])) {
+      result[idx] = result[idx].toLowerCase();
+    }
+    return result.join("");
+  };
+
+  // 根据错误类型生成错误
+  const type = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+  switch (type) {
+    case "swap":
+      return swapError();
+    case "delete":
+      return deleteError();
+    case "insert":
+      return insertError();
+    case "case":
+      return caseError();
+    default:
+      return swapError();
+  }
+};
+
 export default function GermanLearning() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -176,7 +236,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -307,6 +367,31 @@ export default function GermanLearning() {
         word: { ...correctWord, chinese: opt.gender }, // 用词性作为选项显示
         isCorrect: opt.isCorrect
       }));
+    } else if (quizType === "spelling") {
+      // 拼写纠错题型
+      // 题目显示中文，用户需要选择拼写正确的德语选项
+      const correctSpelling = correctWord.german;
+
+      // 生成拼写错误的选项
+      const spellingErrors = new Set<string>();
+      while (spellingErrors.size < quizDifficulty - 1) {
+        const error = generateSpellingError(correctSpelling);
+        if (error !== correctSpelling) {
+          spellingErrors.add(error);
+        }
+      }
+
+      // 正确选项是拼写正确的单词（isCorrect: true 表示选择正确）
+      const spellingOptions: Array<{ spelling: string; isCorrect: boolean }> = [
+        { spelling: correctSpelling, isCorrect: true }, // 正确拼写是正确答案
+        ...Array.from(spellingErrors).map(err => ({ spelling: err, isCorrect: false })),
+      ];
+      const shuffledOptions = spellingOptions.sort(() => Math.random() - 0.5);
+
+      options = shuffledOptions.map(opt => ({
+        word: { ...correctWord, german: opt.spelling }, // 显示拼写
+        isCorrect: opt.isCorrect
+      }));
     } else {
       // 中文匹配或德中匹配题型
       const otherWords = wordsWithGender.filter((_, idx) =>
@@ -366,8 +451,8 @@ export default function GermanLearning() {
 
     setSelectedOption(index);
 
-    // 德中匹配题型选择显示的是德语
-    const selectedValue = quizType === "german"
+    // 德中匹配和拼写纠错题型选择显示的是德语
+    const selectedValue = quizType === "german" || quizType === "spelling"
       ? quizOptions[index].word.german
       : quizOptions[index].word.chinese;
 
@@ -478,7 +563,10 @@ export default function GermanLearning() {
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-blue-800 mb-2">🇩🇪 德语学习</h1>
           <p className="text-gray-600">
-            {mode === "learn" ? "点击卡片查看释义和发音" : quizType === "german" ? "看中文选德语" : "选择正确的中文翻译"}
+            {mode === "learn" ? "点击卡片查看释义和发音" :
+             quizType === "german" ? "看中文选德语" :
+             quizType === "spelling" ? "找出拼写错误的单词" :
+             "选择正确的中文翻译"}
           </p>
         </header>
 
@@ -641,7 +729,7 @@ export default function GermanLearning() {
 
               <div className="mb-4">
                 <span className="text-gray-700 font-medium block mb-2">题型</span>
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-2 flex-wrap">
                   <button
                     onClick={() => setQuizType("chinese")}
                     className={`px-4 py-2 rounded-full font-medium transition ${
@@ -661,6 +749,16 @@ export default function GermanLearning() {
                     }`}
                   >
                     德中匹配
+                  </button>
+                  <button
+                    onClick={() => setQuizType("spelling")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "spelling"
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-orange-50"
+                    }`}
+                  >
+                    拼写纠错
                   </button>
                   <button
                     onClick={() => setQuizType("gender")}
@@ -822,9 +920,18 @@ export default function GermanLearning() {
               <div className="space-y-3">
                 {quizRecords.map((record, idx) => {
                   const isInWrongBook = wrongBook.some(q => q.german === record.german);
-                  // 德中匹配题型显示中文题目，中德匹配显示德语题目
-                  const questionText = quizType === "german" ? record.chinese : record.german;
-                  const answerText = quizType === "german" ? record.german : record.chinese;
+                  // 德中匹配题型显示中文题目，拼写纠错显示中文题目，中德匹配显示德语题目
+                  const questionText = quizType === "german" || quizType === "spelling"
+                    ? record.chinese
+                    : record.german;
+                  // 拼写纠错题型需要特殊处理
+                  const answerText = quizType === "spelling"
+                    ? record.isCorrect
+                      ? `${record.selected}`
+                      : `${record.selected} → ${record.german}`
+                    : quizType === "german"
+                    ? record.german
+                    : record.chinese;
                   return (
                     <div
                       key={idx}
@@ -840,7 +947,15 @@ export default function GermanLearning() {
                             {questionText}
                           </div>
                           <div className="text-gray-600">
-                            正确答案：{answerText}
+                            {quizType === "spelling" ? (
+                              record.isCorrect ? (
+                                <>选择了：{record.selected} ✓</>
+                              ) : (
+                                <>选择了 {record.selected}，正确：{record.german}</>
+                              )
+                            ) : (
+                              <>正确答案：{answerText}</>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -898,7 +1013,9 @@ export default function GermanLearning() {
               {/* 题目显示 */}
               <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
                 <span className="text-sm text-gray-400 mb-2 block">
-                  {quizType === "gender" ? "请选择对应的词性" : quizType === "german" ? "请选择对应的德语" : "请选择对应的中文翻译"}
+                  {quizType === "gender" ? "请选择对应的词性" :
+                   quizType === "spelling" ? "请选择拼写正确的德语" :
+                   quizType === "german" ? "请选择对应的德语" : "请选择对应的中文翻译"}
                 </span>
                 <div className="flex items-center justify-center gap-4">
                   {quizType === "chinese" && quizWord.gender && (
@@ -911,9 +1028,11 @@ export default function GermanLearning() {
                     </span>
                   )}
                   <h2 className="text-4xl font-bold text-blue-800">
-                    {quizType === "german" ? quizWord.chinese : quizWord.german}
+                    {quizType === "german" ? quizWord.chinese :
+                     quizType === "spelling" ? quizWord.chinese :
+                     quizWord.german}
                   </h2>
-                  {quizType === "chinese" && (
+                  {(quizType === "chinese" || quizType === "spelling") && (
                     <button
                       onClick={() => speak(quizWord.german)}
                       className="p-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
@@ -938,8 +1057,12 @@ export default function GermanLearning() {
                 {quizOptions.map((option, idx) => {
                   let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
                   let disabled = false;
-                  // 德中匹配显示德语，中德匹配和词性匹配显示中文/词性
-                  let optionLabel = quizType === "german" ? option.word.german : option.word.chinese;
+                  // 德中匹配和拼写纠错显示德语，中德匹配显示中文，词性匹配显示词性
+                  let optionLabel = quizType === "spelling" || quizType === "german"
+                    ? option.word.german
+                    : quizType === "gender"
+                    ? option.word.chinese
+                    : option.word.chinese;
 
                   // 词性匹配题型用不同颜色
                   if (quizType === "gender") {
@@ -952,6 +1075,22 @@ export default function GermanLearning() {
                     }
                     if (selectedOption === null && !quizTimeout) {
                       buttonClass += " hover:bg-blue-100 hover:border-blue-400";
+                    }
+                  } else if (quizType === "spelling") {
+                    // 拼写纠错题型 - 选择拼写正确的单词
+                    if (selectedOption !== null || quizTimeout) {
+                      disabled = true;
+                      if (option.isCorrect) {
+                        // 选中正确拼写（正确）
+                        buttonClass += "bg-green-100 border-green-500 text-green-800";
+                      } else if (idx === selectedOption && !option.isCorrect) {
+                        // 选中了错误拼写（错误）
+                        buttonClass += "bg-red-100 border-red-500 text-red-800";
+                      } else {
+                        buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                      }
+                    } else {
+                      buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-orange-50 hover:border-orange-400 hover:text-orange-700";
                     }
                   } else {
                     // 中文匹配或德中匹配题型
@@ -994,9 +1133,13 @@ export default function GermanLearning() {
                   </p>
                   {quizResult === "wrong" && (
                     <p className="text-gray-600 mb-4">
-                      正确：{quizType === "german"
-                        ? quizOptions.find(o => o.isCorrect)?.word.german
-                        : quizOptions.find(o => o.isCorrect)?.word.chinese}
+                      {quizType === "spelling" ? (
+                        <>正确：<strong>{quizWord?.german}</strong></>
+                      ) : (
+                        <>正确：{quizType === "german"
+                          ? quizOptions.find(o => o.isCorrect)?.word.german
+                          : quizOptions.find(o => o.isCorrect)?.word.chinese}</>
+                      )}
                     </p>
                   )}
 
