@@ -280,6 +280,25 @@ export default function GermanLearning() {
     }
   }, []);
 
+  // 全局键盘事件：按回车键下一题
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 只在答题模式、已开始、未结束时生效
+      if (mode !== "quiz" || !quizStarted || quizFinished) return;
+
+      // 判断是否已回答当前题目
+      const isAnswered = selectedOption !== null || quizTimeout || quizResult !== null;
+
+      if (e.key === "Enter" && isAnswered) {
+        e.preventDefault();
+        nextQuiz();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mode, quizStarted, quizFinished, selectedOption, quizTimeout, quizResult]);
+
   // 保存 API Key 到 localStorage
   const saveApiKey = (key: string) => {
     setDeepseekApiKey(key);
@@ -1350,11 +1369,6 @@ export default function GermanLearning() {
                     type="text"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !quizResult && userInput.trim()) {
-                        handleInputSubmit();
-                      }
-                    }}
                     placeholder="输入德语单词..."
                     disabled={quizResult !== null}
                     className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
