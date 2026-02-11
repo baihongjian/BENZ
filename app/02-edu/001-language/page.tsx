@@ -236,12 +236,13 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
   const [quizOptions, setQuizOptions] = useState<QuizOption[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [userInput, setUserInput] = useState(""); // 用户输入（听写题型）
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [quizFinished, setQuizFinished] = useState(false); // 是否完成
   const [quizTimeout, setQuizTimeout] = useState(false); // 是否超时未作答
@@ -522,6 +523,9 @@ export default function GermanLearning() {
         word: { ...correctWord, german: opt.spelling }, // 显示拼写
         isCorrect: opt.isCorrect
       }));
+    } else if (quizType === "input") {
+      // 听写题型：不需要选项，用户需要手动输入
+      options = [];
     } else {
       // 中文匹配或德中匹配题型
       const otherWords = wordsWithGender.filter((_, idx) =>
@@ -547,6 +551,7 @@ export default function GermanLearning() {
     setUsedWordIndices(prev => [...prev, correctItem.originalIdx]);
     setTimeLeft(quizTimer);
     setTimerActive(quizTimer > 0);
+    setUserInput(""); // 重置用户输入
   };
 
   // 切换到答题模式
@@ -572,6 +577,7 @@ export default function GermanLearning() {
     setQuizTimeout(false);
     setQuizRecords([]); // 清空答题记录
     setUsedWordIndices([]); // 清空已出题目记录
+    setUserInput(""); // 重置用户输入
     await generateQuiz();
   };
 
@@ -606,6 +612,41 @@ export default function GermanLearning() {
         german: quizWord!.german,
         chinese: quizWord!.chinese,
         selected: selectedValue,
+        isCorrect: false,
+        isTimeout: false,
+        gender: quizWord!.gender
+      }]);
+    }
+  };
+
+  // 提交听写答案
+  const handleInputSubmit = () => {
+    if (!userInput.trim() || quizResult !== null) return;
+
+    const input = userInput.trim();
+    const correctAnswer = quizWord!.german;
+
+    // 不区分大小写比较
+    const isCorrect = input.toLowerCase() === correctAnswer.toLowerCase();
+
+    if (isCorrect) {
+      setQuizResult("correct");
+      playSound("correct");
+      setQuizRecords(prev => [...prev, {
+        german: correctAnswer,
+        chinese: quizWord!.chinese,
+        selected: input,
+        isCorrect: true,
+        isTimeout: false,
+        gender: quizWord!.gender
+      }]);
+    } else {
+      setQuizResult("wrong");
+      playSound("wrong");
+      setQuizRecords(prev => [...prev, {
+        german: correctAnswer,
+        chinese: quizWord!.chinese,
+        selected: input,
         isCorrect: false,
         isTimeout: false,
         gender: quizWord!.gender
@@ -656,6 +697,7 @@ export default function GermanLearning() {
     setQuizTimeout(false);
     setQuizRecords([]);
     setUsedWordIndices([]);
+    setUserInput(""); // 重置用户输入
   };
 
   // 添加到错题本
@@ -705,6 +747,7 @@ export default function GermanLearning() {
             {mode === "learn" ? "点击卡片查看释义和发音" :
              quizType === "german" ? "看中文选德语" :
              quizType === "spelling" ? "找出拼写错误的单词" :
+             quizType === "input" ? "看中文输入德语" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -992,6 +1035,16 @@ export default function GermanLearning() {
                   >
                     词性匹配
                   </button>
+                  <button
+                    onClick={() => setQuizType("input")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "input"
+                        ? "bg-teal-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-teal-50"
+                    }`}
+                  >
+                    中文听写
+                  </button>
                 </div>
               </div>
 
@@ -1143,11 +1196,11 @@ export default function GermanLearning() {
                 {quizRecords.map((record, idx) => {
                   const isInWrongBook = wrongBook.some(q => q.german === record.german);
                   // 德中匹配题型显示中文题目，拼写纠错显示中文题目，中德匹配显示德语题目
-                  const questionText = quizType === "german" || quizType === "spelling"
+                  const questionText = quizType === "german" || quizType === "spelling" || quizType === "input"
                     ? record.chinese
                     : record.german;
-                  // 拼写纠错题型需要特殊处理
-                  const answerText = quizType === "spelling"
+                  // 拼写纠错和听写题型需要特殊处理
+                  const answerText = quizType === "spelling" || quizType === "input"
                     ? record.isCorrect
                       ? `${record.selected}`
                       : `${record.selected} → ${record.german}`
@@ -1169,11 +1222,11 @@ export default function GermanLearning() {
                             {questionText}
                           </div>
                           <div className="text-gray-600">
-                            {quizType === "spelling" ? (
+                            {quizType === "spelling" || quizType === "input" ? (
                               record.isCorrect ? (
-                                <>选择了：{record.selected} ✓</>
+                                <>输入了：{record.selected} ✓</>
                               ) : (
-                                <>选择了 {record.selected}，正确：{record.german}</>
+                                <>输入了 {record.selected}，正确：{record.german}</>
                               )
                             ) : (
                               <>正确答案：{answerText}</>
@@ -1250,6 +1303,7 @@ export default function GermanLearning() {
                     <span className="text-sm text-gray-400 mb-2 block">
                       {quizType === "gender" ? "请选择对应的词性" :
                        quizType === "spelling" ? "请选择拼写正确的德语" :
+                       quizType === "input" ? "请输入对应的德语单词" :
                        quizType === "german" ? "请选择对应的德语" : "请选择对应的中文翻译"}
                     </span>
                 <div className="flex items-center justify-center gap-4">
@@ -1265,9 +1319,10 @@ export default function GermanLearning() {
                   <h2 className="text-4xl font-bold text-blue-800">
                     {quizType === "german" ? quizWord.chinese :
                      quizType === "spelling" ? quizWord.chinese :
+                     quizType === "input" ? quizWord.chinese :
                      quizWord.german}
                   </h2>
-                  {(quizType === "chinese" || quizType === "spelling") && (
+                  {(quizType === "chinese" || quizType === "spelling" || quizType === "input") && (
                     <button
                       onClick={() => speak(quizWord.german)}
                       className="p-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
@@ -1288,6 +1343,32 @@ export default function GermanLearning() {
               </div>
 
               {/* 选项列表 */}
+              {quizType === "input" ? (
+                // 听写题型：显示输入框
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !quizResult && userInput.trim()) {
+                        handleInputSubmit();
+                      }
+                    }}
+                    placeholder="输入德语单词..."
+                    disabled={quizResult !== null}
+                    className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-500"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleInputSubmit}
+                    disabled={!userInput.trim() || quizResult !== null}
+                    className="w-full py-4 bg-teal-500 text-white text-xl font-medium rounded-xl hover:bg-teal-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  >
+                    提交答案
+                  </button>
+                </div>
+              ) : (
               <div className="grid grid-cols-1 gap-3">
                 {quizOptions.map((option, idx) => {
                   let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
@@ -1355,13 +1436,14 @@ export default function GermanLearning() {
                   );
                 })}
               </div>
+              )}
             </div>
             </>
             ) : null}
 
             {/* 右侧：结果和下一题 */}
             <div className="lg:w-56 flex-shrink-0">
-              {selectedOption !== null || quizTimeout ? (
+              {(selectedOption !== null || quizTimeout || (quizType === "input" && quizResult !== null)) ? (
                 <div className="bg-white rounded-2xl shadow-lg p-6 text-center sticky top-4">
                   <p className={`text-2xl font-bold mb-4 ${
                     quizResult === "correct" ? "text-green-600" : "text-red-600"
@@ -1370,7 +1452,7 @@ export default function GermanLearning() {
                   </p>
                   {quizResult === "wrong" && (
                     <p className="text-gray-600 mb-4">
-                      {quizType === "spelling" ? (
+                      {quizType === "spelling" || quizType === "input" ? (
                         <>正确：<strong>{quizWord?.german}</strong></>
                       ) : (
                         <>正确：{quizType === "german"
