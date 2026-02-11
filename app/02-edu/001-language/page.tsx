@@ -252,23 +252,105 @@ export default function GermanLearning() {
   const [usedWordIndices, setUsedWordIndices] = useState<number[]>([]); // 已出过的题目索引
   const [timeLeft, setTimeLeft] = useState<number>(0); // 剩余时间
   const [timerActive, setTimerActive] = useState(false); // 计时器是否运行
+  const [showApiSettings, setShowApiSettings] = useState(false); // 是否显示 API 设置
+  const [deepseekApiKey, setDeepseekApiKey] = useState(""); // DeepSeek API Key
+  const [useAiQuiz, setUseAiQuiz] = useState(false); // 是否使用 AI 出题
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false); // 是否正在生成 AI 题目
 
-  // 从 localStorage 加载错题本（初始化时）
+  // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     try {
-      const saved = localStorage.getItem("german-wrong-book");
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      const savedApiKey = localStorage.getItem("deepseek-api-key");
+      if (savedApiKey) {
+        setDeepseekApiKey(savedApiKey);
+      }
+
+      const savedWrongBook = localStorage.getItem("german-wrong-book");
+      if (savedWrongBook) {
+        const parsed = JSON.parse(savedWrongBook);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setWrongBook(parsed);
         }
       }
     } catch (e) {
-      console.error("Load wrong book error:", e);
+      console.error("Load settings error:", e);
     }
   }, []);
+
+  // 保存 API Key 到 localStorage
+  const saveApiKey = (key: string) => {
+    setDeepseekApiKey(key);
+    localStorage.setItem("deepseek-api-key", key);
+  };
+
+  // 调用 DeepSeek API 生成 AI 题目
+  const generateAIQuiz = async (): Promise<Word | null> => {
+    if (!deepseekApiKey) {
+      alert("请先设置 DeepSeek API Key");
+      return null;
+    }
+
+    setIsGeneratingQuiz(true);
+
+    try {
+      const response = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${deepseekApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            {
+              role: "system",
+              content: "你是一个德语学习助手。请生成一个德语单词用于拼写练习。返回一个 JSON 对象，包含：german（德语单词）、chinese（中文翻译）、pronunciation（发音提示）、category（分类，只能是 greeting/number/color/family 之一）、gender（词性，可选 der/die/das）。不要返回其他内容，只返回纯 JSON。"
+            },
+            {
+              role: "user",
+              content: "请生成一个德语单词，随机选择分类。返回 JSON 格式。"
+            }
+          ],
+          temperature: 0.8,
+          max_tokens: 200,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("API 请求失败");
+      }
+
+      const data = await response.json();
+      let content = data.choices[0].message.content;
+
+      // 清理 markdown 代码块标记
+      content = content.replace(/```json/g, "").replace(/```/g, "").trim();
+
+      // 尝试解析 JSON
+      const wordData = JSON.parse(content);
+
+      // 验证数据
+      if (!wordData.german || !wordData.chinese) {
+        throw new Error("返回数据格式错误");
+      }
+
+      return {
+        german: wordData.german,
+        chinese: wordData.chinese,
+        pronunciation: wordData.pronunciation || "",
+        category: wordData.category || "greeting",
+        gender: wordData.gender as "der" | "die" | "das" | undefined,
+      };
+    } catch (error) {
+      console.error("AI 生成题目失败:", error);
+      alert("AI 生成题目失败，请检查 API Key 或网络连接");
+      return null;
+    } finally {
+      setIsGeneratingQuiz(false);
+    }
+  };
 
   // 保存错题本到 localStorage
   useEffect(() => {
@@ -321,8 +403,48 @@ export default function GermanLearning() {
     return () => clearInterval(timer);
   }, [timerActive, quizTimer, selectedOption, quizWord]);
 
-  // 生成随机题目（不重复）
-  const generateQuiz = () => {
+  // 生成随机题目（不重复）- 支持 AI 出题
+  const generateQuiz = async () => {
+    // AI 出题模式（仅拼写纠错题型支持）
+    if (useAiQuiz && quizType === "spelling") {
+      // 调用 AI 生成题目
+      const aiWord = await generateAIQuiz();
+      if (!aiWord) return;
+
+      const correctSpelling = aiWord.german;
+
+      // 生成拼写错误的选项
+      const spellingErrors = new Set<string>();
+      while (spellingErrors.size < quizDifficulty - 1) {
+        const error = generateSpellingError(correctSpelling);
+        if (error !== correctSpelling) {
+          spellingErrors.add(error);
+        }
+      }
+
+      // 正确选项是拼写正确的单词
+      const spellingOptions: Array<{ spelling: string; isCorrect: boolean }> = [
+        { spelling: correctSpelling, isCorrect: true },
+        ...Array.from(spellingErrors).map(err => ({ spelling: err, isCorrect: false })),
+      ];
+      const shuffledOptions = spellingOptions.sort(() => Math.random() - 0.5);
+
+      const options = shuffledOptions.map(opt => ({
+        word: { ...aiWord, german: opt.spelling },
+        isCorrect: opt.isCorrect
+      }));
+
+      setQuizWord(aiWord);
+      setQuizOptions(options);
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+      return;
+    }
+
+    // 原有逻辑：本地词库出题
     // 词性匹配题型只能从有词性的单词中出题
     const wordsWithGender = quizType === "gender"
       ? filteredWords.filter(w => w.gender)
@@ -435,14 +557,14 @@ export default function GermanLearning() {
   };
 
   // 开始答题
-  const startQuiz = () => {
+  const startQuiz = async () => {
     setQuizStarted(true);
     setCurrentQuizNumber(1);
     setQuizFinished(false);
     setQuizTimeout(false);
     setQuizRecords([]); // 清空答题记录
     setUsedWordIndices([]); // 清空已出题目记录
-    generateQuiz();
+    await generateQuiz();
   };
 
   // 选择答案
@@ -484,23 +606,32 @@ export default function GermanLearning() {
   };
 
   // 下一题
-  const nextQuiz = () => {
+  const nextQuiz = async () => {
     if (currentQuizNumber >= quizCount) {
       // 达到设定的题数，结束答题
       setQuizFinished(true);
       setTimerActive(false);
     } else {
-      // 检查是否还有未出的题目
-      const availableCount = filteredWords.length - usedWordIndices.length;
-      if (availableCount <= 0) {
-        setQuizFinished(true);
-        setTimerActive(false);
-      } else {
+      // AI 出题模式不需要检查本地词库
+      if (useAiQuiz && quizType === "spelling") {
         setCurrentQuizNumber(prev => prev + 1);
         setQuizTimeout(false);
         setTimeLeft(quizTimer);
         setTimerActive(quizTimer > 0);
-        generateQuiz();
+        await generateQuiz();
+      } else {
+        // 检查是否还有未出的题目
+        const availableCount = filteredWords.length - usedWordIndices.length;
+        if (availableCount <= 0) {
+          setQuizFinished(true);
+          setTimerActive(false);
+        } else {
+          setCurrentQuizNumber(prev => prev + 1);
+          setQuizTimeout(false);
+          setTimeLeft(quizTimer);
+          setTimerActive(quizTimer > 0);
+          await generateQuiz();
+        }
       }
     }
   };
@@ -571,7 +702,7 @@ export default function GermanLearning() {
         </header>
 
         {/* 模式切换 */}
-        <div className="flex justify-center gap-4 mb-8">
+        <div className="flex justify-center gap-4 mb-8 flex-wrap">
           <button
             onClick={() => handleModeChange("learn")}
             className={`px-6 py-2 rounded-full font-medium transition ${
@@ -601,6 +732,15 @@ export default function GermanLearning() {
               <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                 {wrongBook.length}
               </span>
+            )}
+          </button>
+          <button
+            onClick={() => setShowApiSettings(true)}
+            className="px-6 py-2 rounded-full font-medium transition bg-white text-gray-700 border border-gray-300 hover:bg-purple-50 relative"
+          >
+            ⚙️ API 设置
+            {deepseekApiKey && (
+              <span className="absolute -top-2 -right-2 w-3 h-3 bg-green-500 rounded-full"></span>
             )}
           </button>
         </div>
@@ -677,6 +817,77 @@ export default function GermanLearning() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* DeepSeek API 设置弹窗 */}
+        {showApiSettings && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
+              {/* 头部 */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <h2 className="text-xl font-bold text-gray-800">⚙️ DeepSeek API 设置</h2>
+                <button
+                  onClick={() => setShowApiSettings(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* 内容 */}
+              <div className="p-4">
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={deepseekApiKey}
+                    onChange={(e) => saveApiKey(e.target.value)}
+                    placeholder="请输入 DeepSeek API Key"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <p className="text-sm text-gray-500 mt-2">
+                    获取 API Key：<a href="https://platform.deepseek.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">DeepSeek 官网</a>
+                  </p>
+                </div>
+
+                <div className="bg-purple-50 rounded-xl p-4 mb-4">
+                  <h3 className="font-medium text-purple-800 mb-2">💡 用途说明</h3>
+                  <p className="text-sm text-purple-700">
+                    启用后，在"拼写纠错"题型中可以使用 AI 生成题目。AI 会从词库中随机选择德语单词，并生成各种拼写错误的选项供你练习。
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={useAiQuiz}
+                      onChange={(e) => setUseAiQuiz(e.target.checked)}
+                      className="w-5 h-5 rounded text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="font-medium">AI 出题模式</span>
+                  </label>
+                  {deepseekApiKey ? (
+                    <span className="text-green-600 text-sm">✓ 已配置</span>
+                  ) : (
+                    <span className="text-gray-400 text-sm">未配置</span>
+                  )}
+                </div>
+              </div>
+
+              {/* 底部 */}
+              <div className="p-4 border-t bg-gray-50">
+                <button
+                  onClick={() => setShowApiSettings(false)}
+                  className="w-full py-3 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition"
+                >
+                  保存并关闭
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -759,6 +970,9 @@ export default function GermanLearning() {
                     }`}
                   >
                     拼写纠错
+                    {useAiQuiz && quizType === "spelling" && (
+                      <span className="ml-1 text-xs">🤖</span>
+                    )}
                   </button>
                   <button
                     onClick={() => setQuizType("gender")}
@@ -1006,17 +1220,30 @@ export default function GermanLearning() {
         )}
 
         {/* 答题模式：左右布局 */}
-        {mode === "quiz" && quizStarted && quizWord && !quizFinished && (
+        {mode === "quiz" && quizStarted && !quizFinished && (
           <div className="flex flex-col lg:flex-row gap-6 items-start">
-            {/* 左侧：题目和选项 */}
-            <div className="flex-1">
-              {/* 题目显示 */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
-                <span className="text-sm text-gray-400 mb-2 block">
-                  {quizType === "gender" ? "请选择对应的词性" :
-                   quizType === "spelling" ? "请选择拼写正确的德语" :
-                   quizType === "german" ? "请选择对应的德语" : "请选择对应的中文翻译"}
-                </span>
+            {/* AI 生成题目时的加载状态 */}
+            {isGeneratingQuiz ? (
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-12 text-center">
+                <div className="text-4xl mb-4 animate-bounce">🤖</div>
+                <p className="text-gray-600">AI 正在生成题目...</p>
+              </div>
+            ) : quizWord ? (
+              // 左侧：题目和选项
+              <>
+                <div className="flex-1">
+                  {/* 题目显示 */}
+                  <div className="bg-white rounded-2xl shadow-lg p-6 text-center mb-4 border-2 border-amber-100">
+                    {useAiQuiz && quizType === "spelling" && (
+                      <div className="mb-2 text-xs text-purple-600 bg-purple-50 rounded-full px-3 py-1 inline-block">
+                        🤖 AI 出题
+                      </div>
+                    )}
+                    <span className="text-sm text-gray-400 mb-2 block">
+                      {quizType === "gender" ? "请选择对应的词性" :
+                       quizType === "spelling" ? "请选择拼写正确的德语" :
+                       quizType === "german" ? "请选择对应的德语" : "请选择对应的中文翻译"}
+                    </span>
                 <div className="flex items-center justify-center gap-4">
                   {quizType === "chinese" && quizWord.gender && (
                     <span className={`px-3 py-1 rounded-full text-xl font-bold ${
@@ -1121,6 +1348,8 @@ export default function GermanLearning() {
                 })}
               </div>
             </div>
+            </>
+            ) : null}
 
             {/* 右侧：结果和下一题 */}
             <div className="lg:w-56 flex-shrink-0">
