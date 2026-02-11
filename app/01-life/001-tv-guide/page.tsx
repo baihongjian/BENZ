@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface Anime {
   mal_id: number;
@@ -31,17 +31,45 @@ interface Anime {
 
 type DayOfWeek = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
 
-const DAYS: { key: DayOfWeek; label: string; ja: string }[] = [
-  { key: "monday", label: "周一", ja: "月曜日" },
-  { key: "tuesday", label: "周二", ja: "火曜日" },
-  { key: "wednesday", label: "周三", ja: "水曜日" },
-  { key: "thursday", label: "周四", ja: "木曜日" },
-  { key: "friday", label: "周五", ja: "金曜日" },
-  { key: "saturday", label: "周六", ja: "土曜日" },
-  { key: "sunday", label: "周日", ja: "日曜日" },
+const DAYS: { key: DayOfWeek; label: string; ja: string; short: string }[] = [
+  { key: "monday", label: "周一", ja: "月曜日", short: "月" },
+  { key: "tuesday", label: "周二", ja: "火曜日", short: "火" },
+  { key: "wednesday", label: "周三", ja: "水曜日", short: "水" },
+  { key: "thursday", label: "周四", ja: "木曜日", short: "木" },
+  { key: "friday", label: "周五", ja: "金曜日", short: "金" },
+  { key: "saturday", label: "周六", ja: "土曜日", short: "土" },
+  { key: "sunday", label: "周日", ja: "日曜日", short: "日" },
 ];
 
-// 获取当前星期的key
+// 时间快捷选项
+const TIME_SLOTS = [
+  { label: "凌晨", time: "00:00" },
+  { label: "清晨", time: "06:00" },
+  { label: "中午", time: "12:00" },
+  { label: "傍晚", time: "17:00" },
+  { label: "晚上", time: "21:00" },
+  { label: "深夜", time: "24:00" },
+];
+
+// 频道分类
+const CHANNEL_TYPES = [
+  { key: "all", label: "全部" },
+  { key: "action", label: "动作", color: "#e53935" },
+  { key: "adventure", label: "冒险", color: "#43a047" },
+  { key: "comedy", label: "喜剧", color: "#fb8c00" },
+  { key: "drama", label: "剧情", color: "#1e88e5" },
+  { key: "slice-of-life", label: "日常", color: "#e91e63" },
+  { key: "fantasy", label: "奇幻", color: "#8e24aa" },
+  { key: "horror", label: "恐怖", color: "#424242" },
+  { key: "mecha", label: "机战", color: "#6d4c41" },
+  { key: "mystery", label: "悬疑", color: "#546e7a" },
+  { key: "psychological", label: "心理", color: "#263238" },
+  { key: "romance", label: "爱情", color: "#f06292" },
+  { key: "sci-fi", label: "科幻", color: "#00acc1" },
+  { key: "sports", label: "体育", color: "#4caf50" },
+  { key: "supernatural", label: "超自然", color: "#5d4037" },
+];
+
 const getCurrentDayKey = (): DayOfWeek => {
   const days: DayOfWeek[] = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   return days[new Date().getDay()];
@@ -49,13 +77,12 @@ const getCurrentDayKey = (): DayOfWeek => {
 
 export default function TVGuide() {
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>(getCurrentDayKey());
+  const [selectedTime, setSelectedTime] = useState("12:00");
+  const [selectedChannelType, setSelectedChannelType] = useState("all");
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
-
-  // 过滤条件
-  const [filterScore, setFilterScore] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -66,7 +93,7 @@ export default function TVGuide() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`https://api.jikan.mojo/v4/schedules?filter=tv`);
+      const response = await fetch(`https://api.jikan.moe/v4/schedules?filter=tv`);
       if (!response.ok) {
         throw new Error("Failed to fetch data");
       }
@@ -80,20 +107,25 @@ export default function TVGuide() {
     }
   };
 
-  // 根据星期过滤动画
-  const filteredAnime = animeList.filter((anime) => {
-    const broadcastDay = anime.broadcast?.day?.toLowerCase() as DayOfWeek | undefined;
-    const matchesDay = broadcastDay === selectedDay || !broadcastDay; // 如果没有广播信息，显示所有
+  // 过滤动画
+  const filteredAnime = useMemo(() => {
+    return animeList.filter((anime) => {
+      const broadcastDay = anime.broadcast?.day?.toLowerCase() as DayOfWeek | undefined;
+      const matchesDay = broadcastDay === selectedDay;
 
-    const matchesSearch = searchTerm === "" ||
-      anime.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      anime.title_english?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      anime.title_japanese?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        searchTerm === "" ||
+        anime.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        anime.title_english?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        anime.title_japanese?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesScore = filterScore === null || (anime.score && anime.score >= filterScore);
+      const matchesChannelType =
+        selectedChannelType === "all" ||
+        anime.genres.some((g) => g.name.toLowerCase().replace(/[^a-z]/g, "-") === selectedChannelType);
 
-    return matchesDay && matchesSearch && matchesScore;
-  });
+      return matchesDay && matchesSearch && matchesChannelType;
+    });
+  }, [animeList, selectedDay, searchTerm, selectedChannelType]);
 
   // 按时间排序
   const sortedAnime = [...filteredAnime].sort((a, b) => {
@@ -102,76 +134,208 @@ export default function TVGuide() {
     return timeA.localeCompare(timeB);
   });
 
+  // 格式化时间
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return "--:--";
+    const [hours, minutes] = timeStr.split(":");
+    return `${hours}:${minutes}`;
+  };
+
+  // 获取流派颜色
+  const getGenreColor = (anime: Anime) => {
+    const mainGenre = anime.genres[0]?.name.toLowerCase().replace(/[^a-z]/g, "-");
+    const channel = CHANNEL_TYPES.find((c) => c.key === mainGenre);
+    return channel?.color || "#4fc3f7";
+  };
+
   return (
-    <main className="min-h-screen p-6 bg-gradient-to-br from-purple-50 to-pink-50">
-      <div className="max-w-6xl mx-auto">
-        {/* 标题 */}
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-purple-800 mb-2">🇯🇵 日本动画时间表</h1>
-          <p className="text-gray-600">
-            每周 {DAYS.find(d => d.key === selectedDay)?.ja} ({DAYS.find(d => d.key === selectedDay)?.label}) 放送的动画
-          </p>
-        </header>
-
-        {/* 星期选择器 */}
-        <div className="flex justify-center gap-2 mb-6 flex-wrap">
-          {DAYS.map((day) => (
-            <button
-              key={day.key}
-              onClick={() => setSelectedDay(day.key)}
-              className={`px-4 py-2 rounded-full font-medium transition ${
-                selectedDay === day.key
-                  ? "bg-purple-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-purple-50"
-              }`}
-            >
-              {day.label} ({day.ja})
-            </button>
-          ))}
+    <main className="min-h-screen bg-gray-50">
+      {/* 顶部导航栏 */}
+      <header className="bg-gradient-to-r from-cyan-600 to-teal-500 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zM6 10h2v2H6zm0-4h2v2H6zm4 0h8v2h-8zm0 4h8v2h-8z"/>
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">J:COM 电视指南</h1>
+                <p className="text-xs text-cyan-100">日本动画时间表</p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-4">
+              <button className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
+                我的收藏
+              </button>
+              <button className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
+                节目提醒
+              </button>
+            </div>
+          </div>
         </div>
+      </header>
 
-        {/* 搜索和过滤 */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <div className="flex flex-wrap gap-4 items-center">
-            <input
-              type="text"
-              placeholder="搜索动画名称..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-            <select
-              value={filterScore || ""}
-              onChange={(e) => setFilterScore(e.target.value ? Number(e.target.value) : null)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+      {/* 区域选择器（模拟） */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-4 text-sm">
+            <span className="text-gray-500">地区：</span>
+            <button
+              className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+              onClick={() => say("请选择")}
             >
-              <option value="">所有评分</option>
-              <option value="8">8分以上</option>
-              <option value="7">7分以上</option>
-              <option value="6">6分以上</option>
-            </select>
-            <span className="text-gray-500">
-              共 {sortedAnime.length} 部动画
+              <span className="text-gray-800 font-medium">关东・甲信越</span>
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <span className="text-gray-400">|</span>
+            <span className="text-cyan-600">当前显示关东地区节目</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 星期导航 */}
+      <div className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex overflow-x-auto py-3 gap-2 scrollbar-hide">
+              {DAYS.map((day) => {
+                const isToday = day.key === getCurrentDayKey();
+                return (
+                  <button
+                    key={day.key}
+                    onClick={() => setSelectedDay(day.key)}
+                    className={`flex-shrink-0 px-5 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      selectedDay === day.key
+                        ? "bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-md transform scale-105"
+                        : "bg-gray-100 text-gray-600 hover:bg-cyan-50"
+                    }`}
+                  >
+                    <span className="block text-sm">{day.short}</span>
+                    <span className={`text-xs ${isToday && selectedDay !== day.key ? "text-cyan-600" : ""}`}>
+                      {day.label}
+                    </span>
+                    {isToday && (
+                      <span className="block text-[10px] opacity-75">今天</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 时间快捷切换 */}
+            <div className="hidden lg:flex items-center gap-2 ml-4">
+              {TIME_SLOTS.map((slot) => (
+                <button
+                  key={slot.time}
+                  onClick={() => setSelectedTime(slot.time)}
+                  className={`px-3 py-1.5 text-xs rounded-md transition ${
+                    selectedTime === slot.time
+                      ? "bg-cyan-100 text-cyan-700 font-medium"
+                      : "text-gray-500 hover:bg-gray-100"
+                  }`}
+                >
+                  {slot.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 搜索栏 */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative flex-1 min-w-[280px]">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder="搜索节目、频道..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white transition"
+              />
+            </div>
+            <span className="text-sm text-gray-500">
+              {DAYS.find((d) => d.key === selectedDay)?.ja} ·
+              当前 {sortedAnime.length} 个节目
             </span>
           </div>
         </div>
+      </div>
 
+      {/* 频道分类筛选 */}
+      <div className="bg-gradient-to-r from-cyan-50 to-teal-50 border-b">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm font-medium text-gray-700">频道类型：</span>
+            {CHANNEL_TYPES.slice(0, 8).map((type) => (
+              <button
+                key={type.key}
+                onClick={() => setSelectedChannelType(type.key)}
+                className={`px-3 py-1 text-sm rounded-full transition ${
+                  selectedChannelType === type.key
+                    ? "text-white shadow-md"
+                    : "bg-white text-gray-600 hover:shadow-sm"
+                }`}
+                style={{
+                  backgroundColor: selectedChannelType === type.key ? type.color : undefined,
+                }}
+              >
+                {type.label}
+              </button>
+            ))}
+            <button
+              className="px-3 py-1 text-sm text-cyan-600 hover:bg-cyan-100 rounded-full transition"
+              onClick={() => say("请选择")}
+            >
+              更多...
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 主内容区 */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
         {/* 加载状态 */}
         {loading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+          <div className="text-center py-16">
+            <div className="inline-block relative">
+              <div className="w-16 h-16 border-4 border-cyan-200 rounded-full"></div>
+              <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin"></div>
+            </div>
             <p className="text-gray-600 mt-4">加载中...</p>
           </div>
         )}
 
         {/* 错误状态 */}
         {error && (
-          <div className="text-center py-12">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <p className="text-red-600">{error}</p>
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p className="text-red-600 mb-4">{error}</p>
             <button
               onClick={fetchAnimeSchedule}
-              className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition"
+              className="px-6 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition"
             >
               重试
             </button>
@@ -180,187 +344,239 @@ export default function TVGuide() {
 
         {/* 动画列表 */}
         {!loading && !error && (
-          <div className="grid gap-4">
+          <>
             {sortedAnime.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl shadow-md">
-                <div className="text-gray-400 text-6xl mb-4">📺</div>
-                <p className="text-gray-600">该日期暂无动画播出</p>
+              <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <p className="text-gray-600">该日期暂无节目</p>
+                <p className="text-sm text-gray-400 mt-1">尝试选择其他日期或筛选条件</p>
               </div>
             ) : (
-              sortedAnime.map((anime) => (
-                <div
-                  key={anime.mal_id}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => setSelectedAnime(anime)}
-                >
-                  <div className="flex">
-                    {/* 左侧图片 */}
-                    <div className="w-32 h-40 flex-shrink-0">
-                      <img
-                        src={anime.images.jpg.image_url}
-                        alt={anime.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    {/* 右侧内容 */}
-                    <div className="flex-1 p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-bold text-lg text-gray-800">{anime.title}</h3>
-                          {anime.title_english && anime.title_english !== anime.title && (
-                            <p className="text-sm text-gray-500">{anime.title_english}</p>
-                          )}
-                          {anime.title_japanese && (
-                            <p className="text-sm text-gray-400">{anime.title_japanese}</p>
-                          )}
+              <div className="grid gap-4">
+                {sortedAnime.map((anime) => (
+                  <div
+                    key={anime.mal_id}
+                    className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer group"
+                    onClick={() => setSelectedAnime(anime)}
+                  >
+                    <div className="flex">
+                      {/* 左侧时间轴 */}
+                      <div className="w-24 md:w-32 bg-gradient-to-br from-cyan-500 to-teal-500 text-white flex flex-col items-center justify-center p-4 flex-shrink-0">
+                        <span className="text-2xl font-bold">
+                          {formatTime(anime.broadcast?.time || "")}
+                        </span>
+                        <span className="text-xs opacity-80 mt-1">开播</span>
+                        <div className="w-full h-px bg-white/30 mt-3"></div>
+                        <div className="mt-2 flex items-center gap-1">
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: getGenreColor(anime) }}
+                          ></div>
+                          <span className="text-xs">{anime.genres[0]?.name || "动画"}</span>
                         </div>
+                      </div>
+
+                      {/* 中间图片 */}
+                      <div className="w-24 h-32 md:w-28 md:h-36 flex-shrink-0 relative overflow-hidden">
+                        <img
+                          src={anime.images.jpg.image_url}
+                          alt={anime.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         {anime.score && (
-                          <div className="flex items-center gap-1 bg-yellow-100 px-2 py-1 rounded">
-                            <span className="text-yellow-600">⭐</span>
-                            <span className="font-bold text-yellow-700">{anime.score}</span>
+                          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded text-sm font-bold">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            {anime.score}
                           </div>
                         )}
                       </div>
 
-                      {/* 标签 */}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {anime.genres.slice(0, 3).map((genre) => (
-                          <span
-                            key={genre.name}
-                            className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full"
-                          >
-                            {genre.name}
-                          </span>
-                        ))}
+                      {/* 右侧内容 */}
+                      <div className="flex-1 p-4 flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-bold text-gray-800 text-lg group-hover:text-cyan-600 transition">
+                            {anime.title}
+                          </h3>
+                          {(anime.title_english || anime.title_japanese) && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {anime.title_english || anime.title_japanese}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {anime.genres.slice(0, 3).map((genre) => (
+                            <span
+                              key={genre.name}
+                              className="px-2 py-0.5 text-xs rounded-full"
+                              style={{
+                                backgroundColor: `${getGenreColor(anime)}20`,
+                                color: getGenreColor(anime),
+                              }}
+                            >
+                              {genre.name}
+                            </span>
+                          ))}
+                        </div>
+
+                        {anime.synopsis && (
+                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                            {anime.synopsis}
+                          </p>
+                        )}
                       </div>
 
-                      {/* 广播时间 */}
-                      {anime.broadcast?.string && (
-                        <p className="text-sm text-gray-500 mt-2">
-                          📡 {anime.broadcast.string}
-                        </p>
-                      )}
-
-                      {/* 简介 */}
-                      {anime.synopsis && (
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                          {anime.synopsis}
-                        </p>
-                      )}
+                      {/* 右侧箭头 */}
+                      <div className="hidden md:flex items-center justify-center w-12 flex-shrink-0">
+                        <svg
+                          className="w-6 h-6 text-gray-300 group-hover:text-cyan-500 transition"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
-          </div>
+          </>
         )}
 
         {/* 返回首页 */}
         <div className="text-center mt-8">
-          <a href="/" className="text-purple-600 hover:underline">← 返回首页</a>
+          <a href="/" className="inline-flex items-center gap-2 text-cyan-600 hover:text-cyan-700 transition">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            返回首页
+          </a>
         </div>
+      </div>
 
-        {/* 动画详情弹窗 */}
-        {selectedAnime && (
+      {/* 动画详情弹窗 */}
+      {selectedAnime && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedAnime(null)}
+        >
           <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setSelectedAnime(null)}
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* 头部图片 */}
-              <div className="relative h-64">
-                <img
-                  src={selectedAnime.images.jpg.large_image_url || selectedAnime.images.jpg.image_url}
-                  alt={selectedAnime.title}
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  onClick={() => setSelectedAnime(null)}
-                  className="absolute top-4 right-4 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* 内容 */}
-              <div className="p-6 overflow-y-auto max-h-[50vh]">
-                <h2 className="text-2xl font-bold text-gray-800">{selectedAnime.title}</h2>
-                {selectedAnime.title_english && (
-                  <p className="text-gray-500">{selectedAnime.title_english}</p>
+            {/* 头部图片 */}
+            <div className="relative h-56">
+              <img
+                src={selectedAnime.images.jpg.large_image_url || selectedAnime.images.jpg.image_url}
+                alt={selectedAnime.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+              <button
+                onClick={() => setSelectedAnime(null)}
+                className="absolute top-4 right-4 w-10 h-10 bg-black/40 text-white rounded-full flex items-center justify-center hover:bg-black/60 transition"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="absolute bottom-4 left-4 right-4">
+                <h2 className="text-2xl font-bold text-white">{selectedAnime.title}</h2>
+                {(selectedAnime.title_english || selectedAnime.title_japanese) && (
+                  <p className="text-white/80 text-sm mt-1">
+                    {selectedAnime.title_english || selectedAnime.title_japanese}
+                  </p>
                 )}
-                {selectedAnime.title_japanese && (
-                  <p className="text-gray-400">{selectedAnime.title_japanese}</p>
-                )}
-
-                <div className="flex items-center gap-4 mt-4">
-                  {selectedAnime.score && (
-                    <div className="flex items-center gap-1 bg-yellow-100 px-3 py-1 rounded-full">
-                      <span className="text-yellow-600">⭐</span>
-                      <span className="font-bold text-yellow-700">{selectedAnime.score}</span>
-                    </div>
-                  )}
-                  {selectedAnime.broadcast?.string && (
-                    <span className="text-gray-500">📡 {selectedAnime.broadcast.string}</span>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {selectedAnime.genres.map((genre) => (
-                    <span
-                      key={genre.name}
-                      className="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full"
-                    >
-                      {genre.name}
-                    </span>
-                  ))}
-                </div>
-
-                {selectedAnime.synopsis && (
-                  <div className="mt-4">
-                    <h3 className="font-bold text-gray-800 mb-2">简介</h3>
-                    <p className="text-gray-600 leading-relaxed">{selectedAnime.synopsis}</p>
-                  </div>
-                )}
-
-                {selectedAnime.producers && selectedAnime.producers.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="font-bold text-gray-800 mb-2">制作方</h3>
-                    <p className="text-gray-600">
-                      {selectedAnime.producers.map((p) => p.name).join(", ")}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* 底部 */}
-              <div className="p-4 border-t bg-gray-50">
-                <a
-                  href={`https://myanimelist.net/anime/${selectedAnime.mal_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-3 bg-purple-600 text-white text-center rounded-full font-medium hover:bg-purple-700 transition"
-                >
-                  在 MyAnimeList 查看详情 →
-                </a>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* CSS */}
-        <style jsx global>{`
-          .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-        `}</style>
-      </div>
+            {/* 内容 */}
+            <div className="p-6 overflow-y-auto max-h-[40vh]">
+              <div className="flex flex-wrap items-center gap-4">
+                {selectedAnime.score && (
+                  <div className="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-lg">
+                    <svg className="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="text-xl font-bold text-yellow-700">{selectedAnime.score}</span>
+                  </div>
+                )}
+                {selectedAnime.broadcast?.string && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{selectedAnime.broadcast.string}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2 mt-4">
+                {selectedAnime.genres.map((genre) => (
+                  <span
+                    key={genre.name}
+                    className="px-3 py-1 text-sm rounded-full"
+                    style={{
+                      backgroundColor: `${getGenreColor(selectedAnime)}20`,
+                      color: getGenreColor(selectedAnime),
+                    }}
+                  >
+                    {genre.name}
+                  </span>
+                ))}
+              </div>
+
+              {selectedAnime.synopsis && (
+                <div className="mt-4">
+                  <h3 className="font-bold text-gray-800 mb-2">简介</h3>
+                  <p className="text-gray-600 leading-relaxed">{selectedAnime.synopsis}</p>
+                </div>
+              )}
+            </div>
+
+            {/* 底部 */}
+            <div className="p-4 border-t bg-gray-50">
+              <a
+                href={`https://myanimelist.net/anime/${selectedAnime.mal_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white rounded-xl font-medium hover:from-cyan-600 hover:to-teal-600 transition"
+              >
+                <span>在 MyAnimeList 查看详情</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSS */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </main>
   );
 }
