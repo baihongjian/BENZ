@@ -415,11 +415,15 @@ export default function GermanLearning() {
 
       // 生成拼写错误的选项
       const spellingErrors = new Set<string>();
-      while (spellingErrors.size < quizDifficulty - 1) {
+      const maxAttempts = 100; // 防止无限循环
+      let attempts = 0;
+      while (spellingErrors.size < quizDifficulty - 1 && attempts < maxAttempts) {
         const error = generateSpellingError(correctSpelling);
-        if (error !== correctSpelling) {
+        // 确保错误拼写与正确答案不同，且不与其他错误重复
+        if (error !== correctSpelling && !spellingErrors.has(error)) {
           spellingErrors.add(error);
         }
+        attempts++;
       }
 
       // 正确选项是拼写正确的单词
@@ -496,11 +500,15 @@ export default function GermanLearning() {
 
       // 生成拼写错误的选项
       const spellingErrors = new Set<string>();
-      while (spellingErrors.size < quizDifficulty - 1) {
+      const maxAttempts = 100; // 防止无限循环
+      let attempts = 0;
+      while (spellingErrors.size < quizDifficulty - 1 && attempts < maxAttempts) {
         const error = generateSpellingError(correctSpelling);
-        if (error !== correctSpelling) {
+        // 确保错误拼写与正确答案不同，且不与其他错误重复
+        if (error !== correctSpelling && !spellingErrors.has(error)) {
           spellingErrors.add(error);
         }
+        attempts++;
       }
 
       // 正确选项是拼写正确的单词（isCorrect: true 表示选择正确）
