@@ -41,32 +41,32 @@ const DAYS: { key: DayOfWeek; label: string; ja: string; short: string }[] = [
   { key: "sunday", label: "周日", ja: "日曜日", short: "日" },
 ];
 
-// 时间快捷选项
+// 時間快捷オプション
 const TIME_SLOTS = [
-  { label: "凌晨", time: "00:00" },
-  { label: "清晨", time: "06:00" },
-  { label: "中午", time: "12:00" },
-  { label: "傍晚", time: "17:00" },
-  { label: "晚上", time: "21:00" },
-  { label: "深夜", time: "24:00" },
+  { label: "深夜", time: "00:00" },
+  { label: "朝", time: "06:00" },
+  { label: "昼", time: "12:00" },
+  { label: "夕方", time: "17:00" },
+  { label: "夜", time: "21:00" },
+  { label: "真夜中", time: "24:00" },
 ];
 
-// 频道分类
+// チャンネル分類
 const CHANNEL_TYPES = [
-  { key: "all", label: "全部" },
-  { key: "action", label: "动作", color: "#e53935" },
-  { key: "adventure", label: "冒险", color: "#43a047" },
-  { key: "comedy", label: "喜剧", color: "#fb8c00" },
-  { key: "drama", label: "剧情", color: "#1e88e5" },
+  { key: "all", label: "全", color: "#4fc3f7" },
+  { key: "action", label: "アクション", color: "#e53935" },
+  { key: "adventure", label: "アドベンチャー", color: "#43a047" },
+  { key: "comedy", label: "コメディ", color: "#fb8c00" },
+  { key: "drama", label: "ドラマ", color: "#1e88e5" },
   { key: "slice-of-life", label: "日常", color: "#e91e63" },
-  { key: "fantasy", label: "奇幻", color: "#8e24aa" },
-  { key: "horror", label: "恐怖", color: "#424242" },
-  { key: "mecha", label: "机战", color: "#6d4c41" },
-  { key: "mystery", label: "悬疑", color: "#546e7a" },
+  { key: "fantasy", label: "ファンタジー", color: "#8e24aa" },
+  { key: "horror", label: "ホラー", color: "#424242" },
+  { key: "mecha", label: "メカ", color: "#6d4c41" },
+  { key: "mystery", label: "ミステリー", color: "#546e7a" },
   { key: "psychological", label: "心理", color: "#263238" },
-  { key: "romance", label: "爱情", color: "#f06292" },
-  { key: "sci-fi", label: "科幻", color: "#00acc1" },
-  { key: "sports", label: "体育", color: "#4caf50" },
+  { key: "romance", label: "ロマンス", color: "#f06292" },
+  { key: "sci-fi", label: "SF", color: "#00acc1" },
+  { key: "sports", label: "スポーツ", color: "#4caf50" },
   { key: "supernatural", label: "超自然", color: "#5d4037" },
 ];
 
@@ -100,14 +100,14 @@ export default function TVGuide() {
       const data = await response.json();
       setAnimeList(data.data || []);
     } catch (err) {
-      setError("获取数据失败，请稍后重试");
+      setError("データの取得に失敗しました");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // 过滤动画
+  // アニメをフィルタリング
   const filteredAnime = useMemo(() => {
     return animeList.filter((anime) => {
       const broadcastDay = anime.broadcast?.day?.toLowerCase() as DayOfWeek | undefined;
@@ -127,21 +127,21 @@ export default function TVGuide() {
     });
   }, [animeList, selectedDay, searchTerm, selectedChannelType]);
 
-  // 按时间排序
+  // 時間で並べ替え
   const sortedAnime = [...filteredAnime].sort((a, b) => {
     const timeA = a.broadcast?.time || "";
     const timeB = b.broadcast?.time || "";
     return timeA.localeCompare(timeB);
   });
 
-  // 格式化时间
+  // 時間フォーマット
   const formatTime = (timeStr: string) => {
     if (!timeStr) return "--:--";
     const [hours, minutes] = timeStr.split(":");
     return `${hours}:${minutes}`;
   };
 
-  // 获取流派颜色
+  // ジャンルから色を取得
   const getGenreColor = (anime: Anime) => {
     const mainGenre = anime.genres[0]?.name.toLowerCase().replace(/[^a-z]/g, "-");
     const channel = CHANNEL_TYPES.find((c) => c.key === mainGenre);
@@ -150,7 +150,7 @@ export default function TVGuide() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* 顶部导航栏 */}
+      {/* 顶部ナビゲーション */}
       <header className="bg-gradient-to-r from-cyan-600 to-teal-500 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -161,43 +161,46 @@ export default function TVGuide() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold">J:COM 电视指南</h1>
-                <p className="text-xs text-cyan-100">日本动画时间表</p>
+                <h1 className="text-xl font-bold">J:COM テレビ番組表</h1>
+                <p className="text-xs text-cyan-100">日本のアニメ放送時間</p>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-4">
               <button className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
-                我的收藏
+                お気に入り
               </button>
-              <button className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition">
-                节目提醒
+              <button
+                className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+                onClick={() => say("選択してください")}
+              >
+                番組提醒
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* 区域选择器（模拟） */}
+      {/* 地域選択（模擬） */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-gray-500">地区：</span>
+            <span className="text-gray-500">地域：</span>
             <button
               className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-              onClick={() => say("请选择")}
+              onClick={() => say("選択してください")}
             >
-              <span className="text-gray-800 font-medium">关东・甲信越</span>
+              <span className="text-gray-800 font-medium">関東・甲信越</span>
               <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             <span className="text-gray-400">|</span>
-            <span className="text-cyan-600">当前显示关东地区节目</span>
+            <span className="text-cyan-600">関東地域の番組を表示中</span>
           </div>
         </div>
       </div>
 
-      {/* 星期导航 */}
+      {/* 曜日ナビゲーション */}
       <div className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between">
@@ -219,14 +222,14 @@ export default function TVGuide() {
                       {day.label}
                     </span>
                     {isToday && (
-                      <span className="block text-[10px] opacity-75">今天</span>
+                      <span className="block text-[10px] opacity-75">本日</span>
                     )}
                   </button>
                 );
               })}
             </div>
 
-            {/* 时间快捷切换 */}
+            {/* 時間快捷切换 */}
             <div className="hidden lg:flex items-center gap-2 ml-4">
               {TIME_SLOTS.map((slot) => (
                 <button
@@ -246,7 +249,7 @@ export default function TVGuide() {
         </div>
       </div>
 
-      {/* 搜索栏 */}
+      {/* 検索欄 */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-wrap items-center gap-4">
@@ -266,7 +269,7 @@ export default function TVGuide() {
               </svg>
               <input
                 type="text"
-                placeholder="搜索节目、频道..."
+                placeholder="番組を検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white transition"
@@ -274,17 +277,17 @@ export default function TVGuide() {
             </div>
             <span className="text-sm text-gray-500">
               {DAYS.find((d) => d.key === selectedDay)?.ja} ·
-              当前 {sortedAnime.length} 个节目
+              現在 {sortedAnime.length} 番組
             </span>
           </div>
         </div>
       </div>
 
-      {/* 频道分类筛选 */}
+      {/* チャンネル分類筛选 */}
       <div className="bg-gradient-to-r from-cyan-50 to-teal-50 border-b">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm font-medium text-gray-700">频道类型：</span>
+            <span className="text-sm font-medium text-gray-700">チャンネル：</span>
             {CHANNEL_TYPES.slice(0, 8).map((type) => (
               <button
                 key={type.key}
@@ -303,7 +306,7 @@ export default function TVGuide() {
             ))}
             <button
               className="px-3 py-1 text-sm text-cyan-600 hover:bg-cyan-100 rounded-full transition"
-              onClick={() => say("请选择")}
+              onClick={() => say("選択してください")}
             >
               更多...
             </button>
@@ -311,20 +314,20 @@ export default function TVGuide() {
         </div>
       </div>
 
-      {/* 主内容区 */}
+      {/* メインコンテンツ */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* 加载状态 */}
+        {/* 加载状態 */}
         {loading && (
           <div className="text-center py-16">
             <div className="inline-block relative">
               <div className="w-16 h-16 border-4 border-cyan-200 rounded-full"></div>
               <div className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-cyan-500 rounded-full animate-spin"></div>
             </div>
-            <p className="text-gray-600 mt-4">加载中...</p>
+            <p className="text-gray-600 mt-4">読み込み中...</p>
           </div>
         )}
 
-        {/* 错误状态 */}
+        {/* エラー状態 */}
         {error && (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -337,12 +340,12 @@ export default function TVGuide() {
               onClick={fetchAnimeSchedule}
               className="px-6 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition"
             >
-              重试
+              再試行
             </button>
           </div>
         )}
 
-        {/* 动画列表 */}
+        {/* アニメリスト */}
         {!loading && !error && (
           <>
             {sortedAnime.length === 0 ? (
@@ -352,8 +355,8 @@ export default function TVGuide() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
-                <p className="text-gray-600">该日期暂无节目</p>
-                <p className="text-sm text-gray-400 mt-1">尝试选择其他日期或筛选条件</p>
+                <p className="text-gray-600">この日付に番組はありません</p>
+                <p className="text-sm text-gray-400 mt-1">他の日付またはフィルター条件を選択してください</p>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -364,23 +367,23 @@ export default function TVGuide() {
                     onClick={() => setSelectedAnime(anime)}
                   >
                     <div className="flex">
-                      {/* 左侧时间轴 */}
+                      {/* 左側タイムライン */}
                       <div className="w-24 md:w-32 bg-gradient-to-br from-cyan-500 to-teal-500 text-white flex flex-col items-center justify-center p-4 flex-shrink-0">
                         <span className="text-2xl font-bold">
                           {formatTime(anime.broadcast?.time || "")}
                         </span>
-                        <span className="text-xs opacity-80 mt-1">开播</span>
+                        <span className="text-xs opacity-80 mt-1">放送開始</span>
                         <div className="w-full h-px bg-white/30 mt-3"></div>
                         <div className="mt-2 flex items-center gap-1">
                           <div
                             className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: getGenreColor(anime) }}
                           ></div>
-                          <span className="text-xs">{anime.genres[0]?.name || "动画"}</span>
+                          <span className="text-xs">{anime.genres[0]?.name || "アニメ"}</span>
                         </div>
                       </div>
 
-                      {/* 中间图片 */}
+                      {/* 中央画像 */}
                       <div className="w-24 h-32 md:w-28 md:h-36 flex-shrink-0 relative overflow-hidden">
                         <img
                           src={anime.images.jpg.image_url}
@@ -398,7 +401,7 @@ export default function TVGuide() {
                         )}
                       </div>
 
-                      {/* 右侧内容 */}
+                      {/* 右側コンテンツ */}
                       <div className="flex-1 p-4 flex flex-col justify-between">
                         <div>
                           <h3 className="font-bold text-gray-800 text-lg group-hover:text-cyan-600 transition">
@@ -433,7 +436,7 @@ export default function TVGuide() {
                         )}
                       </div>
 
-                      {/* 右侧箭头 */}
+                      {/* 右側矢印 */}
                       <div className="hidden md:flex items-center justify-center w-12 flex-shrink-0">
                         <svg
                           className="w-6 h-6 text-gray-300 group-hover:text-cyan-500 transition"
@@ -452,18 +455,18 @@ export default function TVGuide() {
           </>
         )}
 
-        {/* 返回首页 */}
+        {/* ホームに戻る */}
         <div className="text-center mt-8">
           <a href="/" className="inline-flex items-center gap-2 text-cyan-600 hover:text-cyan-700 transition">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            返回首页
+            ホームに戻る
           </a>
         </div>
       </div>
 
-      {/* 动画详情弹窗 */}
+      {/* アニメ詳細ポップアップ */}
       {selectedAnime && (
         <div
           className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
@@ -473,7 +476,7 @@ export default function TVGuide() {
             className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* 头部图片 */}
+            {/* ヘッダー画像 */}
             <div className="relative h-56">
               <img
                 src={selectedAnime.images.jpg.large_image_url || selectedAnime.images.jpg.image_url}
@@ -499,7 +502,7 @@ export default function TVGuide() {
               </div>
             </div>
 
-            {/* 内容 */}
+            {/* コンテンツ */}
             <div className="p-6 overflow-y-auto max-h-[40vh]">
               <div className="flex flex-wrap items-center gap-4">
                 {selectedAnime.score && (
@@ -537,13 +540,13 @@ export default function TVGuide() {
 
               {selectedAnime.synopsis && (
                 <div className="mt-4">
-                  <h3 className="font-bold text-gray-800 mb-2">简介</h3>
+                  <h3 className="font-bold text-gray-800 mb-2">あらすじ</h3>
                   <p className="text-gray-600 leading-relaxed">{selectedAnime.synopsis}</p>
                 </div>
               )}
             </div>
 
-            {/* 底部 */}
+            {/* フッター */}
             <div className="p-4 border-t bg-gray-50">
               <a
                 href={`https://myanimelist.net/anime/${selectedAnime.mal_id}`}
@@ -551,7 +554,7 @@ export default function TVGuide() {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-cyan-500 to-teal-500 text-white rounded-xl font-medium hover:from-cyan-600 hover:to-teal-600 transition"
               >
-                <span>在 MyAnimeList 查看详情</span>
+                <span>MyAnimeListで見る</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                 </svg>
