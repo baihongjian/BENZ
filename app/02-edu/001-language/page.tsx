@@ -85,6 +85,7 @@ interface Word {
   pronunciation: string;
   category: string;
   gender?: "der" | "die" | "das"; // 词性（仅名词需要）
+  verbSubcategory?: string; // 动词子分类
 }
 
 interface QuizOption {
@@ -159,6 +160,132 @@ const words: Word[] = [
   { german: "Onkel", chinese: "叔叔/舅舅", pronunciation: "昂克尔", category: "family", gender: "der" },
   { german: "Mädchen", chinese: "女孩", pronunciation: "梅德欣", category: "family", gender: "das" },
   { german: "Junge", chinese: "男孩", pronunciation: "永格", category: "family", gender: "der" },
+
+  // ============ 动词（按语义分类） ============
+
+  // 日常动作
+  { german: "arbeiten", chinese: "工作", pronunciation: "阿尔贝滕", category: "verb", verbSubcategory: "daily" },
+  { german: "essen", chinese: "吃", pronunciation: "埃森", category: "verb", verbSubcategory: "daily" },
+  { german: "schlafen", chinese: "睡觉", pronunciation: "施拉芬", category: "verb", verbSubcategory: "daily" },
+  { german: "gehen", chinese: "去、走", pronunciation: "格恩", category: "verb", verbSubcategory: "daily" },
+  { german: "kommen", chinese: "来", pronunciation: "科门", category: "verb", verbSubcategory: "daily" },
+  { german: "laufen", chinese: "跑", pronunciation: "劳芬", category: "verb", verbSubcategory: "daily" },
+  { german: "sitzen", chinese: "坐", pronunciation: "西岑", category: "verb", verbSubcategory: "daily" },
+  { german: "stehen", chinese: "站、立", pronunciation: "施泰恩", category: "verb", verbSubcategory: "daily" },
+  { german: "liegen", chinese: "躺、放", pronunciation: "利根", category: "verb", verbSubcategory: "daily" },
+  { german: "waschen", chinese: "洗", pronunciation: "瓦申", category: "verb", verbSubcategory: "daily" },
+  { german: "trinken", chinese: "喝", pronunciation: "特林肯", category: "verb", verbSubcategory: "daily" },
+  { german: "leben", chinese: "生活、居住", pronunciation: "莱本", category: "verb", verbSubcategory: "daily" },
+
+  // 交流沟通
+  { german: "sagen", chinese: "说、告诉", pronunciation: "扎根", category: "verb", verbSubcategory: "communication" },
+  { german: "fragen", chinese: "问、询问", pronunciation: "弗拉根", category: "verb", verbSubcategory: "communication" },
+  { german: "antworten", chinese: "回答、答复", pronunciation: "安特沃滕", category: "verb", verbSubcategory: "communication" },
+  { german: "sprechen", chinese: "说、讲话", pronunciation: "施普雷亨", category: "verb", verbSubcategory: "communication" },
+  { german: "reden", chinese: "说话、谈话", pronunciation: "雷登", category: "verb", verbSubcategory: "communication" },
+  { german: "rufen", chinese: "喊、叫", pronunciation: "鲁芬", category: "verb", verbSubcategory: "communication" },
+  { german: "schreiben", chinese: "写", pronunciation: "施莱本", category: "verb", verbSubcategory: "communication" },
+  { german: "lesen", chinese: "读", pronunciation: "莱森", category: "verb", verbSubcategory: "communication" },
+  { german: "zuhören", chinese: "倾听", pronunciation: "茨霍伦", category: "verb", verbSubcategory: "communication" },
+  { german: "bestellen", chinese: "订购、点餐", pronunciation: "贝施泰伦", category: "verb", verbSubcategory: "communication" },
+  { german: "besuchen", chinese: "访问、拜访", pronunciation: "贝祖肯", category: "verb", verbSubcategory: "communication" },
+
+  // 获得/给予
+  { german: "bekommen", chinese: "得到、收到", pronunciation: "贝孔门", category: "verb", verbSubcategory: "exchange" },
+  { german: "geben", chinese: "给", pronunciation: "格本", category: "verb", verbSubcategory: "exchange" },
+  { german: "nehmen", chinese: "拿、取", pronunciation: "内门", category: "verb", verbSubcategory: "exchange" },
+  { german: "bringen", chinese: "带来", pronunciation: "布林根", category: "verb", verbSubcategory: "exchange" },
+  { german: "leihen", chinese: "借（出/入）", pronunciation: "莱恩", category: "verb", verbSubcategory: "exchange" },
+  { german: "senden", chinese: "发送、寄", pronunciation: "森登", category: "verb", verbSubcategory: "exchange" },
+  { german: "kaufen", chinese: "买", pronunciation: "考芬", category: "verb", verbSubcategory: "exchange" },
+  { german: "bezahlen", chinese: "支付、付款", pronunciation: "贝察伦", category: "verb", verbSubcategory: "exchange" },
+  { german: "bestellen", chinese: "订购", pronunciation: "贝施泰伦", category: "verb", verbSubcategory: "exchange" },
+
+  // 认知思考
+  { german: "wissen", chinese: "知道（事实）", pronunciation: "维森", category: "verb", verbSubcategory: "cognitive" },
+  { german: "kennen", chinese: "认识、知道（人）", pronunciation: "肯嫩", category: "verb", verbSubcategory: "cognitive" },
+  { german: "denken", chinese: "思考、认为", pronunciation: "登肯", category: "verb", verbSubcategory: "cognitive" },
+  { german: "glauben", chinese: "相信、认为", pronunciation: "格劳本", category: "verb", verbSubcategory: "cognitive" },
+  { german: "finden", chinese: "找到、觉得", pronunciation: "芬登", category: "verb", verbSubcategory: "cognitive" },
+  { german: "verstehen", chinese: "理解、懂", pronunciation: "费尔施泰恩", category: "verb", verbSubcategory: "cognitive" },
+  { german: "lernen", chinese: "学习", pronunciation: "勒尔嫩", category: "verb", verbSubcategory: "cognitive" },
+  { german: "studieren", chinese: "大学学习、研究", pronunciation: "施图迪尔恩", category: "verb", verbSubcategory: "cognitive" },
+  { german: "heißen", chinese: "叫做、意味着", pronunciation: "海森", category: "verb", verbSubcategory: "cognitive" },
+  { german: "nennen", chinese: "命名、称为", pronunciation: "内嫩", category: "verb", verbSubcategory: "cognitive" },
+  { german: "merken", chinese: "注意到、记住", pronunciation: "梅尔肯", category: "verb", verbSubcategory: "cognitive" },
+
+  // 情感/意愿
+  { german: "mögen", chinese: "喜欢、想要", pronunciation: "梅根", category: "verb", verbSubcategory: "emotion" },
+  { german: "wollen", chinese: "想要、愿意", pronunciation: "沃伦", category: "verb", verbSubcategory: "emotion" },
+  { german: "müssen", chinese: "必须", pronunciation: "米森", category: "verb", verbSubcategory: "emotion" },
+  { german: "sollen", chinese: "应该", pronunciation: "佐伦", category: "verb", verbSubcategory: "emotion" },
+  { german: "dürfen", chinese: "可以、允许", pronunciation: "杜尔芬", category: "verb", verbSubcategory: "emotion" },
+  { german: "wünschen", chinese: "希望、祝愿", pronunciation: "温申", category: "verb", verbSubcategory: "emotion" },
+  { german: "hoffen", chinese: "希望、期望", pronunciation: "霍芬", category: "verb", verbSubcategory: "emotion" },
+  { german: "lieben", chinese: "爱", pronunciation: "利本", category: "verb", verbSubcategory: "emotion" },
+  { german: "hassen", chinese: "恨、讨厌", pronunciation: "哈森", category: "verb", verbSubcategory: "emotion" },
+  { german: "fürchten", chinese: "害怕、担心", pronunciation: "菲尔希滕", category: "verb", verbSubcategory: "emotion" },
+  { german: "weinen", chinese: "哭", pronunciation: "瓦伊嫩", category: "verb", verbSubcategory: "emotion" },
+  { german: "lachen", chinese: "笑", pronunciation: "拉亨", category: "verb", verbSubcategory: "emotion" },
+
+  // 动作/移动
+  { german: "machen", chinese: "做、制作", pronunciation: "马亨", category: "verb", verbSubcategory: "action" },
+  { german: "tun", chinese: "做", pronunciation: "图恩", category: "verb", verbSubcategory: "action" },
+  { german: "beginnen", chinese: "开始", pronunciation: "贝金嫩", category: "verb", verbSubcategory: "action" },
+  { german: "aufhören", chinese: "停止、结束", pronunciation: "奥夫霍伦", category: "verb", verbSubcategory: "action" },
+  { german: "legen", chinese: "（平）放", pronunciation: "莱根", category: "verb", verbSubcategory: "action" },
+  { german: "stellen", chinese: "（竖）放", pronunciation: "施泰伦", category: "verb", verbSubcategory: "action" },
+  { german: "setzen", chinese: "使坐下", pronunciation: "泽岑", category: "verb", verbSubcategory: "action" },
+  { german: "ziehen", chinese: "拉、抽", pronunciation: "茨根", category: "verb", verbSubcategory: "action" },
+  { german: "tragen", chinese: "穿、搬运", pronunciation: "特拉根", category: "verb", verbSubcategory: "action" },
+  { german: "werfen", chinese: "扔、抛", pronunciation: "韦尔芬", category: "verb", verbSubcategory: "action" },
+  { german: "treffen", chinese: "遇见、碰见", pronunciation: "特雷芬", category: "verb", verbSubcategory: "action" },
+  { german: "fangen", chinese: "抓住、接住", pronunciation: "法恩根", category: "verb", verbSubcategory: "action" },
+  { german: "halten", chinese: "握住、停下", pronunciation: "哈尔滕", category: "verb", verbSubcategory: "action" },
+  { german: "stoßen", chinese: "推、撞", pronunciation: "施托森", category: "verb", verbSubcategory: "action" },
+  { german: "schlagen", chinese: "打、敲", pronunciation: "施拉根", category: "verb", verbSubcategory: "action" },
+  { german: "suchen", chinese: "寻找", pronunciation: "祖希", category: "verb", verbSubcategory: "action" },
+  { german: "finden", chinese: "找到", pronunciation: "芬登", category: "verb", verbSubcategory: "action" },
+  { german: "helfen", chinese: "帮助", pronunciation: "赫尔芬", category: "verb", verbSubcategory: "action" },
+  { german: "warten", chinese: "等待", pronunciation: "瓦尔滕", category: "verb", verbSubcategory: "action" },
+  { german: "benutzen", chinese: "使用", pronunciation: "贝努岑", category: "verb", verbSubcategory: "action" },
+  { german: "zeigen", chinese: "展示、显示", pronunciation: "蔡根", category: "verb", verbSubcategory: "action" },
+  { german: "öffnen", chinese: "打开", pronunciation: "奥夫嫩", category: "verb", verbSubcategory: "action" },
+  { german: "schließen", chinese: "关闭、锁上", pronunciation: "施利森", category: "verb", verbSubcategory: "action" },
+  { german: "drehen", chinese: "旋转、转弯", pronunciation: "德雷恩", category: "verb", verbSubcategory: "action" },
+  { german: "springen", chinese: "跳", pronunciation: "施普林根", category: "verb", verbSubcategory: "action" },
+  { german: "fallen", chinese: "落下、跌倒", pronunciation: "法伦", category: "verb", verbSubcategory: "action" },
+
+  // 变化/状态
+  { german: "werden", chinese: "变成、成为", pronunciation: "韦尔登", category: "verb", verbSubcategory: "change" },
+  { german: "bleiben", chinese: "保持、停留", pronunciation: "布莱本", category: "verb", verbSubcategory: "change" },
+  { german: "wachsen", chinese: "生长", pronunciation: "瓦克森", category: "verb", verbSubcategory: "change" },
+  { german: "sterben", chinese: "死、死亡", pronunciation: "施泰尔本", category: "verb", verbSubcategory: "change" },
+  { german: "ändern", chinese: "改变、变化", pronunciation: "恩德恩", category: "verb", verbSubcategory: "change" },
+  { german: "verbessern", chinese: "改进、改善", pronunciation: "费尔贝瑟恩", category: "verb", verbSubcategory: "change" },
+  { german: "steigen", chinese: "上升、增长", pronunciation: "施泰根", category: "verb", verbSubcategory: "change" },
+  { german: "sinken", chinese: "下降、下沉", pronunciation: "兹恩肯", category: "verb", verbSubcategory: "change" },
+
+  // 感官/感知
+  { german: "sehen", chinese: "看", pronunciation: "泽恩", category: "verb", verbSubcategory: "sense" },
+  { german: "hören", chinese: "听", pronunciation: "霍伦", category: "verb", verbSubcategory: "sense" },
+  { german: "fühlen", chinese: "感觉、触摸", pronunciation: "菲伦", category: "verb", verbSubcategory: "sense" },
+  { german: "riechen", chinese: "闻、嗅", pronunciation: "里希恩", category: "verb", verbSubcategory: "sense" },
+  { german: "schmecken", chinese: "品尝、好吃", pronunciation: "施梅肯", category: "verb", verbSubcategory: "sense" },
+  { german: "spüren", chinese: "感觉到、察觉", pronunciation: "施普伊尔恩", category: "verb", verbSubcategory: "sense" },
+  { german: "bemerken", chinese: "注意到、觉察", pronunciation: "贝梅尔肯", category: "verb", verbSubcategory: "sense" },
+  { german: "beobachten", chinese: "观察", pronunciation: "贝奥巴希滕", category: "verb", verbSubcategory: "sense" },
+
+  // 辅助动词
+  { german: "sein", chinese: "是、在", pronunciation: "宰恩", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "haben", chinese: "有", pronunciation: "哈本", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "können", chinese: "能够、会", pronunciation: "克能", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "dürfen", chinese: "可以、允许", pronunciation: "杜尔芬", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "müssen", chinese: "必须", pronunciation: "米森", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "sollen", chinese: "应该", pronunciation: "佐伦", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "wollen", chinese: "想要", pronunciation: "沃伦", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "mögen", chinese: "喜欢、想要", pronunciation: "梅根", category: "verb", verbSubcategory: "auxiliary" },
+  { german: "lassen", chinese: "让、使", pronunciation: "拉森", category: "verb", verbSubcategory: "auxiliary" },
 ];
 
 const categories = [
@@ -167,6 +294,20 @@ const categories = [
   { id: "number", name: "数字" },
   { id: "color", name: "颜色" },
   { id: "family", name: "家庭" },
+  { id: "verb", name: "动词" },
+];
+
+// 动词子分类
+const verbCategories = [
+  { id: "daily", name: "日常动作" },
+  { id: "communication", name: "交流沟通" },
+  { id: "exchange", name: "获得/给予" },
+  { id: "cognitive", name: "认知思考" },
+  { id: "emotion", name: "情感/意愿" },
+  { id: "action", name: "动作/移动" },
+  { id: "change", name: "变化/状态" },
+  { id: "sense", name: "感官/感知" },
+  { id: "auxiliary", name: "辅助动词" },
 ];
 
 // 生成拼写错误的单词
@@ -231,12 +372,13 @@ const generateSpellingError = (word: string): string => {
 
 export default function GermanLearning() {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedVerbSubcategory, setSelectedVerbSubcategory] = useState<string | null>(null); // 动词子分类
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -382,9 +524,18 @@ export default function GermanLearning() {
     }
   }, [wrongBook]);
 
-  const filteredWords = selectedCategory === "all"
-    ? words
-    : words.filter(w => w.category === selectedCategory);
+  // 过滤单词（支持动词子分类）
+  const filteredWords = (() => {
+    if (selectedCategory === "all") {
+      return words;
+    }
+    let result = words.filter(w => w.category === selectedCategory);
+    // 如果是动词分类且选中了子分类
+    if (selectedCategory === "verb" && selectedVerbSubcategory) {
+      result = result.filter(w => w.verbSubcategory === selectedVerbSubcategory);
+    }
+    return result;
+  })();
 
   const currentWord = filteredWords[currentIndex];
 
@@ -767,6 +918,7 @@ export default function GermanLearning() {
              quizType === "german" ? "看中文选德语" :
              quizType === "spelling" ? "找出拼写错误的单词" :
              quizType === "input" ? "看中文输入德语" :
+             quizType === "verb" ? "看中文选动词" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -1064,6 +1216,16 @@ export default function GermanLearning() {
                   >
                     中文听写
                   </button>
+                  <button
+                    onClick={() => setQuizType("verb")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "verb"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-cyan-50"
+                    }`}
+                  >
+                    动词匹配
+                  </button>
                 </div>
               </div>
 
@@ -1112,6 +1274,7 @@ export default function GermanLearning() {
               key={cat.id}
               onClick={() => {
                 setSelectedCategory(cat.id);
+                setSelectedVerbSubcategory(null); // 重置子分类
                 setCurrentIndex(0);
                 setIsFlipped(false);
               }}
@@ -1131,8 +1294,67 @@ export default function GermanLearning() {
           ))}
         </div>
 
+        {/* 动词子分类筛选 */}
+        {selectedCategory === "verb" && (
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            <button
+              onClick={() => {
+                setSelectedVerbSubcategory(null);
+                setCurrentIndex(0);
+                setIsFlipped(false);
+              }}
+              className={`px-4 py-2 rounded-full transition ${
+                selectedVerbSubcategory === null
+                  ? "bg-cyan-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-cyan-50"
+              }`}
+            >
+              全部动词
+              <span className="ml-1 text-xs opacity-70">
+                ({words.filter(w => w.category === "verb").length})
+              </span>
+            </button>
+            {verbCategories.map((subcat) => {
+              const count = words.filter(w => w.category === "verb" && w.verbSubcategory === subcat.id).length;
+              return (
+                <button
+                  key={subcat.id}
+                  onClick={() => {
+                    setSelectedVerbSubcategory(subcat.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-4 py-2 rounded-full transition ${
+                    selectedVerbSubcategory === subcat.id
+                      ? "bg-cyan-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-cyan-50"
+                  }`}
+                >
+                  {subcat.name}
+                  <span className="ml-1 text-xs opacity-70">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* 学习模式：词汇统计 */}
-        {mode === "learn" && (
+        {mode === "learn" && selectedCategory === "verb" && selectedVerbSubcategory ? (
+          // 动词子分类统计
+          <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
+            <h3 className="font-bold text-gray-800 mb-3">📊 子分类统计</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div
+                className="text-center p-2 rounded-lg bg-cyan-100"
+              >
+                <div className="text-2xl font-bold text-cyan-600">{filteredWords.length}</div>
+                <div className="text-sm text-gray-600">
+                  {verbCategories.find(s => s.id === selectedVerbSubcategory)?.name}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : mode === "learn" && (
           <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
             <h3 className="font-bold text-gray-800 mb-3">📊 词汇统计</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -1215,7 +1437,7 @@ export default function GermanLearning() {
                 {quizRecords.map((record, idx) => {
                   const isInWrongBook = wrongBook.some(q => q.german === record.german);
                   // 德中匹配题型显示中文题目，拼写纠错显示中文题目，中德匹配显示德语题目
-                  const questionText = quizType === "german" || quizType === "spelling" || quizType === "input"
+                  const questionText = quizType === "german" || quizType === "spelling" || quizType === "input" || quizType === "verb"
                     ? record.chinese
                     : record.german;
                   // 拼写纠错和听写题型需要特殊处理
@@ -1223,7 +1445,7 @@ export default function GermanLearning() {
                     ? record.isCorrect
                       ? `${record.selected}`
                       : `${record.selected} → ${record.german}`
-                    : quizType === "german"
+                    : quizType === "german" || quizType === "verb"
                     ? record.german
                     : record.chinese;
                   return (
@@ -1323,6 +1545,7 @@ export default function GermanLearning() {
                       {quizType === "gender" ? "请选择对应的词性" :
                        quizType === "spelling" ? "请选择拼写正确的德语" :
                        quizType === "input" ? "请输入对应的德语单词" :
+                       quizType === "verb" ? "请选择对应的动词" :
                        quizType === "german" ? "请选择对应的德语" : "请选择对应的中文翻译"}
                     </span>
                 <div className="flex items-center justify-center gap-4">
@@ -1339,9 +1562,10 @@ export default function GermanLearning() {
                     {quizType === "german" ? quizWord.chinese :
                      quizType === "spelling" ? quizWord.chinese :
                      quizType === "input" ? quizWord.chinese :
+                     quizType === "verb" ? quizWord.chinese :
                      quizWord.german}
                   </h2>
-                  {(quizType === "chinese" || quizType === "spelling" || quizType === "input") && (
+                  {(quizType === "chinese" || quizType === "spelling" || quizType === "input" || quizType === "verb") && (
                     <button
                       onClick={() => speak(quizWord.german)}
                       className="p-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
@@ -1387,8 +1611,8 @@ export default function GermanLearning() {
                 {quizOptions.map((option, idx) => {
                   let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
                   let disabled = false;
-                  // 德中匹配和拼写纠错显示德语，中德匹配显示中文，词性匹配显示词性
-                  let optionLabel = quizType === "spelling" || quizType === "german"
+                  // 德中匹配和拼写纠错显示德语，中德匹配显示中文，词性匹配显示词性，动词匹配显示德语
+                  let optionLabel = quizType === "spelling" || quizType === "german" || quizType === "verb"
                     ? option.word.german
                     : quizType === "gender"
                     ? option.word.chinese
@@ -1466,7 +1690,7 @@ export default function GermanLearning() {
                   </p>
                   {quizResult === "wrong" && (
                     <p className="text-gray-600 mb-4">
-                      {quizType === "spelling" || quizType === "input" ? (
+                      {quizType === "spelling" || quizType === "input" || quizType === "verb" ? (
                         <>正确：<strong>{quizWord?.german}</strong></>
                       ) : (
                         <>正确：{quizType === "german"
