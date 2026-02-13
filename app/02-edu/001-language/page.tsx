@@ -1985,11 +1985,20 @@ export default function GermanLearning() {
                 <div className="text-center mb-6">
                   {sentenceQuiz ? (
                     <>
-                      <p className="text-3xl font-bold text-gray-800 leading-relaxed">
-                        {sentenceQuiz.sentence}
-                      </p>
+                      <div className="flex items-center justify-center gap-3 mb-2">
+                        <p className="text-3xl font-bold text-gray-800 leading-relaxed">
+                          {sentenceQuiz.sentence}
+                        </p>
+                        <button
+                          onClick={() => speak(sentenceQuiz.sentence.replace("___", sentenceQuiz.missingWord))}
+                          className="p-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
+                          title="播放发音"
+                        >
+                          🔊
+                        </button>
+                      </div>
                       {showSentenceChinese && (
-                        <p className="text-lg text-gray-500 mt-3">{sentenceQuiz.chinese}</p>
+                        <p className="text-lg text-gray-500 mt-2">{sentenceQuiz.chinese}</p>
                       )}
                     </>
                   ) : (
