@@ -7,12 +7,24 @@ Google TTS Service - 供 Next.js API 调用
 
 import sys
 import base64
+import glob
+import os
 from io import BytesIO
 from gtts import gTTS
 
 TEXT = sys.argv[1] if len(sys.argv) > 1 else "Guten Tag"
 LANG = sys.argv[2] if len(sys.argv) > 2 else "de"
-OUTPUT_FILE = sys.argv[3] if len(sys.argv) > 3 else "output.mp3"
+OUTPUT_FILE = sys.argv[3] if len(sys.argv) > 3 else "tts_temp.mp3"
+
+# 删除旧的MP3文件
+def cleanup_old_mp3():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    for old_file in glob.glob(os.path.join(script_dir, "tts_*.mp3")):
+        try:
+            os.remove(old_file)
+            print(f"Deleted: {old_file}")
+        except Exception as e:
+            print(f"Failed to delete {old_file}: {e}")
 
 def text_to_speech(text: str, lang: str = "de"):
     """将文本转换为语音，保存到文件"""
@@ -21,6 +33,9 @@ def text_to_speech(text: str, lang: str = "de"):
     return OUTPUT_FILE
 
 def main():
+    # 清理旧的MP3文件
+    cleanup_old_mp3()
+
     output_file = text_to_speech(TEXT, LANG)
     print(f"Audio saved to: {output_file}")
 
