@@ -292,13 +292,13 @@ const words: Word[] = [
   { german: "am Wochenende", chinese: "在周末", pronunciation: "阿姆 沃肯恩德", category: "date" },
 
   // 星期
-  { german: "Montag", chinese: "星期一", pronunciation: "蒙塔克", category: "week" },
-  { german: "Dienstag", chinese: "星期二", pronunciation: "丁斯塔克", category: "week" },
-  { german: "Mittwoch", chinese: "星期三", pronunciation: "米特沃克", category: "week" },
-  { german: "Donnerstag", chinese: "星期四", pronunciation: "多讷斯塔克", category: "week" },
-  { german: "Freitag", chinese: "星期五", pronunciation: "弗赖塔克", category: "week" },
-  { german: "Samstag", chinese: "星期六", pronunciation: "扎姆斯塔克", category: "week" },
-  { german: "Sonntag", chinese: "星期日", pronunciation: "宗塔克", category: "week" },
+  { german: "Montag", chinese: "星期一", pronunciation: "蒙塔克", category: "week", example: "Heute ist Montag. Ich gehe zur Arbeit." },
+  { german: "Dienstag", chinese: "星期二", pronunciation: "丁斯塔克", category: "week", example: "Am Dienstag habe ich Deutschkurs." },
+  { german: "Mittwoch", chinese: "星期三", pronunciation: "米特沃克", category: "week", example: "Am Mittwoch gehe ich ins Fitnessstudio." },
+  { german: "Donnerstag", chinese: "星期四", pronunciation: "多讷斯塔克", category: "week", example: "Donnerstag ist mein Lieblingstag." },
+  { german: "Freitag", chinese: "星期五", pronunciation: "弗赖塔克", category: "week", example: "Ich arbeite von Montag bis Freitag." },
+  { german: "Samstag", chinese: "星期六", pronunciation: "扎姆斯塔克", category: "week", example: "Am Samstag kaufe ich ein." },
+  { german: "Sonntag", chinese: "星期日", pronunciation: "宗塔克", category: "week", example: "Am Sonntag ruhe ich mich aus." },
 
   // 月份
   { german: "Januar", chinese: "一月", pronunciation: "亚努阿", category: "month" },
@@ -2343,8 +2343,8 @@ export default function GermanLearning() {
                 <span className="text-sm text-amber-600 mb-4">中文 · 发音</span>
                 <h3 className="text-3xl font-bold text-gray-800 mb-2">{currentWord?.chinese}</h3>
                 <p className="text-xl text-amber-600">{currentWord?.pronunciation}</p>
-                {/* 动词例句 */}
-                {currentWord?.category === "verb" && currentWord?.example && (
+                {/* 例句 */}
+                {currentWord?.example && (
                   <div className="mt-4 p-3 bg-white rounded-lg border border-amber-200 max-w-xs">
                     <p className="text-sm text-gray-600 italic text-center">{currentWord.example}</p>
                   </div>
