@@ -56,6 +56,138 @@ const playSound = (type: "correct" | "wrong") => {
   }
 };
 
+// 背景音乐播放器 - 使用全局变量
+let bgMusicPlaying = false;
+let bgMusicTimeout: ReturnType<typeof setTimeout> | null = null;
+
+// 音乐风格配置
+type MusicStyle = "cheerful" | "calm" | "tense" | "success" | "failure";
+
+const musicStyles: Record<MusicStyle, { notes: number[]; durations: number[]; speed: number; type: OscillatorType }> = {
+  // 欢快风格 - 上升音阶
+  cheerful: {
+    notes: [262, 294, 330, 349, 392, 440, 494, 523, 587, 659],
+    durations: [200, 200, 200, 200, 200, 200, 200, 200, 200, 400],
+    speed: 1,
+    type: "sine"
+  },
+  // 放松风格 - 缓慢下降
+  calm: {
+    notes: [392, 370, 349, 330, 311, 294, 277, 262],
+    durations: [500, 500, 500, 500, 500, 500, 500, 600],
+    speed: 0.7,
+    type: "sine"
+  },
+  // 紧张风格 - 快速重复
+  tense: {
+    notes: [220, 233, 247, 262, 277, 294],
+    durations: [150, 150, 150, 150, 150, 150],
+    speed: 1.5,
+    type: "sawtooth"
+  },
+  // 成功风格 - 胜利音阶
+  success: {
+    notes: [523, 659, 784, 1047],
+    durations: [200, 200, 200, 600],
+    speed: 1,
+    type: "square"
+  },
+  // 失败风格 - 下降音
+  failure: {
+    notes: [294, 277, 262, 247, 220, 196],
+    durations: [200, 200, 200, 200, 300, 500],
+    speed: 1,
+    type: "sawtooth"
+  }
+};
+
+const createBgMusicPlayer = (style: MusicStyle = "cheerful", onStop: () => void) => {
+  if (typeof window === "undefined") return;
+
+  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContext) return;
+
+  const config = musicStyles[style];
+  let noteIndex = 0;
+
+  const playNote = () => {
+    if (!bgMusicPlaying) {
+      onStop();
+      return;
+    }
+
+    const ctx = new AudioContext();
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    const freq = config.notes[noteIndex];
+    const duration = config.durations[noteIndex] / config.speed;
+
+    if (freq > 0) {
+      oscillator.type = config.type;
+      oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000 * 0.8);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + duration / 1000);
+    }
+
+    noteIndex = (noteIndex + 1) % config.notes.length;
+
+    // 播放下一个音符
+    bgMusicTimeout = setTimeout(() => {
+      playNote();
+    }, duration);
+  };
+
+  bgMusicPlaying = true;
+  playNote();
+};
+
+const playMusicOnce = (style: MusicStyle) => {
+  if (typeof window === "undefined") return;
+
+  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContext) return;
+
+  const config = musicStyles[style];
+  const ctx = new AudioContext();
+  let startTime = ctx.currentTime;
+
+  config.notes.forEach((freq, idx) => {
+    const duration = config.durations[idx] / 1000 / config.speed;
+
+    if (freq > 0) {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.type = config.type;
+      oscillator.frequency.setValueAtTime(freq, startTime);
+      gainNode.gain.setValueAtTime(0.15, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration * 0.8);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    }
+
+    startTime += duration;
+  });
+};
+
+const stopBgMusicPlayer = () => {
+  bgMusicPlaying = false;
+  if (bgMusicTimeout) {
+    clearTimeout(bgMusicTimeout);
+    bgMusicTimeout = null;
+  }
+};
+
 // 倒计时滴滴声
 const playTickSound = () => {
   if (typeof window === "undefined") return;
@@ -386,6 +518,9 @@ export default function GermanLearning() {
   const [deepseekApiKey, setDeepseekApiKey] = useState(""); // DeepSeek API Key
   const [useAiQuiz, setUseAiQuiz] = useState(false); // 是否使用 AI 出题
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false); // 是否正在生成 AI 题目
+  const [bgMusicEnabled, setBgMusicEnabled] = useState(false); // 背景音乐开关
+  const [bgMusicStyle, setBgMusicStyle] = useState<"cheerful" | "calm" | "tense">("cheerful"); // 音乐风格
+  const [bgMusicPlaying, setBgMusicPlaying] = useState(false); // 背景音乐是否在播放
 
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
@@ -427,6 +562,25 @@ export default function GermanLearning() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mode, quizStarted, quizFinished, selectedOption, quizTimeout, quizResult]);
+  // 背景音乐控制
+  useEffect(() => {
+    // 答题开始时播放音乐
+    if (mode === "quiz" && quizStarted && !quizFinished && bgMusicEnabled) {
+      stopBgMusicPlayer();
+      createBgMusicPlayer(bgMusicStyle, () => setBgMusicPlaying(false));
+    } else {
+      stopBgMusicPlayer();
+    }
+  }, [mode, quizStarted, quizFinished, bgMusicEnabled, bgMusicStyle]);
+
+  // 答题结果音效
+  useEffect(() => {
+    if (quizResult === "correct" && bgMusicEnabled) {
+      playMusicOnce("success");
+    } else if (quizResult === "wrong" && bgMusicEnabled) {
+      playMusicOnce("failure");
+    }
+  }, [quizResult, bgMusicEnabled]);
 
   // 保存 API Key 到 localStorage
   const saveApiKey = (key: string) => {
@@ -1233,6 +1387,55 @@ export default function GermanLearning() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="flex flex-col gap-3 py-3 px-4 bg-gray-100 rounded-xl">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={bgMusicEnabled}
+                    onChange={(e) => setBgMusicEnabled(e.target.checked)}
+                    className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
+                  />
+                  <span className="font-medium">🎵 背景音乐</span>
+                  {bgMusicPlaying && <span className="text-green-600 text-sm">▶ 播放中</span>}
+                </label>
+
+                {/* 音乐风格选择 */}
+                {bgMusicEnabled && (
+                  <div className="flex justify-center gap-2">
+                    <button
+                      onClick={() => setBgMusicStyle("cheerful")}
+                      className={`px-3 py-1 rounded-full text-sm transition ${
+                        bgMusicStyle === "cheerful"
+                          ? "bg-yellow-500 text-white"
+                          : "bg-white text-gray-700 hover:bg-yellow-50"
+                      }`}
+                    >
+                      😊 欢快
+                    </button>
+                    <button
+                      onClick={() => setBgMusicStyle("calm")}
+                      className={`px-3 py-1 rounded-full text-sm transition ${
+                        bgMusicStyle === "calm"
+                          ? "bg-blue-500 text-white"
+                          : "bg-white text-gray-700 hover:bg-blue-50"
+                      }`}
+                    >
+                      😌 放松
+                    </button>
+                    <button
+                      onClick={() => setBgMusicStyle("tense")}
+                      className={`px-3 py-1 rounded-full text-sm transition ${
+                        bgMusicStyle === "tense"
+                          ? "bg-red-500 text-white"
+                          : "bg-white text-gray-700 hover:bg-red-50"
+                      }`}
+                    >
+                      😰 紧张
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
