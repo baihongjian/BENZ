@@ -2,16 +2,39 @@
 
 import { useState, useCallback, useEffect } from "react";
 
-// 发音函数
-const speak = (text: string) => {
+// 发音函数 - 使用 Python gTTS API
+const speak = async (text: string) => {
   if (typeof window === "undefined") return;
 
+  try {
+    const response = await fetch('/02-edu/001-language/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, lang: 'de' })
+    });
+
+    const data = await response.json();
+
+    if (data.audio) {
+      const audio = new Audio(data.audio);
+      await audio.play();
+    } else {
+      // 如果API失败，回退到浏览器语音
+      fallbackSpeak(text);
+    }
+  } catch {
+    // 如果出错，回退到浏览器语音
+    fallbackSpeak(text);
+  }
+};
+
+// 浏览器语音回退
+const fallbackSpeak = (text: string) => {
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "de-DE"; // 德语
-  utterance.rate = 0.8; // 稍慢一点
+  utterance.lang = "de-DE";
+  utterance.rate = 0.8;
   utterance.pitch = 1;
 
-  // 尝试选择德语语音
   const voices = speechSynthesis.getVoices();
   const germanVoice = voices.find(v => v.lang.includes("de"));
   if (germanVoice) {
@@ -548,7 +571,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "weekListening">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -586,6 +609,10 @@ export default function GermanLearning() {
 
   // 是否显示句子中文翻译
   const [showSentenceChinese, setShowSentenceChinese] = useState(false);
+
+  // 星期听力练习数据
+  const [weekListeningTarget, setWeekListeningTarget] = useState<Word | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
@@ -934,6 +961,49 @@ export default function GermanLearning() {
   // 生成随机题目（不重复）- 支持 AI 出题
   const generateQuiz = async () => {
     console.log("generateQuiz called, quizType:", quizType, "useAiQuiz:", useAiQuiz);
+
+    // 星期听力练习题型
+    if (quizType === "weekListening") {
+      // 只从星期词汇中出题
+      const weekWords = filteredWords.filter(w => w.category === "week");
+      if (weekWords.length < 2) {
+        alert("星期词汇不足，无法进行听力练习");
+        return;
+      }
+
+      // 获取未出过的题目索引
+      const availableIndices = weekWords
+        .map((_, idx) => idx)
+        .filter(idx => !usedWordIndices.includes(idx));
+
+      if (availableIndices.length === 0) {
+        alert("所有星期词汇都已练习过了！");
+        return;
+      }
+
+      // 随机选择一个
+      const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      const targetWord = weekWords[randomIndex];
+
+      // 记录已使用的索引
+      setUsedWordIndices(prev => [...prev, randomIndex]);
+
+      setWeekListeningTarget(targetWord);
+      setQuizOptions([]); // 听力题型不使用标准选项
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+
+      // 自动播放读音
+      setTimeout(() => {
+        setIsPlayingAudio(true);
+        speak(targetWord.german);
+        setTimeout(() => setIsPlayingAudio(false), 1500);
+      }, 300);
+      return;
+    }
 
     // AI 出题模式（句子填空题型）
     if (useAiQuiz && quizType === "sentence") {
@@ -1675,6 +1745,16 @@ export default function GermanLearning() {
                       <span className="ml-1 text-xs">🤖</span>
                     )}
                   </button>
+                  <button
+                    onClick={() => setQuizType("weekListening")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "weekListening"
+                        ? "bg-pink-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-pink-50"
+                    }`}
+                  >
+                    🎧 星期听力
+                  </button>
                 </div>
               </div>
 
@@ -2027,6 +2107,95 @@ export default function GermanLearning() {
               <div className="flex-1 bg-white rounded-2xl shadow-lg p-12 text-center">
                 <div className="text-4xl mb-4 animate-bounce">🤖</div>
                 <p className="text-gray-600">AI 正在生成题目...</p>
+              </div>
+            ) : quizType === "weekListening" ? (
+              // 星期听力练习题型
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                <div className="text-center mb-6">
+                  <span className="text-sm text-gray-400 mb-2 block">听发音，选择正确的星期</span>
+
+                  {/* 播放按钮 */}
+                  <button
+                    onClick={() => {
+                      if (weekListeningTarget) {
+                        setIsPlayingAudio(true);
+                        speak(weekListeningTarget.german);
+                        setTimeout(() => setIsPlayingAudio(false), 1500);
+                      }
+                    }}
+                    disabled={isPlayingAudio}
+                    className={`p-8 rounded-full transition ${
+                      isPlayingAudio
+                        ? "bg-green-100 text-green-600 animate-pulse"
+                        : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    }`}
+                  >
+                    <span className="text-6xl">🔊</span>
+                  </button>
+                  <p className="text-gray-500 mt-4">
+                    {isPlayingAudio ? "🔊 播放中..." : "点击喇叭听发音"}
+                  </p>
+                </div>
+
+                {/* 选项列表 */}
+                <div className="grid grid-cols-2 gap-3">
+                  {filteredWords
+                    .filter(w => w.category === "week")
+                    .map((word, idx) => {
+                      const isSelected = selectedOption === idx;
+                      const isCorrect = weekListeningTarget?.german === word.german;
+                      const showResult = selectedOption !== null || quizTimeout;
+
+                      let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
+                      if (showResult) {
+                        if (isCorrect) {
+                          buttonClass += "bg-green-100 border-green-500 text-green-800";
+                        } else if (isSelected && !isCorrect) {
+                          buttonClass += "bg-red-100 border-red-500 text-red-800";
+                        } else {
+                          buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                        }
+                      } else {
+                        buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-teal-50 hover:border-teal-400 hover:text-teal-700";
+                      }
+
+                      return (
+                        <button
+                          key={word.german}
+                          onClick={() => {
+                            setSelectedOption(idx);
+                            if (word.german === weekListeningTarget?.german) {
+                              setQuizResult("correct");
+                              playSound("correct");
+                              setQuizRecords(prev => [...prev, {
+                                german: weekListeningTarget!.german,
+                                chinese: weekListeningTarget!.chinese,
+                                selected: word.german,
+                                isCorrect: true,
+                                isTimeout: false,
+                                gender: weekListeningTarget!.gender
+                              }]);
+                            } else {
+                              setQuizResult("wrong");
+                              playSound("wrong");
+                              setQuizRecords(prev => [...prev, {
+                                german: weekListeningTarget!.german,
+                                chinese: weekListeningTarget!.chinese,
+                                selected: word.german,
+                                isCorrect: false,
+                                isTimeout: false,
+                                gender: weekListeningTarget!.gender
+                              }]);
+                            }
+                          }}
+                          disabled={showResult}
+                          className={buttonClass}
+                        >
+                          {word.chinese}
+                        </button>
+                      );
+                    })}
+                </div>
               </div>
             ) : quizType === "sentence" ? (
               // 句子填空题型
