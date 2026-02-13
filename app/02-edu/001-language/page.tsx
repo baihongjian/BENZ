@@ -497,7 +497,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -521,6 +521,17 @@ export default function GermanLearning() {
   const [bgMusicEnabled, setBgMusicEnabled] = useState(false); // 背景音乐开关
   const [bgMusicStyle, setBgMusicStyle] = useState<"cheerful" | "calm" | "tense">("cheerful"); // 音乐风格
   const [bgMusicPlaying, setBgMusicPlaying] = useState(false); // 背景音乐是否在播放
+
+  // 句子填空题型数据
+  const [sentenceQuiz, setSentenceQuiz] = useState<{
+    sentence: string; // 带空格的句子
+    missingWord: string; // 正确答案
+    options: string[]; // 选项
+    chinese: string; // 中文翻译
+  } | null>(null);
+
+  // 记录已使用过的句子（用于去重）
+  const [usedSentenceSentences, setUsedSentenceSentences] = useState<string[]>([]);
 
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
@@ -655,6 +666,134 @@ export default function GermanLearning() {
     }
   };
 
+  // 调用 DeepSeek API 生成句子填空题目
+  const generateSentenceQuiz = async (): Promise<{
+    sentence: string;
+    missingWord: string;
+    options: string[];
+    chinese: string;
+  } | null> => {
+    if (!deepseekApiKey) {
+      alert("请先设置 DeepSeek API Key");
+      return null;
+    }
+
+    // 根据当前选择的类别筛选词汇
+    let availableWords = words;
+    if (selectedCategory !== "all") {
+      availableWords = words.filter(w => w.category === selectedCategory);
+      // 如果是动词分类且选中了子分类，进一步筛选
+      if (selectedCategory === "verb" && selectedVerbSubcategory) {
+        availableWords = availableWords.filter(w => w.verbSubcategory === selectedVerbSubcategory);
+      }
+    }
+
+    // 如果词汇太少，使用全部词汇
+    if (availableWords.length < 3) {
+      availableWords = words.slice(0, 50);
+    }
+
+    const wordTexts = availableWords.map(w => `${w.german} (${w.chinese})`).join(", ");
+    console.log("用于生成句子的词汇:", wordTexts.slice(0, 200));
+
+    setIsGeneratingQuiz(true);
+
+    // 尝试生成不重复的题目，最多尝试 3 次
+    let attempts = 0;
+    const maxAttempts = 3;
+    let result = null;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      console.log(`尝试第 ${attempts} 次生成题目...`);
+
+      try {
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${deepseekApiKey}`,
+          },
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            messages: [
+              {
+                role: "system",
+                content: `你是一个德语学习助手。请生成一个德语句子填空题目，基于以下词汇表生成简单句子。
+返回 JSON 对象，包含：
+- sentence: 带空格的完整句子，使用 "___" 表示需要填写的单词位置
+- missingWord: 正确答案（德语单词）
+- options: 4个选项，包含正确答案和3个干扰项（从词汇表中随机选择）
+- chinese: 句子的中文翻译
+
+要求：
+1. 句子要简单，适合初学者
+2. 使用词汇表中的词汇
+3. 只有一个空格
+4. 句型要多样化：可以生成陈述句、否定句、疑问句、使用不同的时间或地点状语等
+5. 不要生成与以下句型相同的句子：Ich ___ Brot. / Ich ___ Wasser. / Er ___ nach Hause.
+6. 返回纯 JSON，不要 markdown 代码块`
+              },
+              {
+                role: "user",
+                content: `基于以下词汇生成 1 个不同的句子填空题目，句型要多样化：\n${wordTexts.slice(0, 500)}`
+              }
+            ],
+            temperature: 1.0, // 提高温度，增加随机性
+            max_tokens: 300,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("API 请求失败");
+        }
+
+        const data = await response.json();
+        let content = data.choices[0].message.content;
+
+        // 清理 markdown 代码块标记
+        content = content.replace(/```json/g, "").replace(/```/g, "").trim();
+
+        // 尝试解析 JSON
+        const quizData = JSON.parse(content);
+
+        // 验证数据
+        if (!quizData.sentence || !quizData.missingWord || !quizData.options) {
+          throw new Error("返回数据格式错误");
+        }
+
+        const quizResult = {
+          sentence: quizData.sentence,
+          missingWord: quizData.missingWord,
+          options: quizData.options.slice(0, 4),
+          chinese: quizData.chinese || "",
+        };
+
+        // 检查是否已使用过
+        if (usedSentenceSentences.includes(quizResult.sentence)) {
+          console.log("题目重复，重新生成...");
+          if (attempts >= maxAttempts) {
+            console.log("已达到最大尝试次数");
+          }
+          continue; // 继续下一次尝试
+        }
+
+        console.log("最终返回的题目:", quizResult);
+        result = quizResult;
+        break; // 成功生成，跳出循环
+      } catch (error) {
+        console.error(`第 ${attempts} 次尝试失败:`, error);
+        if (attempts >= maxAttempts) {
+          alert("AI 生成句子题目失败，请检查 API Key 或网络连接");
+        }
+      }
+    }
+
+    setIsGeneratingQuiz(false);
+    console.log("generateSentenceQuiz 完成，返回:", result);
+    return result;
+  };
+
   // 保存错题本到 localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -694,14 +833,24 @@ export default function GermanLearning() {
           setQuizResult("wrong");
           playSound("wrong");
           // 记录超时未答题
-          setQuizRecords(prev => [...prev, {
-            german: quizWord!.german,
-            chinese: quizWord!.chinese,
-            selected: null,
-            isCorrect: false,
-            isTimeout: true,
-            gender: quizWord!.gender
-          }]);
+          if (quizType === "sentence") {
+            setQuizRecords(prev => [...prev, {
+              german: sentenceQuiz?.missingWord || "",
+              chinese: sentenceQuiz?.chinese || "",
+              selected: null,
+              isCorrect: false,
+              isTimeout: true,
+            }]);
+          } else {
+            setQuizRecords(prev => [...prev, {
+              german: quizWord!.german,
+              chinese: quizWord!.chinese,
+              selected: null,
+              isCorrect: false,
+              isTimeout: true,
+              gender: quizWord!.gender
+            }]);
+          }
           return 0;
         }
         // 最后3秒播放滴滴声
@@ -717,6 +866,42 @@ export default function GermanLearning() {
 
   // 生成随机题目（不重复）- 支持 AI 出题
   const generateQuiz = async () => {
+    console.log("generateQuiz called, quizType:", quizType, "useAiQuiz:", useAiQuiz);
+
+    // AI 出题模式（句子填空题型）
+    if (useAiQuiz && quizType === "sentence") {
+      console.log("进入句子填空题型处理");
+      const sq = await generateSentenceQuiz();
+      console.log("generateSentenceQuiz 返回:", sq);
+
+      if (!sq) {
+        console.log("sq 为 null，返回");
+        return;
+      }
+
+      // 打乱选项顺序
+      const shuffledOptions = [...sq.options].sort(() => Math.random() - 0.5);
+
+      const newSentenceQuiz = {
+        sentence: sq.sentence,
+        missingWord: sq.missingWord,
+        options: shuffledOptions,
+        chinese: sq.chinese,
+      };
+      console.log("设置 sentenceQuiz:", newSentenceQuiz);
+
+      setSentenceQuiz(newSentenceQuiz);
+      // 记录已使用的句子
+      setUsedSentenceSentences(prev => [...prev, sq.sentence]);
+      setQuizOptions([]); // 句子题型不使用标准选项
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+      return;
+    }
+
     // AI 出题模式（仅拼写纠错题型支持）
     if (useAiQuiz && quizType === "spelling") {
       // 调用 AI 生成题目
@@ -888,6 +1073,7 @@ export default function GermanLearning() {
     setQuizTimeout(false);
     setQuizRecords([]); // 清空答题记录
     setUsedWordIndices([]); // 清空已出题目记录
+    setUsedSentenceSentences([]); // 清空已使用句子记录
     setUserInput(""); // 重置用户输入
     await generateQuiz();
   };
@@ -898,6 +1084,36 @@ export default function GermanLearning() {
 
     setSelectedOption(index);
 
+    // 句子填空题型
+    if (quizType === "sentence") {
+      const selectedOptionValue = sentenceQuiz?.options[index] || "";
+      const isCorrect = selectedOptionValue === sentenceQuiz?.missingWord;
+
+      if (isCorrect) {
+        setQuizResult("correct");
+        playSound("correct");
+        setQuizRecords(prev => [...prev, {
+          german: sentenceQuiz?.missingWord || "",
+          chinese: sentenceQuiz?.chinese || "",
+          selected: selectedOptionValue,
+          isCorrect: true,
+          isTimeout: false,
+        }]);
+      } else {
+        setQuizResult("wrong");
+        playSound("wrong");
+        setQuizRecords(prev => [...prev, {
+          german: sentenceQuiz?.missingWord || "",
+          chinese: sentenceQuiz?.chinese || "",
+          selected: selectedOptionValue,
+          isCorrect: false,
+          isTimeout: false,
+        }]);
+      }
+      return;
+    }
+
+    // 其他题型
     // 德中匹配和拼写纠错题型选择显示的是德语
     const selectedValue = quizType === "german" || quizType === "spelling"
       ? quizOptions[index].word.german
@@ -1013,19 +1229,31 @@ export default function GermanLearning() {
 
   // 添加到错题本
   const addToWrongBook = () => {
-    if (!quizWord) return;
-
-    const newQuestion: WrongQuestion = {
-      german: quizWord.german,
-      chinese: quizWord.chinese,
-      gender: quizWord.gender,
-      addedAt: Date.now(),
-    };
-
-    // 检查是否已存在
-    const exists = wrongBook.some(q => q.german === quizWord.german);
-    if (!exists) {
-      setWrongBook(prev => [...prev, newQuestion]);
+    if (quizType === "sentence") {
+      // 句子填空题型
+      if (!sentenceQuiz) return;
+      const newQuestion: WrongQuestion = {
+        german: `句子: ${sentenceQuiz.sentence}`,
+        chinese: sentenceQuiz.chinese,
+        addedAt: Date.now(),
+      };
+      const exists = wrongBook.some(q => q.german === newQuestion.german);
+      if (!exists) {
+        setWrongBook(prev => [...prev, newQuestion]);
+      }
+    } else {
+      // 其他题型
+      if (!quizWord) return;
+      const newQuestion: WrongQuestion = {
+        german: quizWord.german,
+        chinese: quizWord.chinese,
+        gender: quizWord.gender,
+        addedAt: Date.now(),
+      };
+      const exists = wrongBook.some(q => q.german === quizWord.german);
+      if (!exists) {
+        setWrongBook(prev => [...prev, newQuestion]);
+      }
     }
   };
 
@@ -1366,6 +1594,19 @@ export default function GermanLearning() {
                     }`}
                   >
                     动词匹配
+                  </button>
+                  <button
+                    onClick={() => setQuizType("sentence")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "sentence"
+                        ? "bg-indigo-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-indigo-50"
+                    }`}
+                  >
+                    📝 句子填空
+                    {useAiQuiz && quizType === "sentence" && (
+                      <span className="ml-1 text-xs">🤖</span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -1720,6 +1961,36 @@ export default function GermanLearning() {
                 <div className="text-4xl mb-4 animate-bounce">🤖</div>
                 <p className="text-gray-600">AI 正在生成题目...</p>
               </div>
+            ) : quizType === "sentence" ? (
+              // 句子填空题型
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                {/* 句子填空内容 */}
+                <div className="text-center mb-6">
+                  {sentenceQuiz ? (
+                    <p className="text-3xl font-bold text-gray-800 leading-relaxed">
+                      {sentenceQuiz.sentence}
+                    </p>
+                  ) : (
+                    <p className="text-gray-400">句子数据加载中...</p>
+                  )}
+                </div>
+
+                {/* 选项列表 */}
+                {sentenceQuiz && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {sentenceQuiz.options.map((option, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleOptionSelect(idx)}
+                        disabled={selectedOption !== null || quizTimeout}
+                        className="p-4 rounded-xl text-xl font-medium transition border-2 bg-white border-gray-300 text-gray-700 hover:bg-teal-50 hover:border-teal-400 hover:text-teal-700"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : quizWord ? (
               // 左侧：题目和选项
               <>
@@ -1882,6 +2153,8 @@ export default function GermanLearning() {
                     <p className="text-gray-600 mb-4">
                       {quizType === "spelling" || quizType === "input" || quizType === "verb" ? (
                         <>正确：<strong>{quizWord?.german}</strong></>
+                      ) : quizType === "sentence" ? (
+                        <>正确：<strong>{sentenceQuiz?.missingWord}</strong></>
                       ) : (
                         <>正确：{quizType === "german"
                           ? quizOptions.find(o => o.isCorrect)?.word.german
