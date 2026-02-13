@@ -266,6 +266,54 @@ const words: Word[] = [
   { german: "Neun", chinese: "九", pronunciation: "诺因", category: "number" },
   { german: "Zehn", chinese: "十", pronunciation: "茨恩", category: "number" },
 
+  // 11-20
+  { german: "Elf", chinese: "十一", pronunciation: "埃尔夫", category: "number" },
+  { german: "Zwölf", chinese: "十二", pronunciation: "茨沃尔夫", category: "number" },
+  { german: "Dreizehn", chinese: "十三", pronunciation: "德赖茨恩", category: "number" },
+  { german: "Vierzehn", chinese: "十四", pronunciation: "菲尔茨恩", category: "number" },
+  { german: "Fünfzehn", chinese: "十五", pronunciation: "芬夫茨恩", category: "number" },
+  { german: "Sechzehn", chinese: "十六", pronunciation: "泽希茨恩", category: "number" },
+  { german: "Siebzehn", chinese: "十七", pronunciation: "西普茨恩", category: "number" },
+  { german: "Achtzehn", chinese: "十八", pronunciation: "阿希茨恩", category: "number" },
+  { german: "Neunzehn", chinese: "十九", pronunciation: "诺因茨恩", category: "number" },
+  { german: "Zwanzig", chinese: "二十", pronunciation: "茨万齐希", category: "number" },
+
+  // 21-31
+  { german: "Einundzwanzig", chinese: "二十一", pronunciation: "艾因翁特茨万齐希", category: "number" },
+  { german: "Dreißig", chinese: "三十", pronunciation: "德赖西希", category: "number" },
+
+  // 日期时间
+  { german: "heute", chinese: "今天", pronunciation: "霍伊特", category: "date" },
+  { german: "morgen", chinese: "明天", pronunciation: "莫根", category: "date" },
+  { german: "gestern", chinese: "昨天", pronunciation: "格斯特恩", category: "date" },
+  { german: "jetzt", chinese: "现在", pronunciation: "耶斯特", category: "date" },
+  { german: "heute Abend", chinese: "今晚", pronunciation: "霍伊特 阿本特", category: "date" },
+  { german: "morgen früh", chinese: "明天早上", pronunciation: "莫根 弗吕", category: "date" },
+  { german: "am Wochenende", chinese: "在周末", pronunciation: "阿姆 沃肯恩德", category: "date" },
+
+  // 星期
+  { german: "Montag", chinese: "星期一", pronunciation: "蒙塔克", category: "week" },
+  { german: "Dienstag", chinese: "星期二", pronunciation: "丁斯塔克", category: "week" },
+  { german: "Mittwoch", chinese: "星期三", pronunciation: "米特沃克", category: "week" },
+  { german: "Donnerstag", chinese: "星期四", pronunciation: "多讷斯塔克", category: "week" },
+  { german: "Freitag", chinese: "星期五", pronunciation: "弗赖塔克", category: "week" },
+  { german: "Samstag", chinese: "星期六", pronunciation: "扎姆斯塔克", category: "week" },
+  { german: "Sonntag", chinese: "星期日", pronunciation: "宗塔克", category: "week" },
+
+  // 月份
+  { german: "Januar", chinese: "一月", pronunciation: "亚努阿", category: "month" },
+  { german: "Februar", chinese: "二月", pronunciation: "费布鲁阿", category: "month" },
+  { german: "März", chinese: "三月", pronunciation: "梅尔茨", category: "month" },
+  { german: "April", chinese: "四月", pronunciation: "阿普里尔", category: "month" },
+  { german: "Mai", chinese: "五月", pronunciation: "迈", category: "month" },
+  { german: "Juni", chinese: "六月", pronunciation: "尤尼", category: "month" },
+  { german: "Juli", chinese: "七月", pronunciation: "尤利", category: "month" },
+  { german: "August", chinese: "八月", pronunciation: "奥古斯特", category: "month" },
+  { german: "September", chinese: "九月", pronunciation: "zeptember", category: "month" },
+  { german: "Oktober", chinese: "十月", pronunciation: "奥克托伯", category: "month" },
+  { german: "November", chinese: "十一月", pronunciation: "诺韦姆伯", category: "month" },
+  { german: "Dezember", chinese: "十二月", pronunciation: "德策姆伯", category: "month" },
+
   // 颜色
   { german: "Rot", chinese: "红色", pronunciation: "罗特", category: "color" },
   { german: "Blau", chinese: "蓝色", pronunciation: "布劳", category: "color" },
@@ -411,6 +459,9 @@ const categories = [
   { id: "all", name: "全部" },
   { id: "greeting", name: "问候语" },
   { id: "number", name: "数字" },
+  { id: "date", name: "日期时间" },
+  { id: "week", name: "星期" },
+  { id: "month", name: "月份" },
   { id: "color", name: "颜色" },
   { id: "family", name: "家庭" },
   { id: "verb", name: "动词" },
@@ -723,23 +774,36 @@ export default function GermanLearning() {
               {
                 role: "system",
                 content: `你是一个德语学习助手。请生成一个德语句子填空题目，基于以下词汇表生成简单句子。
-返回 JSON 对象，包含：
+
+生成规则（必须严格遵守）：
+1. 随机选择以下元素组合成句子：
+   - 主语（ich / du / er / sie / wir）
+   - 时间状语（heute / morgen / jetzt / am Abend / um 7 Uhr）
+   - 地点状语（zu Hause / im Büro / in der Schule / in der Stadt）
+   - 句型类型（陈述句 / 疑问句 / 否定句）
+
+2. 句型模板（随机选择一种）：
+   - 陈述句：___ + 动词 + 主语/时间/地点
+   - 疑问句：动词 + 主语 + ___ + 时间/地点？
+   - 否定句：___ + 动词 + nicht + 主语 + 时间/地点
+
+3. 如果生成的句型结构与之前相似，必须强制改写为完全不同的句型
+
+返回 JSON 对象：
 - sentence: 带空格的完整句子，使用 "___" 表示需要填写的单词位置
-- missingWord: 正确答案（德语单词）
-- options: 4个选项，包含正确答案和3个干扰项（从词汇表中随机选择）
+- missingWord: 正确答案（德语单词，从词汇表中选择）
+- options: 4个选项，包含正确答案和3个干扰项（从词汇表中随机选择不同词性的词）
 - chinese: 句子的中文翻译
 
 要求：
 1. 句子要简单，适合初学者
-2. 使用词汇表中的词汇
-3. 只有一个空格
-4. 句型要多样化：可以生成陈述句、否定句、疑问句、使用不同的时间或地点状语等
-5. 不要生成与以下句型相同的句子：Ich ___ Brot. / Ich ___ Wasser. / Er ___ nach Hause.
-6. 返回纯 JSON，不要 markdown 代码块`
+2. 动词放在第二位（德语句子基本语序）
+3. 每个句子必须包含主语、时间状语、地点状语中的至少两种成分
+4. 返回纯 JSON，不要 markdown 代码块`
               },
               {
                 role: "user",
-                content: `基于以下词汇生成 1 个不同的句子填空题目，句型要多样化：\n${wordTexts.slice(0, 500)}`
+                content: `基于以下词汇生成 1 个多样化句型的句子填空题目（必须包含主语、时间状语、地点状语中的至少两种）：\n${wordTexts.slice(0, 500)}`
               }
             ],
             temperature: 1.0, // 提高温度，增加随机性
