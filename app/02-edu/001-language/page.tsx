@@ -571,7 +571,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "weekListening">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -610,8 +610,8 @@ export default function GermanLearning() {
   // 是否显示句子中文翻译
   const [showSentenceChinese, setShowSentenceChinese] = useState(false);
 
-  // 星期听力练习数据
-  const [weekListeningTarget, setWeekListeningTarget] = useState<Word | null>(null);
+  // 听力练习数据（通用）
+  const [listeningTarget, setListeningTarget] = useState<Word | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   // 从 localStorage 加载 API Key 和错题本
@@ -962,34 +962,33 @@ export default function GermanLearning() {
   const generateQuiz = async () => {
     console.log("generateQuiz called, quizType:", quizType, "useAiQuiz:", useAiQuiz);
 
-    // 星期听力练习题型
-    if (quizType === "weekListening") {
-      // 只从星期词汇中出题
-      const weekWords = filteredWords.filter(w => w.category === "week");
-      if (weekWords.length < 2) {
-        alert("星期词汇不足，无法进行听力练习");
+    // 听力练习题型（所有词汇）
+    if (quizType === "listening") {
+      const currentFilteredWords = filteredWords;
+      if (currentFilteredWords.length < 2) {
+        alert("词汇不足，无法进行听力练习");
         return;
       }
 
       // 获取未出过的题目索引
-      const availableIndices = weekWords
+      const availableIndices = currentFilteredWords
         .map((_, idx) => idx)
         .filter(idx => !usedWordIndices.includes(idx));
 
       if (availableIndices.length === 0) {
-        alert("所有星期词汇都已练习过了！");
+        alert("所有词汇都已练习过了！");
         return;
       }
 
       // 随机选择一个
       const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-      const targetWord = weekWords[randomIndex];
+      const targetWord = currentFilteredWords[randomIndex];
 
       // 记录已使用的索引
       setUsedWordIndices(prev => [...prev, randomIndex]);
 
-      setWeekListeningTarget(targetWord);
-      setQuizOptions([]); // 听力题型不使用标准选项
+      setListeningTarget(targetWord);
+      setQuizOptions([]);
       setSelectedOption(null);
       setQuizResult(null);
       setQuizTimeout(false);
@@ -1425,6 +1424,7 @@ export default function GermanLearning() {
              quizType === "spelling" ? "找出拼写错误的单词" :
              quizType === "input" ? "看中文输入德语" :
              quizType === "verb" ? "看中文选动词" :
+             quizType === "listening" ? "听力练习" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -1746,14 +1746,14 @@ export default function GermanLearning() {
                     )}
                   </button>
                   <button
-                    onClick={() => setQuizType("weekListening")}
+                    onClick={() => setQuizType("listening")}
                     className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "weekListening"
-                        ? "bg-pink-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-pink-50"
+                      quizType === "listening"
+                        ? "bg-indigo-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-indigo-50"
                     }`}
                   >
-                    🎧 星期听力
+                    🎧 听力练习
                   </button>
                 </div>
               </div>
@@ -2108,18 +2108,18 @@ export default function GermanLearning() {
                 <div className="text-4xl mb-4 animate-bounce">🤖</div>
                 <p className="text-gray-600">AI 正在生成题目...</p>
               </div>
-            ) : quizType === "weekListening" ? (
-              // 星期听力练习题型
+            ) : quizType === "listening" ? (
+              // 听力练习题型（通用）
               <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
                 <div className="text-center mb-6">
-                  <span className="text-sm text-gray-400 mb-2 block">听发音，选择正确的星期</span>
+                  <span className="text-sm text-gray-400 mb-2 block">听发音，选择正确的中文含义</span>
 
                   {/* 播放按钮 */}
                   <button
                     onClick={() => {
-                      if (weekListeningTarget) {
+                      if (listeningTarget) {
                         setIsPlayingAudio(true);
-                        speak(weekListeningTarget.german);
+                        speak(listeningTarget.german);
                         setTimeout(() => setIsPlayingAudio(false), 1500);
                       }
                     }}
@@ -2139,62 +2139,60 @@ export default function GermanLearning() {
 
                 {/* 选项列表 */}
                 <div className="grid grid-cols-2 gap-3">
-                  {filteredWords
-                    .filter(w => w.category === "week")
-                    .map((word, idx) => {
-                      const isSelected = selectedOption === idx;
-                      const isCorrect = weekListeningTarget?.german === word.german;
-                      const showResult = selectedOption !== null || quizTimeout;
+                  {filteredWords.map((word, idx) => {
+                    const isSelected = selectedOption === idx;
+                    const isCorrect = listeningTarget?.german === word.german;
+                    const showResult = selectedOption !== null || quizTimeout;
 
-                      let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
-                      if (showResult) {
-                        if (isCorrect) {
-                          buttonClass += "bg-green-100 border-green-500 text-green-800";
-                        } else if (isSelected && !isCorrect) {
-                          buttonClass += "bg-red-100 border-red-500 text-red-800";
-                        } else {
-                          buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
-                        }
+                    let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
+                    if (showResult) {
+                      if (isCorrect) {
+                        buttonClass += "bg-green-100 border-green-500 text-green-800";
+                      } else if (isSelected && !isCorrect) {
+                        buttonClass += "bg-red-100 border-red-500 text-red-800";
                       } else {
-                        buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-teal-50 hover:border-teal-400 hover:text-teal-700";
+                        buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
                       }
+                    } else {
+                      buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-teal-50 hover:border-teal-400 hover:text-teal-700";
+                    }
 
-                      return (
-                        <button
-                          key={word.german}
-                          onClick={() => {
-                            setSelectedOption(idx);
-                            if (word.german === weekListeningTarget?.german) {
-                              setQuizResult("correct");
-                              playSound("correct");
-                              setQuizRecords(prev => [...prev, {
-                                german: weekListeningTarget!.german,
-                                chinese: weekListeningTarget!.chinese,
-                                selected: word.german,
-                                isCorrect: true,
-                                isTimeout: false,
-                                gender: weekListeningTarget!.gender
-                              }]);
-                            } else {
-                              setQuizResult("wrong");
-                              playSound("wrong");
-                              setQuizRecords(prev => [...prev, {
-                                german: weekListeningTarget!.german,
-                                chinese: weekListeningTarget!.chinese,
-                                selected: word.german,
-                                isCorrect: false,
-                                isTimeout: false,
-                                gender: weekListeningTarget!.gender
-                              }]);
-                            }
-                          }}
-                          disabled={showResult}
-                          className={buttonClass}
-                        >
-                          {word.chinese}
-                        </button>
-                      );
-                    })}
+                    return (
+                      <button
+                        key={word.german}
+                        onClick={() => {
+                          setSelectedOption(idx);
+                          if (word.german === listeningTarget?.german) {
+                            setQuizResult("correct");
+                            playSound("correct");
+                            setQuizRecords(prev => [...prev, {
+                              german: listeningTarget!.german,
+                              chinese: listeningTarget!.chinese,
+                              selected: word.german,
+                              isCorrect: true,
+                              isTimeout: false,
+                              gender: listeningTarget!.gender
+                            }]);
+                          } else {
+                            setQuizResult("wrong");
+                            playSound("wrong");
+                            setQuizRecords(prev => [...prev, {
+                              german: listeningTarget!.german,
+                              chinese: listeningTarget!.chinese,
+                              selected: word.german,
+                              isCorrect: false,
+                              isTimeout: false,
+                              gender: listeningTarget!.gender
+                            }]);
+                          }
+                        }}
+                        disabled={showResult}
+                        className={buttonClass}
+                      >
+                        {word.chinese}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ) : quizType === "sentence" ? (
