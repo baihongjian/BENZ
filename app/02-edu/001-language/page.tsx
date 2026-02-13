@@ -533,6 +533,9 @@ export default function GermanLearning() {
   // 记录已使用过的句子（用于去重）
   const [usedSentenceSentences, setUsedSentenceSentences] = useState<string[]>([]);
 
+  // 是否显示句子中文翻译
+  const [showSentenceChinese, setShowSentenceChinese] = useState(false);
+
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1964,12 +1967,31 @@ export default function GermanLearning() {
             ) : quizType === "sentence" ? (
               // 句子填空题型
               <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                {/* 显示/隐藏中文翻译按钮 */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowSentenceChinese(!showSentenceChinese)}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      showSentenceChinese
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    }`}
+                  >
+                    {showSentenceChinese ? "🙈 隐藏中文" : "👁️ 显示中文"}
+                  </button>
+                </div>
+
                 {/* 句子填空内容 */}
                 <div className="text-center mb-6">
                   {sentenceQuiz ? (
-                    <p className="text-3xl font-bold text-gray-800 leading-relaxed">
-                      {sentenceQuiz.sentence}
-                    </p>
+                    <>
+                      <p className="text-3xl font-bold text-gray-800 leading-relaxed">
+                        {sentenceQuiz.sentence}
+                      </p>
+                      {showSentenceChinese && (
+                        <p className="text-lg text-gray-500 mt-3">{sentenceQuiz.chinese}</p>
+                      )}
+                    </>
                   ) : (
                     <p className="text-gray-400">句子数据加载中...</p>
                   )}
@@ -2154,7 +2176,10 @@ export default function GermanLearning() {
                       {quizType === "spelling" || quizType === "input" || quizType === "verb" ? (
                         <>正确：<strong>{quizWord?.german}</strong></>
                       ) : quizType === "sentence" ? (
-                        <>正确：<strong>{sentenceQuiz?.missingWord}</strong></>
+                        <>
+                          <p>正确：<strong>{sentenceQuiz?.missingWord}</strong></p>
+                          <p className="text-sm text-gray-400 mt-1">{sentenceQuiz?.chinese}</p>
+                        </>
                       ) : (
                         <>正确：{quizType === "german"
                           ? quizOptions.find(o => o.isCorrect)?.word.german
