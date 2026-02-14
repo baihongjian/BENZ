@@ -980,15 +980,30 @@ export default function GermanLearning() {
         return;
       }
 
-      // 随机选择一个
+      // 随机选择一个正确答案
       const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
       const targetWord = currentFilteredWords[randomIndex];
+
+      // 生成错误选项（基于难度）
+      const otherWords = currentFilteredWords.filter((_, idx) =>
+        !usedWordIndices.includes(idx) && idx !== randomIndex
+      );
+      const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
+      const wrongCount = Math.min(quizDifficulty - 1, otherWords.length);
+      const wrongWords = shuffledOthers.slice(0, wrongCount);
+
+      // 组合选项并打乱
+      const options = [
+        { word: targetWord, isCorrect: true },
+        ...wrongWords.map(w => ({ word: w, isCorrect: false })),
+      ];
+      options.sort(() => Math.random() - 0.5);
 
       // 记录已使用的索引
       setUsedWordIndices(prev => [...prev, randomIndex]);
 
       setListeningTarget(targetWord);
-      setQuizOptions([]);
+      setQuizOptions(options);
       setSelectedOption(null);
       setQuizResult(null);
       setQuizTimeout(false);
@@ -1677,7 +1692,7 @@ export default function GermanLearning() {
                         : "bg-gray-100 text-gray-700 hover:bg-blue-50"
                     }`}
                   >
-                    中德匹配
+                    🔤 中德匹配
                   </button>
                   <button
                     onClick={() => setQuizType("german")}
@@ -1687,7 +1702,7 @@ export default function GermanLearning() {
                         : "bg-gray-100 text-gray-700 hover:bg-green-50"
                     }`}
                   >
-                    德中匹配
+                    🔤 德中匹配
                   </button>
                   <button
                     onClick={() => setQuizType("spelling")}
@@ -1697,7 +1712,7 @@ export default function GermanLearning() {
                         : "bg-gray-100 text-gray-700 hover:bg-orange-50"
                     }`}
                   >
-                    拼写纠错
+                    ✏️ 拼写纠错
                     {useAiQuiz && quizType === "spelling" && (
                       <span className="ml-1 text-xs">🤖</span>
                     )}
@@ -1710,7 +1725,7 @@ export default function GermanLearning() {
                         : "bg-gray-100 text-gray-700 hover:bg-purple-50"
                     }`}
                   >
-                    词性匹配
+                    📖 词性匹配
                   </button>
                   <button
                     onClick={() => setQuizType("input")}
@@ -1720,7 +1735,7 @@ export default function GermanLearning() {
                         : "bg-gray-100 text-gray-700 hover:bg-teal-50"
                     }`}
                   >
-                    中文听写
+                    ⌨️ 中文听写
                   </button>
                   <button
                     onClick={() => setQuizType("verb")}
@@ -1730,7 +1745,7 @@ export default function GermanLearning() {
                         : "bg-gray-100 text-gray-700 hover:bg-cyan-50"
                     }`}
                   >
-                    动词匹配
+                    🏃 动词匹配
                   </button>
                   <button
                     onClick={() => setQuizType("sentence")}
@@ -1749,8 +1764,8 @@ export default function GermanLearning() {
                     onClick={() => setQuizType("listening")}
                     className={`px-4 py-2 rounded-full font-medium transition ${
                       quizType === "listening"
-                        ? "bg-indigo-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-50"
+                        ? "bg-pink-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-pink-50"
                     }`}
                   >
                     🎧 听力练习
@@ -2139,9 +2154,9 @@ export default function GermanLearning() {
 
                 {/* 选项列表 */}
                 <div className="grid grid-cols-2 gap-3">
-                  {filteredWords.map((word, idx) => {
+                  {quizOptions.map((option, idx) => {
                     const isSelected = selectedOption === idx;
-                    const isCorrect = listeningTarget?.german === word.german;
+                    const isCorrect = option.isCorrect;
                     const showResult = selectedOption !== null || quizTimeout;
 
                     let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
@@ -2159,16 +2174,16 @@ export default function GermanLearning() {
 
                     return (
                       <button
-                        key={word.german}
+                        key={option.word.german}
                         onClick={() => {
                           setSelectedOption(idx);
-                          if (word.german === listeningTarget?.german) {
+                          if (option.isCorrect) {
                             setQuizResult("correct");
                             playSound("correct");
                             setQuizRecords(prev => [...prev, {
                               german: listeningTarget!.german,
                               chinese: listeningTarget!.chinese,
-                              selected: word.german,
+                              selected: option.word.german,
                               isCorrect: true,
                               isTimeout: false,
                               gender: listeningTarget!.gender
@@ -2179,7 +2194,7 @@ export default function GermanLearning() {
                             setQuizRecords(prev => [...prev, {
                               german: listeningTarget!.german,
                               chinese: listeningTarget!.chinese,
-                              selected: word.german,
+                              selected: option.word.german,
                               isCorrect: false,
                               isTimeout: false,
                               gender: listeningTarget!.gender
@@ -2189,7 +2204,7 @@ export default function GermanLearning() {
                         disabled={showResult}
                         className={buttonClass}
                       >
-                        {word.chinese}
+                        {option.word.chinese}
                       </button>
                     );
                   })}
