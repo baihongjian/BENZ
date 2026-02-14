@@ -610,6 +610,9 @@ export default function GermanLearning() {
   // 是否显示句子中文翻译
   const [showSentenceChinese, setShowSentenceChinese] = useState(false);
 
+  // 是否显示听力句子内容
+  const [showListeningSentence, setShowListeningSentence] = useState(false);
+
   // 听力练习数据（通用）
   const [listeningTarget, setListeningTarget] = useState<Word | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -2304,15 +2307,31 @@ export default function GermanLearning() {
                   <span className="text-sm text-gray-400 mb-2 block">听句子，选择正确的星期</span>
                 </div>
 
-                {/* 显示句子 */}
-                <div className="bg-blue-50 rounded-xl p-4 mb-6">
-                  <p className="text-xl text-gray-800 text-center">
-                    {listeningArticleData?.sentence}
-                  </p>
-                  <p className="text-gray-500 text-center mt-2">
-                    {listeningArticleData?.chinese}
-                  </p>
+                {/* 显示/隐藏句子按钮 */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowListeningSentence(!showListeningSentence)}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      showListeningSentence
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    }`}
+                  >
+                    {showListeningSentence ? "🙈 隐藏句子" : "👁️ 显示句子"}
+                  </button>
                 </div>
+
+                {/* 显示句子 */}
+                {showListeningSentence && (
+                  <div className="bg-blue-50 rounded-xl p-4 mb-6">
+                    <p className="text-xl text-gray-800 text-center">
+                      {listeningArticleData?.sentence}
+                    </p>
+                    <p className="text-gray-500 text-center mt-2">
+                      {listeningArticleData?.chinese}
+                    </p>
+                  </div>
+                )}
 
                 {/* 播放句子按钮 */}
                 <div className="text-center mb-6">
