@@ -1043,8 +1043,37 @@ export default function GermanLearning() {
         { german: "Sonntag", chinese: "星期日" },
       ];
 
-      // 句子模板
-      const sentenceTemplates = [
+      // 月份词汇
+      const months = [
+        { german: "Januar", chinese: "一月" },
+        { german: "Februar", chinese: "二月" },
+        { german: "März", chinese: "三月" },
+        { german: "April", chinese: "四月" },
+        { german: "Mai", chinese: "五月" },
+        { german: "Juni", chinese: "六月" },
+        { german: "Juli", chinese: "七月" },
+        { german: "August", chinese: "八月" },
+        { german: "September", chinese: "九月" },
+        { german: "Oktober", chinese: "十月" },
+        { german: "November", chinese: "十一月" },
+        { german: "Dezember", chinese: "十二月" },
+      ];
+
+      // 根据选择的类别决定是星期还是月份
+      let useMonths: boolean;
+      if (selectedCategory === "month") {
+        useMonths = true;
+      } else if (selectedCategory === "week") {
+        useMonths = false;
+      } else {
+        // 默认或其他类别时随机选择
+        useMonths = Math.random() > 0.5;
+      }
+
+      const wordList = useMonths ? months : weekdays;
+
+      // 句子模板（星期）
+      const weekdayTemplates = [
         { template: "Ich lerne Deutsch am ______.", chinese: "我每周_____学习德语。" },
         { template: "Ich gehe am ______ zur Arbeit.", chinese: "我每周_____去上班。" },
         { template: "Ich gehe am ______ ins Fitnessstudio.", chinese: "我每周_____去健身房。" },
@@ -1052,26 +1081,37 @@ export default function GermanLearning() {
         { template: "Ich ruhe mich am ______ aus.", chinese: "我每周_____休息。" },
       ];
 
+      // 句子模板（月份）
+      const monthTemplates = [
+        { template: "Im ______ bin ich in Urlaub.", chinese: "_____我在度假。" },
+        { template: "Im ______ feiere ich meinen Geburtstag.", chinese: "_____我庆祝我的生日。" },
+        { template: "Im ______ beginnt das neue Schuljahr.", chinese: "_____新学年开始了。" },
+        { template: "Im ______ ist es sehr kalt.", chinese: "_____天气很冷。" },
+        { template: "Im ______ ist es sehr warm.", chinese: "_____天气很热。" },
+      ];
+
+      const sentenceTemplates = useMonths ? monthTemplates : weekdayTemplates;
+
       // 随机选择一个句子模板
       const shuffledTemplates = [...sentenceTemplates].sort(() => Math.random() - 0.5);
       const selectedTemplate = shuffledTemplates[0];
 
-      // 随机选择一个星期
-      const shuffledWeekdays = [...weekdays].sort(() => Math.random() - 0.5);
-      const selectedWeekday = shuffledWeekdays[0];
+      // 随机选择一个词
+      const shuffledWords = [...wordList].sort(() => Math.random() - 0.5);
+      const selectedWord = shuffledWords[0];
 
       // 填充句子
-      const filledSentence = selectedTemplate.template.replace("______", selectedWeekday.german);
+      const filledSentence = selectedTemplate.template.replace("______", selectedWord.german);
 
       // 生成错误选项
-      const otherWeekdays = weekdays.filter(w => w.german !== selectedWeekday.german);
-      const shuffledWrong = [...otherWeekdays].sort(() => Math.random() - 0.5);
-      const wrongCount = Math.min(quizDifficulty - 1, otherWeekdays.length);
+      const otherWords = wordList.filter(w => w.german !== selectedWord.german);
+      const shuffledWrong = [...otherWords].sort(() => Math.random() - 0.5);
+      const wrongCount = Math.min(quizDifficulty - 1, otherWords.length);
       const wrongOptions = shuffledWrong.slice(0, wrongCount);
 
       // 组合选项并打乱
       const options = [
-        { word: { german: selectedWeekday.german, chinese: selectedWeekday.chinese } as Word, isCorrect: true },
+        { word: { german: selectedWord.german, chinese: selectedWord.chinese } as Word, isCorrect: true },
         ...wrongOptions.map(w => ({ word: { german: w.german, chinese: w.chinese } as Word, isCorrect: false })),
       ];
       options.sort(() => Math.random() - 0.5);
@@ -1079,7 +1119,7 @@ export default function GermanLearning() {
       setListeningArticleData({
         sentence: filledSentence,
         chinese: selectedTemplate.chinese,
-        weekday: selectedWeekday.german,
+        weekday: selectedWord.german,
         sentenceTemplate: selectedTemplate.template,
       });
       setQuizOptions(options);
@@ -1848,7 +1888,7 @@ export default function GermanLearning() {
                         : "bg-gray-100 text-gray-700 hover:bg-pink-50"
                     }`}
                   >
-                    🎧 听力练习
+                    🎧 单词听力练习
                   </button>
                   <button
                     onClick={() => setQuizType("listeningArticle")}
