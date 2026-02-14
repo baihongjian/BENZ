@@ -571,7 +571,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -623,6 +623,16 @@ export default function GermanLearning() {
     chinese: string;
     weekday: string;
     sentenceTemplate: string;
+  } | null>(null);
+
+  // 星期逻辑推理题型数据
+  const [weekdayLogicData, setWeekdayLogicData] = useState<{
+    question: string;
+    questionChinese: string;
+    answer: string;
+    answerChinese: string;
+    relation: string; // yesterday, today, tomorrow
+    baseWeekday: string;
   } | null>(null);
 
   // 从 localStorage 加载 API Key 和错题本
@@ -1138,6 +1148,84 @@ export default function GermanLearning() {
       return;
     }
 
+    // 星期逻辑推理题型
+    if (quizType === "weekdayLogic") {
+      // 星期词汇表
+      const weekdays = [
+        { german: "Montag", chinese: "星期一", index: 0 },
+        { german: "Dienstag", chinese: "星期二", index: 1 },
+        { german: "Mittwoch", chinese: "星期三", index: 2 },
+        { german: "Donnerstag", chinese: "星期四", index: 3 },
+        { german: "Freitag", chinese: "星期五", index: 4 },
+        { german: "Samstag", chinese: "星期六", index: 5 },
+        { german: "Sonntag", chinese: "星期日", index: 6 },
+      ];
+
+      // 随机选择一个基础星期
+      const shuffledWeekdays = [...weekdays].sort(() => Math.random() - 0.5);
+      const baseWeekday = shuffledWeekdays[0];
+
+      // 随机选择关系类型：yesterday 或 tomorrow
+      const relations = ["yesterday", "tomorrow"];
+      const shuffledRelations = [...relations].sort(() => Math.random() - 0.5);
+      const relation = shuffledRelations[0];
+
+      // 计算答案星期
+      let answerIndex: number;
+      let questionText: string;
+      let questionChinese: string;
+
+      if (relation === "yesterday") {
+        // 昨天是 baseWeekday，今天是 baseWeekday + 1
+        answerIndex = (baseWeekday.index + 1) % 7;
+        questionText = `Gestern war ${baseWeekday.german}. Heute ist ?.`;
+        questionChinese = `昨天是${baseWeekday.chinese}，今天是星期几？`;
+      } else {
+        // tomorrow: 明天是 baseWeekday，今天是 baseWeekday - 1 = baseWeekday + 6
+        answerIndex = (baseWeekday.index + 6) % 7;
+        questionText = `Morgen ist ${baseWeekday.german}. Heute ist ?.`;
+        questionChinese = `明天是${baseWeekday.chinese}，今天是星期几？`;
+      }
+
+      const answerWeekday = weekdays[answerIndex];
+
+      // 生成错误选项（排除正确答案）
+      const otherWeekdays = weekdays.filter(w => w.index !== answerIndex);
+      const shuffledWrong = [...otherWeekdays].sort(() => Math.random() - 0.5);
+      const wrongCount = Math.min(quizDifficulty - 1, otherWeekdays.length);
+      const wrongOptions = shuffledWrong.slice(0, wrongCount);
+
+      // 组合选项并打乱
+      const options = [
+        { word: { german: answerWeekday.german, chinese: answerWeekday.chinese } as Word, isCorrect: true },
+        ...wrongOptions.map(w => ({ word: { german: w.german, chinese: w.chinese } as Word, isCorrect: false })),
+      ];
+      options.sort(() => Math.random() - 0.5);
+
+      setWeekdayLogicData({
+        question: questionText,
+        questionChinese: questionChinese,
+        answer: answerWeekday.german,
+        answerChinese: answerWeekday.chinese,
+        relation: relation,
+        baseWeekday: baseWeekday.german,
+      });
+      setQuizOptions(options);
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+
+      // 播放问题
+      setTimeout(() => {
+        setIsPlayingAudio(true);
+        speak(questionText);
+        setTimeout(() => setIsPlayingAudio(false), 2000);
+      }, 300);
+      return;
+    }
+
     // AI 出题模式（句子填空题型）
     if (useAiQuiz && quizType === "sentence") {
       console.log("进入句子填空题型处理");
@@ -1560,6 +1648,7 @@ export default function GermanLearning() {
              quizType === "verb" ? "看中文选动词" :
              quizType === "listening" ? "听力练习" :
              quizType === "listeningArticle" ? "句子听力填空" :
+             quizType === "weekdayLogic" ? "星期逻辑推理" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -1899,6 +1988,16 @@ export default function GermanLearning() {
                     }`}
                   >
                     📝 句子听力
+                  </button>
+                  <button
+                    onClick={() => setQuizType("weekdayLogic")}
+                    className={`px-4 py-2 rounded-full font-medium transition ${
+                      quizType === "weekdayLogic"
+                        ? "bg-violet-500 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-violet-50"
+                    }`}
+                  >
+                    🧠 星期推理
                   </button>
                 </div>
               </div>
@@ -2436,6 +2535,102 @@ export default function GermanLearning() {
                             setQuizRecords(prev => [...prev, {
                               german: listeningArticleData!.sentence,
                               chinese: option.word.chinese,
+                              selected: option.word.german,
+                              isCorrect: false,
+                              isTimeout: false,
+                              gender: undefined
+                            }]);
+                          }
+                        }}
+                        disabled={showResult}
+                        className={buttonClass}
+                      >
+                        {option.word.chinese}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : quizType === "weekdayLogic" ? (
+              // 星期逻辑推理题型
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400 mb-2 block">听问题，推理今天是星期几</span>
+                </div>
+
+                {/* 显示问题 */}
+                <div className="bg-violet-50 rounded-xl p-6 mb-6">
+                  <p className="text-xl text-gray-800 text-center font-medium">
+                    {weekdayLogicData?.question}
+                  </p>
+                  <p className="text-lg text-gray-500 text-center mt-3">
+                    {weekdayLogicData?.questionChinese}
+                  </p>
+                </div>
+
+                {/* 播放问题按钮 */}
+                <div className="text-center mb-6">
+                  <button
+                    onClick={() => {
+                      if (weekdayLogicData?.question) {
+                        setIsPlayingAudio(true);
+                        speak(weekdayLogicData.question);
+                        setTimeout(() => setIsPlayingAudio(false), 2000);
+                      }
+                    }}
+                    disabled={isPlayingAudio}
+                    className={`px-6 py-3 rounded-full transition ${
+                      isPlayingAudio
+                        ? "bg-green-100 text-green-600"
+                        : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    }`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🔊 播放问题"}
+                  </button>
+                </div>
+
+                {/* 选项列表 */}
+                <div className="grid grid-cols-2 gap-3">
+                  {quizOptions.map((option, idx) => {
+                    const isSelected = selectedOption === idx;
+                    const isCorrect = option.isCorrect;
+                    const showResult = selectedOption !== null || quizTimeout;
+
+                    let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
+                    if (showResult) {
+                      if (isCorrect) {
+                        buttonClass += "bg-green-100 border-green-500 text-green-800";
+                      } else if (isSelected && !isCorrect) {
+                        buttonClass += "bg-red-100 border-red-500 text-red-800";
+                      } else {
+                        buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                      }
+                    } else {
+                      buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-teal-50 hover:border-teal-400 hover:text-teal-700";
+                    }
+
+                    return (
+                      <button
+                        key={option.word.german}
+                        onClick={() => {
+                          setSelectedOption(idx);
+                          if (option.isCorrect) {
+                            setQuizResult("correct");
+                            playSound("correct");
+                            setQuizRecords(prev => [...prev, {
+                              german: weekdayLogicData!.question,
+                              chinese: weekdayLogicData!.answerChinese,
+                              selected: option.word.german,
+                              isCorrect: true,
+                              isTimeout: false,
+                              gender: undefined
+                            }]);
+                          } else {
+                            setQuizResult("wrong");
+                            playSound("wrong");
+                            setQuizRecords(prev => [...prev, {
+                              german: weekdayLogicData!.question,
+                              chinese: weekdayLogicData!.answerChinese,
                               selected: option.word.german,
                               isCorrect: false,
                               isTimeout: false,
