@@ -2662,7 +2662,7 @@ export default function GermanLearning() {
                         disabled={showResult}
                         className={buttonClass}
                       >
-                        {option.word.chinese}
+                        {option.word.german}
                       </button>
                     );
                   })}
