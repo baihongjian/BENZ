@@ -2047,58 +2047,129 @@ export default function GermanLearning() {
             </div>
 
             {/* 背景音乐设置 */}
-            <div className="flex flex-wrap justify-center gap-4 py-3 px-4 bg-gray-50 rounded-xl mb-4">
-              <label className="flex items-center gap-3 cursor-pointer">
+            <div className="flex flex-wrap justify-center gap-4 py-2 px-4 bg-gray-50 rounded-lg mb-3">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={bgMusicEnabled}
                   onChange={(e) => setBgMusicEnabled(e.target.checked)}
-                  className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
+                  className="w-4 h-4 rounded text-green-600 focus:ring-green-500"
                 />
-                <span className="font-medium">🎵 背景音乐</span>
-                {bgMusicPlaying && <span className="text-green-600 text-sm">▶ 播放中</span>}
+                <span className="text-sm">🎵 背景音乐</span>
+                {bgMusicPlaying && <span className="text-green-600 text-xs">▶</span>}
               </label>
 
               {/* 音乐风格选择 */}
               {bgMusicEnabled && (
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-1">
                   <button
                     onClick={() => setBgMusicStyle("cheerful")}
-                    className={`px-3 py-1 rounded-full text-sm transition ${
+                    className={`px-2 py-0.5 rounded-full text-xs transition ${
                       bgMusicStyle === "cheerful"
                         ? "bg-yellow-500 text-white"
-                        : "bg-white text-gray-700 hover:bg-yellow-50"
+                        : "bg-white text-gray-600 hover:bg-yellow-50"
                     }`}
                   >
-                    😊 欢快
+                    😊
                   </button>
                   <button
                     onClick={() => setBgMusicStyle("calm")}
-                    className={`px-3 py-1 rounded-full text-sm transition ${
+                    className={`px-2 py-0.5 rounded-full text-xs transition ${
                       bgMusicStyle === "calm"
                         ? "bg-blue-500 text-white"
-                        : "bg-white text-gray-700 hover:bg-blue-50"
+                        : "bg-white text-gray-600 hover:bg-blue-50"
                     }`}
                   >
-                    😌 放松
+                    😌
                   </button>
                   <button
                     onClick={() => setBgMusicStyle("tense")}
-                    className={`px-3 py-1 rounded-full text-sm transition ${
+                    className={`px-2 py-0.5 rounded-full text-xs transition ${
                       bgMusicStyle === "tense"
                         ? "bg-red-500 text-white"
-                        : "bg-white text-gray-700 hover:bg-red-50"
+                        : "bg-white text-gray-600 hover:bg-red-50"
                     }`}
                   >
-                    😰 紧张
+                    😰
                   </button>
                 </div>
               )}
             </div>
 
+            {/* 分类筛选 - 放到卡片内部 */}
+            <div className="flex flex-wrap justify-center gap-1 mb-3">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setSelectedVerbSubcategory(null);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs transition ${
+                    selectedCategory === cat.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-blue-50"
+                  }`}
+                >
+                  {cat.name}
+                  {cat.id !== "all" && (
+                    <span className="ml-0.5 text-xs opacity-70">
+                      ({words.filter(w => w.category === cat.id).length})
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* 动词子分类筛选 */}
+            {selectedCategory === "verb" && (
+              <div className="flex flex-wrap justify-center gap-1 mb-3">
+                <button
+                  onClick={() => {
+                    setSelectedVerbSubcategory(null);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs transition ${
+                    selectedVerbSubcategory === null
+                      ? "bg-cyan-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-cyan-50"
+                  }`}
+                >
+                  全部动词
+                  <span className="ml-0.5 text-xs opacity-70">
+                    ({words.filter(w => w.category === "verb").length})
+                  </span>
+                </button>
+                {verbCategories.map((subcat) => {
+                  const count = words.filter(w => w.category === "verb" && w.verbSubcategory === subcat.id).length;
+                  return (
+                    <button
+                      key={subcat.id}
+                      onClick={() => {
+                        setSelectedVerbSubcategory(subcat.id);
+                        setCurrentIndex(0);
+                        setIsFlipped(false);
+                      }}
+                      className={`px-2 py-1 rounded-lg text-xs transition ${
+                        selectedVerbSubcategory === subcat.id
+                          ? "bg-cyan-600 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-cyan-50"
+                      }`}
+                    >
+                      {subcat.name}
+                      <span className="ml-0.5 text-xs opacity-70">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <button
               onClick={startQuiz}
-              className="px-8 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition text-lg"
+              className="px-6 py-2 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition text-base"
             >
               开始答题 →
             </button>
@@ -2114,43 +2185,45 @@ export default function GermanLearning() {
           </div>
         )}
 
-        {/* 分类筛选 */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setSelectedCategory(cat.id);
-                setSelectedVerbSubcategory(null); // 重置子分类
-                setCurrentIndex(0);
-                setIsFlipped(false);
-              }}
-              className={`px-4 py-2 rounded-full transition ${
-                selectedCategory === cat.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-blue-50"
-              }`}
-            >
-              {cat.name}
-              {cat.id !== "all" && (
-                <span className="ml-1 text-xs opacity-70">
-                  ({words.filter(w => w.category === cat.id).length})
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        {/* 学习模式：分类筛选 */}
+        {mode === "learn" && (
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  setSelectedVerbSubcategory(null);
+                  setCurrentIndex(0);
+                  setIsFlipped(false);
+                }}
+                className={`px-3 py-1.5 rounded-full text-sm transition ${
+                  selectedCategory === cat.id
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-blue-50"
+                }`}
+              >
+                {cat.name}
+                {cat.id !== "all" && (
+                  <span className="ml-1 text-xs opacity-70">
+                    ({words.filter(w => w.category === cat.id).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* 动词子分类筛选 */}
-        {selectedCategory === "verb" && (
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+        {/* 学习模式：动词子分类筛选 */}
+        {mode === "learn" && selectedCategory === "verb" && (
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
             <button
               onClick={() => {
                 setSelectedVerbSubcategory(null);
                 setCurrentIndex(0);
                 setIsFlipped(false);
               }}
-              className={`px-4 py-2 rounded-full transition ${
+              className={`px-3 py-1.5 rounded-full text-sm transition ${
                 selectedVerbSubcategory === null
                   ? "bg-cyan-600 text-white"
                   : "bg-white text-gray-700 border border-gray-300 hover:bg-cyan-50"
@@ -2171,7 +2244,7 @@ export default function GermanLearning() {
                     setCurrentIndex(0);
                     setIsFlipped(false);
                   }}
-                  className={`px-4 py-2 rounded-full transition ${
+                  className={`px-3 py-1.5 rounded-full text-sm transition ${
                     selectedVerbSubcategory === subcat.id
                       ? "bg-cyan-600 text-white"
                       : "bg-white text-gray-700 border border-gray-300 hover:bg-cyan-50"
