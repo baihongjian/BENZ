@@ -571,7 +571,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic" | "phoneNumber">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -650,6 +650,16 @@ export default function GermanLearning() {
 
   // 是否显示月份推理文本
   const [showMonthLogicText, setShowMonthLogicText] = useState(false);
+
+  // 电话号码练习数据
+  const [phoneNumberData, setPhoneNumberData] = useState<{
+    phoneNumber: string;      // 电话号码，如 "0151 2345 6789"
+    germanText: string;       // 德语读法，如 "null eins fünf / zwei drei vier fünf / sechs sieben acht neun"
+    formattedNumber: string;  // 格式化后的号码
+  } | null>(null);
+
+  // 用户输入的电话号码
+  const [phoneNumberInput, setPhoneNumberInput] = useState("");
 
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
@@ -1325,6 +1335,61 @@ export default function GermanLearning() {
       return;
     }
 
+    // 电话号码听力练习题型
+    if (quizType === "phoneNumber") {
+      // 德语数字对照
+      const digitToGerman: Record<string, string> = {
+        '0': 'null',
+        '1': 'eins',
+        '2': 'zwei',
+        '3': 'drei',
+        '4': 'vier',
+        '5': 'fünf',
+        '6': 'sechs',
+        '7': 'sieben',
+        '8': 'acht',
+        '9': 'neun',
+      };
+
+      // 生成随机电话号码
+      // 德国手机号格式: 01X XXX XXXX 或 015X XXX XXXX
+      const prefix = Math.random() > 0.5 ? '015' + Math.floor(Math.random() * 5 + 1) : '016' + Math.floor(Math.random() * 3 + 2);
+      const part2 = String(Math.floor(Math.random() * 899) + 100); // 100-999
+      const part3 = String(Math.floor(Math.random() * 8999) + 1000); // 1000-9999
+      const phoneNumber = `${prefix} ${part2} ${part3}`;
+
+      // 生成德语读法（3-4-4分组）
+      const digits = phoneNumber.replace(/\s/g, '');
+      const groups: string[] = [];
+      for (let i = 0; i < digits.length; i += 4) {
+        groups.push(digits.slice(i, i + 4));
+      }
+      const germanText = groups.map(group =>
+        group.split('').map(d => digitToGerman[d]).join(' ')
+      ).join(' / ');
+
+      setPhoneNumberData({
+        phoneNumber,
+        germanText,
+        formattedNumber: phoneNumber,
+      });
+      setPhoneNumberInput("");
+      setQuizOptions([]);
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+
+      // 播放电话号码
+      setTimeout(() => {
+        setIsPlayingAudio(true);
+        speak(germanText.replace(/\s/g, ' ').replace(/\//g, ','));
+        setTimeout(() => setIsPlayingAudio(false), 3000);
+      }, 300);
+      return;
+    }
+
     // AI 出题模式（句子填空题型）
     if (useAiQuiz && quizType === "sentence") {
       console.log("进入句子填空题型处理");
@@ -1534,6 +1599,8 @@ export default function GermanLearning() {
     setUserInput(""); // 重置用户输入
     setShowListeningSentence(false); // 重置句子听力显示状态
     setShowWeekdayLogicText(false); // 重置星期推理显示状态
+    setPhoneNumberData(null); // 重置电话号码数据
+    setPhoneNumberInput(""); // 重置电话号码输入
     await generateQuiz();
   };
 
@@ -1642,6 +1709,11 @@ export default function GermanLearning() {
 
   // 下一题
   const nextQuiz = async () => {
+    // 重置电话题型状态
+    setPhoneNumberInput("");
+    setQuizResult(null);
+    setSelectedOption(null);
+
     if (currentQuizNumber >= quizCount) {
       // 达到设定的题数，结束答题
       setQuizFinished(true);
@@ -1751,6 +1823,7 @@ export default function GermanLearning() {
              quizType === "listeningArticle" ? "句子听力填空" :
              quizType === "weekdayLogic" ? "星期逻辑推理" :
              quizType === "monthLogic" ? "月份逻辑推理" :
+             quizType === "phoneNumber" ? "电话号码听力" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -2042,6 +2115,36 @@ export default function GermanLearning() {
                   >
                     句子听力
                   </button>
+                  <button
+                    onClick={() => setQuizType("phoneNumber")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "phoneNumber"
+                        ? "bg-teal-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-teal-50"
+                    }`}
+                  >
+                    电话号码
+                  </button>
+                  <button
+                    onClick={() => setQuizType("weekdayLogic")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "weekdayLogic"
+                        ? "bg-violet-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-violet-50"
+                    }`}
+                  >
+                    星期听力推理
+                  </button>
+                  <button
+                    onClick={() => setQuizType("monthLogic")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "monthLogic"
+                        ? "bg-emerald-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-emerald-50"
+                    }`}
+                  >
+                    月份听力推理
+                  </button>
                 </div>
 
                 {/* 词汇基础组 */}
@@ -2126,30 +2229,7 @@ export default function GermanLearning() {
                   </button>
                 </div>
 
-                {/* 逻辑推理组 */}
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-400">🧠</span>
-                  <button
-                    onClick={() => setQuizType("weekdayLogic")}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
-                      quizType === "weekdayLogic"
-                        ? "bg-violet-500 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-violet-50"
-                    }`}
-                  >
-                    星期推理
-                  </button>
-                  <button
-                    onClick={() => setQuizType("monthLogic")}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
-                      quizType === "monthLogic"
-                        ? "bg-emerald-500 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-emerald-50"
-                    }`}
-                  >
-                    月份推理
-                  </button>
-                </div>
+                
               </div>
             </div>
 
@@ -2979,6 +3059,136 @@ export default function GermanLearning() {
                     );
                   })}
                 </div>
+              </div>
+            ) : quizType === "phoneNumber" ? (
+              // 电话号码听力练习题型
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400 mb-2 block">听电话号码，输入数字</span>
+                </div>
+
+                {/* 播放按钮 */}
+                <div className="text-center mb-6">
+                  <button
+                    onClick={() => {
+                      if (phoneNumberData?.germanText) {
+                        setIsPlayingAudio(true);
+                        speak(phoneNumberData.germanText.replace(/\s/g, ' ').replace(/\//g, ','));
+                        setTimeout(() => setIsPlayingAudio(false), 3000);
+                      }
+                    }}
+                    disabled={isPlayingAudio}
+                    className={`px-8 py-4 rounded-full transition ${
+                      isPlayingAudio
+                        ? "bg-green-100 text-green-600"
+                        : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    }`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🎧 播放电话号码"}
+                  </button>
+                </div>
+
+                {/* 数字键盘输入区 */}
+                <div className="mb-6">
+                  <div className="bg-gray-100 rounded-xl p-4 mb-4 text-center min-h-[60px] flex items-center justify-center">
+                    <span className="text-3xl font-mono tracking-widest">
+                      {phoneNumberInput || "请输入电话号码..."}
+                    </span>
+                  </div>
+
+                  {/* 数字键盘 */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(num => (
+                      <button
+                        key={num}
+                        onClick={() => {
+                          if (phoneNumberInput.length < 11) {
+                            setPhoneNumberInput(prev => prev + num);
+                          }
+                        }}
+                        disabled={quizResult !== null}
+                        className="py-4 rounded-xl text-2xl font-bold bg-white border-2 border-gray-200 hover:bg-blue-50 hover:border-blue-300 active:bg-blue-100 transition"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setPhoneNumberInput(prev => prev.slice(0, -1))}
+                      disabled={quizResult !== null || phoneNumberInput.length === 0}
+                      className="py-4 rounded-xl text-lg font-medium bg-red-50 border-2 border-red-200 text-red-600 hover:bg-red-100 active:bg-red-200 transition"
+                    >
+                      ⌫
+                    </button>
+                    <button
+                      onClick={() => setPhoneNumberInput("")}
+                      disabled={quizResult !== null}
+                      className="py-4 rounded-xl text-lg font-medium bg-gray-100 border-2 border-gray-200 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition"
+                    >
+                      清空
+                    </button>
+                    <button
+                      onClick={() => {
+                        // 检查答案
+                        const rawInput = phoneNumberInput.replace(/\s/g, '');
+                        const rawAnswer = phoneNumberData?.phoneNumber.replace(/\s/g, '') || '';
+                        const isCorrect = rawInput === rawAnswer;
+
+                        if (isCorrect) {
+                          setQuizResult("correct");
+                          playSound("correct");
+                          setQuizRecords(prev => [...prev, {
+                            german: phoneNumberData!.germanText,
+                            chinese: phoneNumberData!.phoneNumber,
+                            selected: phoneNumberInput,
+                            isCorrect: true,
+                            isTimeout: false,
+                            gender: undefined
+                          }]);
+                        } else {
+                          setQuizResult("wrong");
+                          playSound("wrong");
+                          setQuizRecords(prev => [...prev, {
+                            german: phoneNumberData!.germanText,
+                            chinese: phoneNumberData!.phoneNumber,
+                            selected: phoneNumberInput,
+                            isCorrect: false,
+                            isTimeout: false,
+                            gender: undefined
+                          }]);
+                        }
+                      }}
+                      disabled={quizResult !== null || phoneNumberInput.length < 11}
+                      className={`py-4 rounded-xl text-lg font-bold transition ${
+                        phoneNumberInput.length >= 11
+                          ? "bg-green-500 text-white hover:bg-green-600"
+                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      ✓ 确认
+                    </button>
+                  </div>
+                </div>
+
+                {/* 显示正确答案（答题后） */}
+                {quizResult !== null && (
+                  <div className="bg-blue-50 rounded-xl p-4 text-center">
+                    <p className="text-gray-600 mb-2">正确答案是：</p>
+                    <p className="text-3xl font-mono font-bold text-blue-600">
+                      {phoneNumberData?.phoneNumber}
+                    </p>
+                    <p className="text-gray-500 mt-2">
+                      德语：{phoneNumberData?.germanText}
+                    </p>
+
+                    {/* 下一题按钮 */}
+                    <button
+                      onClick={nextQuiz}
+                      className="mt-4 w-full py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
+                    >
+                      下一题 →
+                    </button>
+                  </div>
+                )}
               </div>
             ) : quizType === "sentence" ? (
               // 句子填空题型
