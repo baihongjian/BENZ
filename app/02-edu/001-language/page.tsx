@@ -571,7 +571,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -637,6 +637,19 @@ export default function GermanLearning() {
 
   // 是否显示星期推理文本
   const [showWeekdayLogicText, setShowWeekdayLogicText] = useState(false);
+
+  // 月份逻辑推理题型数据
+  const [monthLogicData, setMonthLogicData] = useState<{
+    question: string;
+    questionChinese: string;
+    answer: string;
+    answerChinese: string;
+    relation: string; // previousMonth, nextMonth
+    baseMonth: string;
+  } | null>(null);
+
+  // 是否显示月份推理文本
+  const [showMonthLogicText, setShowMonthLogicText] = useState(false);
 
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
@@ -1229,6 +1242,89 @@ export default function GermanLearning() {
       return;
     }
 
+    // 月份逻辑推理题型
+    if (quizType === "monthLogic") {
+      // 月份词汇表
+      const months = [
+        { german: "Januar", chinese: "一月", index: 0 },
+        { german: "Februar", chinese: "二月", index: 1 },
+        { german: "März", chinese: "三月", index: 2 },
+        { german: "April", chinese: "四月", index: 3 },
+        { german: "Mai", chinese: "五月", index: 4 },
+        { german: "Juni", chinese: "六月", index: 5 },
+        { german: "Juli", chinese: "七月", index: 6 },
+        { german: "August", chinese: "八月", index: 7 },
+        { german: "September", chinese: "九月", index: 8 },
+        { german: "Oktober", chinese: "十月", index: 9 },
+        { german: "November", chinese: "十一月", index: 10 },
+        { german: "Dezember", chinese: "十二月", index: 11 },
+      ];
+
+      // 随机选择一个基础月份
+      const shuffledMonths = [...months].sort(() => Math.random() - 0.5);
+      const baseMonth = shuffledMonths[0];
+
+      // 随机选择关系类型：previousMonth 或 nextMonth
+      const relations = ["previousMonth", "nextMonth"];
+      const shuffledRelations = [...relations].sort(() => Math.random() - 0.5);
+      const relation = shuffledRelations[0];
+
+      // 计算答案月份
+      let answerIndex: number;
+      let questionText: string;
+      let questionChinese: string;
+
+      if (relation === "previousMonth") {
+        // 上个月是 baseMonth，这个月是 baseMonth + 1
+        answerIndex = (baseMonth.index + 1) % 12;
+        questionText = `Letzter Monat war ${baseMonth.german}. Diesen Monat ist ?.`;
+        questionChinese = `上个月是${baseMonth.chinese}，这个月是几月？`;
+      } else {
+        // 下个月是 baseMonth，这个月是 baseMonth - 1
+        answerIndex = (baseMonth.index + 11) % 12;
+        questionText = `Nächster Monat ist ${baseMonth.german}. Diesen Monat ist ?.`;
+        questionChinese = `下个月是${baseMonth.chinese}，这个月是几月？`;
+      }
+
+      const answerMonth = months[answerIndex];
+
+      // 生成错误选项（排除正确答案）
+      const otherMonths = months.filter(m => m.index !== answerIndex);
+      const shuffledWrong = [...otherMonths].sort(() => Math.random() - 0.5);
+      const wrongCount = Math.min(quizDifficulty - 1, otherMonths.length);
+      const wrongOptions = shuffledWrong.slice(0, wrongCount);
+
+      // 组合选项并打乱
+      const options = [
+        { word: { german: answerMonth.german, chinese: answerMonth.chinese } as Word, isCorrect: true },
+        ...wrongOptions.map(w => ({ word: { german: w.german, chinese: w.chinese } as Word, isCorrect: false })),
+      ];
+      options.sort(() => Math.random() - 0.5);
+
+      setMonthLogicData({
+        question: questionText,
+        questionChinese: questionChinese,
+        answer: answerMonth.german,
+        answerChinese: answerMonth.chinese,
+        relation: relation,
+        baseMonth: baseMonth.german,
+      });
+      setQuizOptions(options);
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+
+      // 播放问题
+      setTimeout(() => {
+        setIsPlayingAudio(true);
+        speak(questionText);
+        setTimeout(() => setIsPlayingAudio(false), 2000);
+      }, 300);
+      return;
+    }
+
     // AI 出题模式（句子填空题型）
     if (useAiQuiz && quizType === "sentence") {
       console.log("进入句子填空题型处理");
@@ -1654,6 +1750,7 @@ export default function GermanLearning() {
              quizType === "listening" ? "听力练习" :
              quizType === "listeningArticle" ? "句子听力填空" :
              quizType === "weekdayLogic" ? "星期逻辑推理" :
+             quizType === "monthLogic" ? "月份逻辑推理" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -2041,6 +2138,16 @@ export default function GermanLearning() {
                     }`}
                   >
                     星期推理
+                  </button>
+                  <button
+                    onClick={() => setQuizType("monthLogic")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "monthLogic"
+                        ? "bg-emerald-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-emerald-50"
+                    }`}
+                  >
+                    月份推理
                   </button>
                 </div>
               </div>
@@ -2745,6 +2852,118 @@ export default function GermanLearning() {
                             setQuizRecords(prev => [...prev, {
                               german: weekdayLogicData!.question,
                               chinese: weekdayLogicData!.answerChinese,
+                              selected: option.word.german,
+                              isCorrect: false,
+                              isTimeout: false,
+                              gender: undefined
+                            }]);
+                          }
+                        }}
+                        disabled={showResult}
+                        className={buttonClass}
+                      >
+                        {option.word.german}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : quizType === "monthLogic" ? (
+              // 月份逻辑推理题型
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400 mb-2 block">听问题，推理现在是几月</span>
+                </div>
+
+                {/* 显示/隐藏文本按钮 */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowMonthLogicText(!showMonthLogicText)}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      showMonthLogicText
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    }`}
+                  >
+                    {showMonthLogicText ? "🙈 隐藏文本" : "👁️ 显示文本"}
+                  </button>
+                </div>
+
+                {/* 显示问题 */}
+                {showMonthLogicText && (
+                  <div className="bg-emerald-50 rounded-xl p-6 mb-6">
+                    <p className="text-xl text-gray-800 text-center font-medium">
+                      {monthLogicData?.question}
+                    </p>
+                    <p className="text-lg text-gray-500 text-center mt-3">
+                      {monthLogicData?.questionChinese}
+                    </p>
+                  </div>
+                )}
+
+                {/* 播放问题按钮 */}
+                <div className="text-center mb-6">
+                  <button
+                    onClick={() => {
+                      if (monthLogicData?.question) {
+                        setIsPlayingAudio(true);
+                        speak(monthLogicData.question);
+                        setTimeout(() => setIsPlayingAudio(false), 2000);
+                      }
+                    }}
+                    disabled={isPlayingAudio}
+                    className={`px-6 py-3 rounded-full transition ${
+                      isPlayingAudio
+                        ? "bg-green-100 text-green-600"
+                        : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                    }`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🔊 播放问题"}
+                  </button>
+                </div>
+
+                {/* 选项列表 */}
+                <div className="grid grid-cols-3 gap-3">
+                  {quizOptions.map((option, idx) => {
+                    const isSelected = selectedOption === idx;
+                    const isCorrect = option.isCorrect;
+                    const showResult = selectedOption !== null || quizTimeout;
+
+                    let buttonClass = "p-4 rounded-xl text-xl font-medium transition border-2 ";
+                    if (showResult) {
+                      if (isCorrect) {
+                        buttonClass += "bg-green-100 border-green-500 text-green-800";
+                      } else if (isSelected && !isCorrect) {
+                        buttonClass += "bg-red-100 border-red-500 text-red-800";
+                      } else {
+                        buttonClass += "bg-gray-100 border-gray-300 text-gray-500 opacity-50";
+                      }
+                    } else {
+                      buttonClass += "bg-white border-gray-300 text-gray-700 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-700";
+                    }
+
+                    return (
+                      <button
+                        key={option.word.german}
+                        onClick={() => {
+                          setSelectedOption(idx);
+                          if (option.isCorrect) {
+                            setQuizResult("correct");
+                            playSound("correct");
+                            setQuizRecords(prev => [...prev, {
+                              german: monthLogicData!.question,
+                              chinese: monthLogicData!.answerChinese,
+                              selected: option.word.german,
+                              isCorrect: true,
+                              isTimeout: false,
+                              gender: undefined
+                            }]);
+                          } else {
+                            setQuizResult("wrong");
+                            playSound("wrong");
+                            setQuizRecords(prev => [...prev, {
+                              german: monthLogicData!.question,
+                              chinese: monthLogicData!.answerChinese,
                               selected: option.word.german,
                               isCorrect: false,
                               isTimeout: false,
