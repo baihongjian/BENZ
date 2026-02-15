@@ -635,6 +635,9 @@ export default function GermanLearning() {
     baseWeekday: string;
   } | null>(null);
 
+  // 是否显示星期推理文本
+  const [showWeekdayLogicText, setShowWeekdayLogicText] = useState(false);
+
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1433,6 +1436,8 @@ export default function GermanLearning() {
     setUsedWordIndices([]); // 清空已出题目记录
     setUsedSentenceSentences([]); // 清空已使用句子记录
     setUserInput(""); // 重置用户输入
+    setShowListeningSentence(false); // 重置句子听力显示状态
+    setShowWeekdayLogicText(false); // 重置星期推理显示状态
     await generateQuiz();
   };
 
@@ -2558,15 +2563,31 @@ export default function GermanLearning() {
                   <span className="text-sm text-gray-400 mb-2 block">听问题，推理今天是星期几</span>
                 </div>
 
-                {/* 显示问题 */}
-                <div className="bg-violet-50 rounded-xl p-6 mb-6">
-                  <p className="text-xl text-gray-800 text-center font-medium">
-                    {weekdayLogicData?.question}
-                  </p>
-                  <p className="text-lg text-gray-500 text-center mt-3">
-                    {weekdayLogicData?.questionChinese}
-                  </p>
+                {/* 显示/隐藏文本按钮 */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowWeekdayLogicText(!showWeekdayLogicText)}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      showWeekdayLogicText
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    }`}
+                  >
+                    {showWeekdayLogicText ? "🙈 隐藏文本" : "👁️ 显示文本"}
+                  </button>
                 </div>
+
+                {/* 显示问题 */}
+                {showWeekdayLogicText && (
+                  <div className="bg-violet-50 rounded-xl p-6 mb-6">
+                    <p className="text-xl text-gray-800 text-center font-medium">
+                      {weekdayLogicData?.question}
+                    </p>
+                    <p className="text-lg text-gray-500 text-center mt-3">
+                      {weekdayLogicData?.questionChinese}
+                    </p>
+                  </div>
+                )}
 
                 {/* 播放问题按钮 */}
                 <div className="text-center mb-6">
