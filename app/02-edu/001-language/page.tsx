@@ -1851,20 +1851,21 @@ export default function GermanLearning() {
 
         {/* 答题模式：开始界面 */}
         {mode === "quiz" && !quizStarted && !quizFinished && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md mx-auto">
-            <div className="text-6xl mb-4">🎯</div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">德语单词测验</h2>
+          <div className="bg-white rounded-2xl shadow-lg p-6 text-center max-w-4xl mx-auto">
+            <div className="text-5xl mb-3">🎯</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">德语单词测验</h2>
 
-            {/* 设置选项 */}
-            <div className="mb-6">
-              <div className="mb-4">
-                <span className="text-gray-700 font-medium block mb-2">题数</span>
-                <div className="flex justify-center gap-2">
+            {/* 设置选项 - 水平排列 */}
+            <div className="flex flex-wrap justify-center gap-6 mb-4">
+              {/* 题数 */}
+              <div className="flex flex-col items-center min-w-[100px]">
+                <span className="text-gray-600 font-medium text-sm mb-2">题数</span>
+                <div className="flex gap-1">
                   {[5, 10, 15, 20].map(num => (
                     <button
                       key={num}
                       onClick={() => setQuizCount(num)}
-                      className={`w-12 h-12 rounded-full font-bold transition ${
+                      className={`w-10 h-10 rounded-full font-bold text-sm transition ${
                         quizCount === num
                           ? "bg-amber-500 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-amber-50"
@@ -1876,14 +1877,15 @@ export default function GermanLearning() {
                 </div>
               </div>
 
-              <div className="mb-4">
-                <span className="text-gray-700 font-medium block mb-2">难度</span>
-                <div className="flex justify-center gap-2">
+              {/* 难度 */}
+              <div className="flex flex-col items-center min-w-[100px]">
+                <span className="text-gray-600 font-medium text-sm mb-2">难度</span>
+                <div className="flex gap-1">
                   {[2, 3, 4].map(num => (
                     <button
                       key={num}
                       onClick={() => setQuizDifficulty(num as 2 | 3 | 4)}
-                      className={`w-12 h-12 rounded-full font-bold transition ${
+                      className={`w-10 h-10 rounded-full font-bold text-sm transition ${
                         quizDifficulty === num
                           ? "bg-amber-500 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-amber-50"
@@ -1895,185 +1897,203 @@ export default function GermanLearning() {
                 </div>
               </div>
 
-              <div className="mb-4">
-                <span className="text-gray-700 font-medium block mb-2">题型</span>
-                <div className="flex justify-center gap-2 flex-wrap">
-                  <button
-                    onClick={() => setQuizType("chinese")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "chinese"
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-blue-50"
-                    }`}
-                  >
-                    🔤 中德匹配
-                  </button>
-                  <button
-                    onClick={() => setQuizType("german")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "german"
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-green-50"
-                    }`}
-                  >
-                    🔤 德中匹配
-                  </button>
-                  <button
-                    onClick={() => setQuizType("spelling")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "spelling"
-                        ? "bg-orange-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-orange-50"
-                    }`}
-                  >
-                    ✏️ 拼写纠错
-                    {useAiQuiz && quizType === "spelling" && (
-                      <span className="ml-1 text-xs">🤖</span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setQuizType("gender")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "gender"
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-purple-50"
-                    }`}
-                  >
-                    📖 词性匹配
-                  </button>
-                  <button
-                    onClick={() => setQuizType("input")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "input"
-                        ? "bg-teal-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-teal-50"
-                    }`}
-                  >
-                    ⌨️ 中文听写
-                  </button>
-                  <button
-                    onClick={() => setQuizType("verb")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "verb"
-                        ? "bg-cyan-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-cyan-50"
-                    }`}
-                  >
-                    🏃 动词匹配
-                  </button>
-                  <button
-                    onClick={() => setQuizType("sentence")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "sentence"
-                        ? "bg-indigo-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-indigo-50"
-                    }`}
-                  >
-                    📝 句子填空
-                    {useAiQuiz && quizType === "sentence" && (
-                      <span className="ml-1 text-xs">🤖</span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setQuizType("listening")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "listening"
-                        ? "bg-pink-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-pink-50"
-                    }`}
-                  >
-                    🎧 单词听力练习
-                  </button>
-                  <button
-                    onClick={() => setQuizType("listeningArticle")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "listeningArticle"
-                        ? "bg-rose-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-rose-50"
-                    }`}
-                  >
-                    📝 句子听力
-                  </button>
-                  <button
-                    onClick={() => setQuizType("weekdayLogic")}
-                    className={`px-4 py-2 rounded-full font-medium transition ${
-                      quizType === "weekdayLogic"
-                        ? "bg-violet-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-violet-50"
-                    }`}
-                  >
-                    🧠 星期推理
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-gray-700 font-medium block mb-2">倒计时</span>
-                <div className="flex justify-center gap-2">
+              {/* 倒计时 */}
+              <div className="flex flex-col items-center min-w-[120px]">
+                <span className="text-gray-600 font-medium text-sm mb-2">倒计时</span>
+                <div className="flex gap-1">
                   {[0, 5, 7, 10].map(num => (
                     <button
                       key={num}
                       onClick={() => setQuizTimer(num as 0 | 5 | 7 | 10)}
-                      className={`w-14 h-10 rounded-full font-medium transition ${
+                      className={`w-10 h-10 rounded-full font-medium text-xs transition ${
                         quizTimer === num
                           ? "bg-red-500 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-red-50"
                       }`}
                     >
-                      {num === 0 ? "∞" : `${num}秒`}
+                      {num === 0 ? "∞" : `${num}s`}
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className="flex flex-col gap-3 py-3 px-4 bg-gray-100 rounded-xl">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={bgMusicEnabled}
-                    onChange={(e) => setBgMusicEnabled(e.target.checked)}
-                    className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
-                  />
-                  <span className="font-medium">🎵 背景音乐</span>
-                  {bgMusicPlaying && <span className="text-green-600 text-sm">▶ 播放中</span>}
-                </label>
+            {/* 题型选择 - 水平排列 */}
+            <div className="mb-4">
+              <span className="text-gray-600 font-medium text-sm block mb-2">题型</span>
+              <div className="flex flex-wrap justify-center gap-2">
+                {/* 听力练习组 */}
+                <div className="flex items-center gap-1 mr-3">
+                  <span className="text-xs text-gray-400">👂</span>
+                  <button
+                    onClick={() => setQuizType("listening")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "listening"
+                        ? "bg-pink-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-pink-50"
+                    }`}
+                  >
+                    单词听力
+                  </button>
+                  <button
+                    onClick={() => setQuizType("listeningArticle")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "listeningArticle"
+                        ? "bg-rose-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-rose-50"
+                    }`}
+                  >
+                    句子听力
+                  </button>
+                </div>
 
-                {/* 音乐风格选择 */}
-                {bgMusicEnabled && (
-                  <div className="flex justify-center gap-2">
-                    <button
-                      onClick={() => setBgMusicStyle("cheerful")}
-                      className={`px-3 py-1 rounded-full text-sm transition ${
-                        bgMusicStyle === "cheerful"
-                          ? "bg-yellow-500 text-white"
-                          : "bg-white text-gray-700 hover:bg-yellow-50"
-                      }`}
-                    >
-                      😊 欢快
-                    </button>
-                    <button
-                      onClick={() => setBgMusicStyle("calm")}
-                      className={`px-3 py-1 rounded-full text-sm transition ${
-                        bgMusicStyle === "calm"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white text-gray-700 hover:bg-blue-50"
-                      }`}
-                    >
-                      😌 放松
-                    </button>
-                    <button
-                      onClick={() => setBgMusicStyle("tense")}
-                      className={`px-3 py-1 rounded-full text-sm transition ${
-                        bgMusicStyle === "tense"
-                          ? "bg-red-500 text-white"
-                          : "bg-white text-gray-700 hover:bg-red-50"
-                      }`}
-                    >
-                      😰 紧张
-                    </button>
-                  </div>
-                )}
+                {/* 词汇基础组 */}
+                <div className="flex items-center gap-1 mr-3">
+                  <span className="text-xs text-gray-400">📚</span>
+                  <button
+                    onClick={() => setQuizType("chinese")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "chinese"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    中德
+                  </button>
+                  <button
+                    onClick={() => setQuizType("german")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "german"
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-green-50"
+                    }`}
+                  >
+                    德中
+                  </button>
+                  <button
+                    onClick={() => setQuizType("gender")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "gender"
+                        ? "bg-purple-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-purple-50"
+                    }`}
+                  >
+                    词性
+                  </button>
+                  <button
+                    onClick={() => setQuizType("verb")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "verb"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-cyan-50"
+                    }`}
+                  >
+                    动词
+                  </button>
+                </div>
+
+                {/* 书写练习组 */}
+                <div className="flex items-center gap-1 mr-3">
+                  <span className="text-xs text-gray-400">✍️</span>
+                  <button
+                    onClick={() => setQuizType("spelling")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "spelling"
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-orange-50"
+                    }`}
+                  >
+                    纠错
+                    {useAiQuiz && quizType === "spelling" && <span className="ml-1">🤖</span>}
+                  </button>
+                  <button
+                    onClick={() => setQuizType("input")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "input"
+                        ? "bg-teal-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-teal-50"
+                    }`}
+                  >
+                    听写
+                  </button>
+                  <button
+                    onClick={() => setQuizType("sentence")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "sentence"
+                        ? "bg-indigo-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-indigo-50"
+                    }`}
+                  >
+                    填空
+                    {useAiQuiz && quizType === "sentence" && <span className="ml-1">🤖</span>}
+                  </button>
+                </div>
+
+                {/* 逻辑推理组 */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-400">🧠</span>
+                  <button
+                    onClick={() => setQuizType("weekdayLogic")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "weekdayLogic"
+                        ? "bg-violet-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-violet-50"
+                    }`}
+                  >
+                    星期推理
+                  </button>
+                </div>
               </div>
+            </div>
+
+            {/* 背景音乐设置 */}
+            <div className="flex flex-wrap justify-center gap-4 py-3 px-4 bg-gray-50 rounded-xl mb-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={bgMusicEnabled}
+                  onChange={(e) => setBgMusicEnabled(e.target.checked)}
+                  className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
+                />
+                <span className="font-medium">🎵 背景音乐</span>
+                {bgMusicPlaying && <span className="text-green-600 text-sm">▶ 播放中</span>}
+              </label>
+
+              {/* 音乐风格选择 */}
+              {bgMusicEnabled && (
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => setBgMusicStyle("cheerful")}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      bgMusicStyle === "cheerful"
+                        ? "bg-yellow-500 text-white"
+                        : "bg-white text-gray-700 hover:bg-yellow-50"
+                    }`}
+                  >
+                    😊 欢快
+                  </button>
+                  <button
+                    onClick={() => setBgMusicStyle("calm")}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      bgMusicStyle === "calm"
+                        ? "bg-blue-500 text-white"
+                        : "bg-white text-gray-700 hover:bg-blue-50"
+                    }`}
+                  >
+                    😌 放松
+                  </button>
+                  <button
+                    onClick={() => setBgMusicStyle("tense")}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      bgMusicStyle === "tense"
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-gray-700 hover:bg-red-50"
+                    }`}
+                  >
+                    😰 紧张
+                  </button>
+                </div>
+              )}
             </div>
 
             <button
