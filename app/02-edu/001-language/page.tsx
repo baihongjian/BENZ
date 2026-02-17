@@ -241,6 +241,7 @@ interface Word {
   category: string;
   gender?: "der" | "die" | "das"; // 词性（仅名词需要）
   verbSubcategory?: string; // 动词子分类
+  numberSubcategory?: string; // 数字子分类
   example?: string; // 例句（仅动词需要）
 }
 
@@ -277,33 +278,52 @@ const words: Word[] = [
   { german: "Bitte", chinese: "不客气/请", pronunciation: "比特", category: "greeting" },
   { german: "Entschuldigung", chinese: "对不起", pronunciation: "恩特舒尔迪贡", category: "greeting" },
 
-  // 数字
-  { german: "Eins", chinese: "一", pronunciation: "艾因斯", category: "number" },
-  { german: "Zwei", chinese: "二", pronunciation: "茨维", category: "number" },
-  { german: "Drei", chinese: "三", pronunciation: "德赖", category: "number" },
-  { german: "Vier", chinese: "四", pronunciation: "菲尔", category: "number" },
-  { german: "Fünf", chinese: "五", pronunciation: "芬夫", category: "number" },
-  { german: "Sechs", chinese: "六", pronunciation: "泽克斯", category: "number" },
-  { german: "Sieben", chinese: "七", pronunciation: "西本", category: "number" },
-  { german: "Acht", chinese: "八", pronunciation: "阿赫特", category: "number" },
-  { german: "Neun", chinese: "九", pronunciation: "诺因", category: "number" },
-  { german: "Zehn", chinese: "十", pronunciation: "茨恩", category: "number" },
+  // 数字 0-10
+  { german: "Null", chinese: "零", pronunciation: "努尔", category: "number", numberSubcategory: "0-10" },
+  { german: "Eins", chinese: "一", pronunciation: "艾因斯", category: "number", numberSubcategory: "0-10" },
+  { german: "Zwei", chinese: "二", pronunciation: "茨维", category: "number", numberSubcategory: "0-10" },
+  { german: "Drei", chinese: "三", pronunciation: "德赖", category: "number", numberSubcategory: "0-10" },
+  { german: "Vier", chinese: "四", pronunciation: "菲尔", category: "number", numberSubcategory: "0-10" },
+  { german: "Fünf", chinese: "五", pronunciation: "芬夫", category: "number", numberSubcategory: "0-10" },
+  { german: "Sechs", chinese: "六", pronunciation: "泽克斯", category: "number", numberSubcategory: "0-10" },
+  { german: "Sieben", chinese: "七", pronunciation: "西本", category: "number", numberSubcategory: "0-10" },
+  { german: "Acht", chinese: "八", pronunciation: "阿赫特", category: "number", numberSubcategory: "0-10" },
+  { german: "Neun", chinese: "九", pronunciation: "诺因", category: "number", numberSubcategory: "0-10" },
+  { german: "Zehn", chinese: "十", pronunciation: "茨恩", category: "number", numberSubcategory: "0-10" },
 
   // 11-20
-  { german: "Elf", chinese: "十一", pronunciation: "埃尔夫", category: "number" },
-  { german: "Zwölf", chinese: "十二", pronunciation: "茨沃尔夫", category: "number" },
-  { german: "Dreizehn", chinese: "十三", pronunciation: "德赖茨恩", category: "number" },
-  { german: "Vierzehn", chinese: "十四", pronunciation: "菲尔茨恩", category: "number" },
-  { german: "Fünfzehn", chinese: "十五", pronunciation: "芬夫茨恩", category: "number" },
-  { german: "Sechzehn", chinese: "十六", pronunciation: "泽希茨恩", category: "number" },
-  { german: "Siebzehn", chinese: "十七", pronunciation: "西普茨恩", category: "number" },
-  { german: "Achtzehn", chinese: "十八", pronunciation: "阿希茨恩", category: "number" },
-  { german: "Neunzehn", chinese: "十九", pronunciation: "诺因茨恩", category: "number" },
-  { german: "Zwanzig", chinese: "二十", pronunciation: "茨万齐希", category: "number" },
+  { german: "Elf", chinese: "十一", pronunciation: "埃尔夫", category: "number", numberSubcategory: "11-20" },
+  { german: "Zwölf", chinese: "十二", pronunciation: "茨沃尔夫", category: "number", numberSubcategory: "11-20" },
+  { german: "Dreizehn", chinese: "十三", pronunciation: "德赖茨恩", category: "number", numberSubcategory: "11-20" },
+  { german: "Vierzehn", chinese: "十四", pronunciation: "菲尔茨恩", category: "number", numberSubcategory: "11-20" },
+  { german: "Fünfzehn", chinese: "十五", pronunciation: "芬夫茨恩", category: "number", numberSubcategory: "11-20" },
+  { german: "Sechzehn", chinese: "十六", pronunciation: "泽希茨恩", category: "number", numberSubcategory: "11-20" },
+  { german: "Siebzehn", chinese: "十七", pronunciation: "西普茨恩", category: "number", numberSubcategory: "11-20" },
+  { german: "Achtzehn", chinese: "十八", pronunciation: "阿希茨恩", category: "number", numberSubcategory: "11-20" },
+  { german: "Neunzehn", chinese: "十九", pronunciation: "诺因茨恩", category: "number", numberSubcategory: "11-20" },
+  { german: "Zwanzig", chinese: "二十", pronunciation: "茨万齐希", category: "number", numberSubcategory: "11-20" },
 
-  // 21-31
-  { german: "Einundzwanzig", chinese: "二十一", pronunciation: "艾因翁特茨万齐希", category: "number" },
-  { german: "Dreißig", chinese: "三十", pronunciation: "德赖西希", category: "number" },
+  // 21-30
+  { german: "Einundzwanzig", chinese: "二十一", pronunciation: "艾因翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Zweiundzwanzig", chinese: "二十二", pronunciation: "茨维翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Dreiundzwanzig", chinese: "二十三", pronunciation: "德赖翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Vierundzwanzig", chinese: "二十四", pronunciation: "菲尔翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Fünfundzwanzig", chinese: "二十五", pronunciation: "芬夫翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Sechsundzwanzig", chinese: "二十六", pronunciation: "泽克斯翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Siebenundzwanzig", chinese: "二十七", pronunciation: "西本翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Achtundzwanzig", chinese: "二十八", pronunciation: "阿赫特翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Neunundzwanzig", chinese: "二十九", pronunciation: "诺因翁特茨万齐希", category: "number", numberSubcategory: "21-30" },
+  { german: "Dreißig", chinese: "三十", pronunciation: "德赖西希", category: "number", numberSubcategory: "21-30" },
+
+  // 31-100
+  { german: "Einunddreißig", chinese: "三十一", pronunciation: "艾因翁特德赖西希", category: "number", numberSubcategory: "31-100" },
+  { german: "Vierzig", chinese: "四十", pronunciation: "菲尔齐希", category: "number", numberSubcategory: "31-100" },
+  { german: "Fünfzig", chinese: "五十", pronunciation: "芬夫齐希", category: "number", numberSubcategory: "31-100" },
+  { german: "Sechzig", chinese: "六十", pronunciation: "泽希齐希", category: "number", numberSubcategory: "31-100" },
+  { german: "Siebzig", chinese: "七十", pronunciation: "西普齐希", category: "number", numberSubcategory: "31-100" },
+  { german: "Achtzig", chinese: "八十", pronunciation: "阿希齐希", category: "number", numberSubcategory: "31-100" },
+  { german: "Neunzig", chinese: "九十", pronunciation: "诺因齐希", category: "number", numberSubcategory: "31-100" },
+  { german: "Hundert", chinese: "一百", pronunciation: "洪德特", category: "number", numberSubcategory: "31-100" },
 
   // 日期时间
   { german: "heute", chinese: "今天", pronunciation: "霍伊特", category: "date" },
@@ -503,6 +523,14 @@ const verbCategories = [
   { id: "auxiliary", name: "辅助动词" },
 ];
 
+// 数字子分类
+const numberCategories = [
+  { id: "0-10", name: "0-10" },
+  { id: "11-20", name: "11-20" },
+  { id: "21-30", name: "21-30" },
+  { id: "31-100", name: "31-100" },
+];
+
 // 生成拼写错误的单词
 const generateSpellingError = (word: string): string => {
   if (word.length < 3) return word; // 太短的单词不处理
@@ -566,6 +594,7 @@ const generateSpellingError = (word: string): string => {
 export default function GermanLearning() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedVerbSubcategory, setSelectedVerbSubcategory] = useState<string | null>(null); // 动词子分类
+  const [selectedNumberSubcategory, setSelectedNumberSubcategory] = useState<string | null>(null); // 数字子分类
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
@@ -945,7 +974,7 @@ export default function GermanLearning() {
     }
   }, [wrongBook]);
 
-  // 过滤单词（支持动词子分类）
+  // 过滤单词（支持动词和数字子分类）
   const filteredWords = (() => {
     if (selectedCategory === "all") {
       return words;
@@ -954,6 +983,10 @@ export default function GermanLearning() {
     // 如果是动词分类且选中了子分类
     if (selectedCategory === "verb" && selectedVerbSubcategory) {
       result = result.filter(w => w.verbSubcategory === selectedVerbSubcategory);
+    }
+    // 如果是数字分类且选中了子分类
+    if (selectedCategory === "number" && selectedNumberSubcategory) {
+      result = result.filter(w => w.numberSubcategory === selectedNumberSubcategory);
     }
     return result;
   })();
@@ -2291,6 +2324,7 @@ export default function GermanLearning() {
                   onClick={() => {
                     setSelectedCategory(cat.id);
                     setSelectedVerbSubcategory(null);
+                    setSelectedNumberSubcategory(null);
                     setCurrentIndex(0);
                     setIsFlipped(false);
                   }}
@@ -2354,6 +2388,50 @@ export default function GermanLearning() {
               </div>
             )}
 
+            {/* 数字子分类筛选 */}
+            {selectedCategory === "number" && (
+              <div className="flex flex-wrap justify-center gap-1 mb-3">
+                <button
+                  onClick={() => {
+                    setSelectedNumberSubcategory(null);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs transition ${
+                    selectedNumberSubcategory === null
+                      ? "bg-teal-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-teal-50"
+                  }`}
+                >
+                  全部数字
+                  <span className="ml-0.5 text-xs opacity-70">
+                    ({words.filter(w => w.category === "number").length})
+                  </span>
+                </button>
+                {numberCategories.map((subcat) => {
+                  const count = words.filter(w => w.category === "number" && w.numberSubcategory === subcat.id).length;
+                  return (
+                    <button
+                      key={subcat.id}
+                      onClick={() => {
+                        setSelectedNumberSubcategory(subcat.id);
+                        setCurrentIndex(0);
+                        setIsFlipped(false);
+                      }}
+                      className={`px-2 py-1 rounded-lg text-xs transition ${
+                        selectedNumberSubcategory === subcat.id
+                          ? "bg-teal-600 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-teal-50"
+                      }`}
+                    >
+                      {subcat.name}
+                      <span className="ml-0.5 text-xs opacity-70">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <button
               onClick={startQuiz}
               className="px-6 py-2 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition text-base"
@@ -2381,6 +2459,7 @@ export default function GermanLearning() {
                 onClick={() => {
                   setSelectedCategory(cat.id);
                   setSelectedVerbSubcategory(null);
+                  setSelectedNumberSubcategory(null);
                   setCurrentIndex(0);
                   setIsFlipped(false);
                 }}
@@ -2435,6 +2514,50 @@ export default function GermanLearning() {
                     selectedVerbSubcategory === subcat.id
                       ? "bg-cyan-600 text-white"
                       : "bg-white text-gray-700 border border-gray-300 hover:bg-cyan-50"
+                  }`}
+                >
+                  {subcat.name}
+                  <span className="ml-1 text-xs opacity-70">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 学习模式：数字子分类筛选 */}
+        {mode === "learn" && selectedCategory === "number" && (
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            <button
+              onClick={() => {
+                setSelectedNumberSubcategory(null);
+                setCurrentIndex(0);
+                setIsFlipped(false);
+              }}
+              className={`px-3 py-1.5 rounded-full text-sm transition ${
+                selectedNumberSubcategory === null
+                  ? "bg-teal-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-teal-50"
+              }`}
+            >
+              全部数字
+              <span className="ml-1 text-xs opacity-70">
+                ({words.filter(w => w.category === "number").length})
+              </span>
+            </button>
+            {numberCategories.map((subcat) => {
+              const count = words.filter(w => w.category === "number" && w.numberSubcategory === subcat.id).length;
+              return (
+                <button
+                  key={subcat.id}
+                  onClick={() => {
+                    setSelectedNumberSubcategory(subcat.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-sm transition ${
+                    selectedNumberSubcategory === subcat.id
+                      ? "bg-teal-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-teal-50"
                   }`}
                 >
                   {subcat.name}
