@@ -242,6 +242,7 @@ interface Word {
   gender?: "der" | "die" | "das"; // 词性（仅名词需要）
   verbSubcategory?: string; // 动词子分类
   numberSubcategory?: string; // 数字子分类
+  phraseCategory?: string; // 短句子分类
   example?: string; // 例句（仅动词需要）
 }
 
@@ -496,6 +497,545 @@ const words: Word[] = [
   { german: "wollen", chinese: "想要", pronunciation: "沃伦", category: "verb", verbSubcategory: "auxiliary", example: "Ich will ein Eis." },
   { german: "mögen", chinese: "喜欢、想要", pronunciation: "梅根", category: "verb", verbSubcategory: "auxiliary", example: "Ich möchte Kaffee." },
   { german: "lassen", chinese: "让、使", pronunciation: "拉森", category: "verb", verbSubcategory: "auxiliary", example: "Lass mich in Ruhe!" },
+
+  // ========== 常用短句 300句 ==========
+
+  // 问候
+  { german: "Guten Morgen!", chinese: "早上好！", pronunciation: "古腾 莫尔根", category: "phrase", phraseCategory: "greeting" },
+  { german: "Guten Tag!", chinese: "你好！/日安！", pronunciation: "古腾 塔克", category: "phrase", phraseCategory: "greeting" },
+  { german: "Guten Abend!", chinese: "晚上好！", pronunciation: "古腾 阿本特", category: "phrase", phraseCategory: "greeting" },
+  { german: "Gute Nacht!", chinese: "晚安！", pronunciation: "古特 纳赫特", category: "phrase", phraseCategory: "greeting" },
+  { german: "Hallo!", chinese: "你好！", pronunciation: "哈洛", category: "phrase", phraseCategory: "greeting" },
+  { german: "Hi!", chinese: "嗨！", pronunciation: "嗨", category: "phrase", phraseCategory: "greeting" },
+  { german: "Guten Tag! Wie geht es Ihnen?", chinese: "您好！您好吗？", pronunciation: "古腾 塔克, 维 格特 埃斯 伊hnen", category: "phrase", phraseCategory: "greeting" },
+  { german: "Wie geht's?", chinese: "你好吗？/近况如何？", pronunciation: "维 格茨", category: "phrase", phraseCategory: "greeting" },
+  { german: "Mir geht's gut.", chinese: "我很好。", pronunciation: "米尔 格茨 古特", category: "phrase", phraseCategory: "greeting" },
+  { german: "Nicht schlecht.", chinese: "还不错。", pronunciation: "尼希特 施莱希特", category: "phrase", phraseCategory: "greeting" },
+  { german: "Es geht so.", chinese: "马马虎虎。", pronunciation: "埃斯 格特 佐", category: "phrase", phraseCategory: "greeting" },
+  { german: "Und Ihnen?", chinese: "您呢？", pronunciation: "翁特 伊hnen", category: "phrase", phraseCategory: "greeting" },
+  { german: "Freut mich.", chinese: "很高兴（认识你）。", pronunciation: "弗罗伊特 米希", category: "phrase", phraseCategory: "greeting" },
+  { german: "Angenehm.", chinese: "很高兴（认识你）。", pronunciation: "阿格内姆", category: "phrase", phraseCategory: "greeting" },
+  { german: "Wie heißen Sie?", chinese: "您叫什么名字？", pronunciation: "维 嗨ßen 贼", category: "phrase", phraseCategory: "greeting" },
+  { german: "Ich heiße...", chinese: "我叫...", pronunciation: "伊希 嗨ße", category: "phrase", phraseCategory: "greeting" },
+  { german: "Woher kommen Sie?", chinese: "您来自哪里？", pronunciation: "沃黑尔 科门 贼", category: "phrase", phraseCategory: "greeting" },
+  { german: "Ich komme aus...", chinese: "我来自...", pronunciation: "伊希 科么 奥斯", category: "phrase", phraseCategory: "greeting" },
+  { german: "Ich bin...", chinese: "我是...（职业）", pronunciation: "伊希 宾", category: "phrase", phraseCategory: "greeting" },
+
+  // 告别
+  { german: "Auf Wiedersehen!", chinese: "再见！", pronunciation: "奥夫 维德尔泽恩", category: "phrase", phraseCategory: "farewell" },
+  { german: "Tschüss!", chinese: "再见！/拜拜！", pronunciation: "楚斯", category: "phrase", phraseCategory: "farewell" },
+  { german: "Bis bald!", chinese: "一会儿见！", pronunciation: "比斯 巴尔特", category: "phrase", phraseCategory: "farewell" },
+  { german: "Bis später!", chinese: "待会儿见！", pronunciation: "比斯 施派特", category: "phrase", phraseCategory: "farewell" },
+  { german: "Bis morgen!", chinese: "明天见！", pronunciation: "比斯 莫尔根", category: "phrase", phraseCategory: "farewell" },
+  { german: "Bis nächste Woche!", chinese: "下周见！", pronunciation: "比斯 内赫斯特 沃克", category: "phrase", phraseCategory: "farewell" },
+  { german: "Ciao!", chinese: "再见！", pronunciation: "乔", category: "phrase", phraseCategory: "farewell" },
+  { german: "Ade!", chinese: "再见！", pronunciation: "阿德", category: "phrase", phraseCategory: "farewell" },
+  { german: "Man sieht sich!", chinese: "回头见！", pronunciation: "曼 泽希特 贼希", category: "phrase", phraseCategory: "farewell" },
+  { german: "Gute Reise!", chinese: "旅途愉快！", pronunciation: "古特 赖泽", category: "phrase", phraseCategory: "farewell" },
+  { german: "Viel Spaß!", chinese: "玩得开心！", pronunciation: "菲尔 施帕斯", category: "phrase", phraseCategory: "farewell" },
+  { german: "Hals- und Beinbruch!", chinese: "祝你好运！（字面：脖子和腿断了）", pronunciation: "哈尔斯 翁特 拜因布鲁希", category: "phrase", phraseCategory: "farewell" },
+
+  // 感谢
+  { german: "Danke!", chinese: "谢谢！", pronunciation: "丹克", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Danke schön!", chinese: "非常感谢！", pronunciation: "丹克 舍恩", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Vielen Dank!", chinese: "非常感谢！", pronunciation: "菲林 丹克", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Herzlichen Dank!", chinese: "衷心感谢！", pronunciation: "海尔茨利欣 丹克", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Tausend Dank!", chinese: "千恩万谢！", pronunciation: "陶森特 丹克", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Danke für...", chinese: "谢谢...（某事物）", pronunciation: "丹克 菲尔", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Danke für Ihre Hilfe!", chinese: "谢谢您的帮助！", pronunciation: "丹克 菲尔 伊雷 希尔弗", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Das ist sehr nett von Ihnen!", chinese: "您真是太好了！", pronunciation: "达斯 伊斯特 贼尔 内特 冯 伊hnen", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Keine Ursache!", chinese: "不客气！/没关系！", pronunciation: "凯娜 乌尔扎赫", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Gerne geschehen!", chinese: "乐意效劳！", pronunciation: "格尔呢 格谢恩", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Bitteschön!", chinese: "请！/不客气！", pronunciation: "比特 舍恩", category: "phrase", phraseCategory: "gratitude" },
+  { german: "Vielen Dank für Ihre Mühe!", chinese: "非常感谢您的辛苦！", pronunciation: "菲林 丹克 菲尔 伊雷 米厄", category: "phrase", phraseCategory: "gratitude" },
+
+  // 道歉
+  { german: "Entschuldigung!", chinese: "对不起！/抱歉！", pronunciation: "恩特舒尔迪贡", category: "phrase", phraseCategory: "apology" },
+  { german: "Es tut mir leid.", chinese: "我很抱歉。", pronunciation: "埃斯 图特 米尔 赖特", category: "phrase", phraseCategory: "apology" },
+  { german: "Tut mir leid.", chinese: "抱歉。", pronunciation: "图特 米尔 赖特", category: "phrase", phraseCategory: "apology" },
+  { german: "Das tut mir leid.", chinese: "对此我很抱歉。", pronunciation: "达斯 图特 米尔 赖特", category: "phrase", phraseCategory: "apology" },
+  { german: "Entschuldigen Sie mich bitte.", chinese: "请您原谅我。", pronunciation: "恩特舒尔迪根 贼 米希 比特", category: "phrase", phraseCategory: "apology" },
+  { german: "Ich bitte um Entschuldigung.", chinese: "我请求原谅。", pronunciation: "伊希 比特 翁姆 恩特舒尔迪贡", category: "phrase", phraseCategory: "apology" },
+  { german: "Verzeihung!", chinese: "请原谅！", pronunciation: "菲尔措伊贡", category: "phrase", phraseCategory: "apology" },
+  { german: "Kein Problem!", chinese: "没问题！", pronunciation: "凯因 普罗布莱姆", category: "phrase", phraseCategory: "apology" },
+  { german: "Macht nichts!", chinese: "没关系！/别在意！", pronunciation: "马希特 尼希茨", category: "phrase", phraseCategory: "apology" },
+  { german: "Das macht nichts.", chinese: "没关系。", pronunciation: "达斯 马希特 尼希茨", category: "phrase", phraseCategory: "apology" },
+  { german: "Ich habe mich geirrt.", chinese: "我搞错了。", pronunciation: "伊希 哈伯 米希 格伊尔特", category: "phrase", phraseCategory: "apology" },
+  { german: "Das war mein Fehler.", chinese: "这是我的错。", pronunciation: "达斯 瓦尔 迈恩 菲勒", category: "phrase", phraseCategory: "apology" },
+
+  // 请教/礼貌用语
+  { german: "Bitte!", chinese: "请！", pronunciation: "比特", category: "phrase", phraseCategory: "polite" },
+  { german: "Bitte schön!", chinese: "请您！", pronunciation: "比特 舍恩", category: "phrase", phraseCategory: "polite" },
+  { german: "Darf ich fragen?", chinese: "我可以问吗？", pronunciation: "达尔弗 伊希 弗拉根", category: "phrase", phraseCategory: "polite" },
+  { german: "Kann ich Ihnen helfen?", chinese: "我可以帮您吗？", pronunciation: "坎 伊希 伊hnen 赫尔弗", category: "phrase", phraseCategory: "polite" },
+  { german: "Würden Sie mir bitte helfen?", chinese: "您能帮我吗？", pronunciation: "维尔den 贼 米尔 比特 赫尔弗", category: "phrase", phraseCategory: "polite" },
+  { german: "Entschuldigung, ich habe eine Frage.", chinese: "抱歉，我有个问题。", pronunciation: "恩特舒尔迪贡, 伊希 哈伯 艾纳 弗拉格", category: "phrase", phraseCategory: "polite" },
+  { german: "Könnten Sie das bitte wiederholen?", chinese: "您能重复一下吗？", pronunciation: "克因特恩 贼 达斯 比特 维德尔霍伦", category: "phrase", phraseCategory: "polite" },
+  { german: "Können Sie das bitte langsamer sagen?", chinese: "您能说慢一点吗？", pronunciation: "克因恩 贼 达斯 比特 朗扎默 萨根", category: "phrase", phraseCategory: "polite" },
+  { german: "Ich verstehe nicht.", chinese: "我不懂。", pronunciation: "伊希 菲尔施特 尼希特", category: "phrase", phraseCategory: "polite" },
+  { german: "Ich verstehe nur ein bisschen.", chinese: "我只懂一点。", pronunciation: "伊希 菲尔施特 努尔 艾因 比欣", category: "phrase", phraseCategory: "polite" },
+  { german: "Sprechen Sie langsamer, bitte.", chinese: "请说慢一点。", pronunciation: "施普雷chen 贼 朗扎默, 比特", category: "phrase", phraseCategory: "polite" },
+  { german: "Was bedeutet das?", chinese: "这是什么意思？", pronunciation: "瓦斯 伯德伊特 达斯", category: "phrase", phraseCategory: "polite" },
+  { german: "Können Sie das aufschreiben?", chinese: "您能写下来吗？", pronunciation: "克因恩 贼 达斯 奥弗施莱本", category: "phrase", phraseCategory: "polite" },
+  { german: "Haben Sie das verstanden?", chinese: "您明白了吗？", pronunciation: "哈本 贼 达斯 菲尔施坦登", category: "phrase", phraseCategory: "polite" },
+  { german: "Ja, ich habe verstanden.", chinese: "是的，我明白了。", pronunciation: "呀, 伊希 哈伯 菲尔施坦登", category: "phrase", phraseCategory: "polite" },
+  { german: "Nein, ich habe nicht verstanden.", chinese: "不，我不懂。", pronunciation: "奈恩, 伊希 哈伯 尼希特 菲尔施坦登", category: "phrase", phraseCategory: "polite" },
+
+  // 餐厅/点餐
+  { german: "Die Speisekarte, bitte.", chinese: "请给我菜单。", pronunciation: "迪 施派泽卡尔特, 比特", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich möchte bestellen.", chinese: "我想点餐。", pronunciation: "伊希 梅希特 贝施特伦", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Kann ich bitte die Speisekarte haben?", chinese: "我能看一下菜单吗？", pronunciation: "坎 伊希 比特 迪 施派泽卡尔特 哈本", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Was empfehlen Sie?", chinese: "您推荐什么？", pronunciation: "瓦斯 恩普菲伦 贼", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich nehme...", chinese: "我要...（点餐）", pronunciation: "伊希 内么", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich hätte gern...", chinese: "我想要...（更客气）", pronunciation: "伊希 赫特 格尔恩", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Die Rechnung, bitte.", chinese: "请结账。", pronunciation: "迪 雷希宁, 比特", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich möchte bezahlen.", chinese: "我想付钱。", pronunciation: "伊希 梅希特 贝察伦", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Getrennt oder zusammen?", chinese: "分开还是一起？", pronunciation: "格特雷恩特 奥德 楚扎门", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Zusammen, bitte.", chinese: "请放在一起。", pronunciation: "楚扎门, 比特", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich möchte zur Toilette gehen.", chinese: "我想去洗手间。", pronunciation: "伊希 梅希特 茨尔 托亚莱特 格恩", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Das ist sehr lecker!", chinese: "非常好吃！", pronunciation: "达斯 伊斯特 贼尔 莱克", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Kann ich einen Tisch reservieren?", chinese: "我能预订一个桌子吗？", pronunciation: "坎 伊希 艾能 蒂施 雷泽尔维伦", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich habe einen Tisch bestellt.", chinese: "我预订了桌子。", pronunciation: "伊希 哈伯 艾能 蒂施 贝施泰尔特", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Für wie viele Personen?", chinese: "几位？", pronunciation: "菲尔 维 菲勒 佩尔措恩", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Für zwei Personen.", chinese: "两位。", pronunciation: "菲尔 茨维 佩尔措恩", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Haben Sie noch freie Tische?", chinese: "还有空位吗？", pronunciation: "哈本 贼 诺赫 弗赖 蒂施", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich bin Vegetarier.", chinese: "我是素食主义者。", pronunciation: "伊希 宾 维格塔里亚", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ich bin allergisch gegen...", chinese: "我对...过敏。", pronunciation: "伊希 宾 阿莱尔希施 盖根", category: "phrase", phraseCategory: "restaurant" },
+  { german: "Ohne Milch und Zucker.", chinese: "不加牛奶和糖。", pronunciation: "欧恩 米尔希 翁特 茨克尔", category: "phrase", phraseCategory: "restaurant" },
+
+  // 购物
+  { german: "Kann ich Ihnen helfen?", chinese: "我能帮您吗？", pronunciation: "坎 伊希 伊hnen 赫尔弗", category: "phrase", phraseCategory: "shopping" },
+  { german: "Ich schaue mich nur um.", chinese: "我只是随便看看。", pronunciation: "伊希 绍厄 米希 努尔 翁姆", category: "phrase", phraseCategory: "shopping" },
+  { german: "Ich suche...", chinese: "我在找...", pronunciation: "伊希 祖赫", category: "phrase", phraseCategory: "shopping" },
+  { german: "Was kostet das?", chinese: "这个多少钱？", pronunciation: "瓦斯 科斯特 达斯", category: "phrase", phraseCategory: "shopping" },
+  { german: "Wie viel kostet das?", chinese: "这个多少钱？", pronunciation: "维 菲尔 科斯特 达斯", category: "phrase", phraseCategory: "shopping" },
+  { german: "Das ist zu teuer.", chinese: "这太贵了。", pronunciation: "达斯 伊斯特 茨 托伊尔", category: "phrase", phraseCategory: "shopping" },
+  { german: "Gibt es das billiger?", chinese: "有便宜点的吗？", pronunciation: "吉普特 埃斯 达斯 比尔格尔", category: "phrase", phraseCategory: "shopping" },
+  { german: "Ich nehme das.", chinese: "我要这个。", pronunciation: "伊希 内么 达斯", category: "phrase", phraseCategory: "shopping" },
+  { german: "Kann ich mit Karte bezahlen?", chinese: "我能用卡支付吗？", pronunciation: "坎 伊希 米特 卡尔特 贝察伦", category: "phrase", phraseCategory: "shopping" },
+  { german: "Kann ich bar bezahlen?", chinese: "我能付现金吗？", pronunciation: "坎 伊希 巴尔 贝察伦", category: "phrase", phraseCategory: "shopping" },
+  { german: "Ich nehme das mit.", chinese: "我要这个带走。", pronunciation: "伊希 内么 达斯 米特", category: "phrase", phraseCategory: "shopping" },
+  { german: "Kann ich das umtauschen?", chinese: "我能退货吗？", pronunciation: "坎 伊希 达斯 翁姆陶申", category: "phrase", phraseCategory: "shopping" },
+  { german: "Haben Sie eine Quittung?", chinese: "您有收据吗？", pronunciation: "哈本 贼 艾纳 克维通", category: "phrase", phraseCategory: "shopping" },
+  { german: "Ich möchte das zurückgeben.", chinese: "我想退货。", pronunciation: "伊希 梅希特 达斯 楚吕克格伯", category: "phrase", phraseCategory: "shopping" },
+  { german: "Wo ist die Kasse?", chinese: "收银台在哪里？", pronunciation: "沃 伊斯特 迪 卡斯", category: "phrase", phraseCategory: "shopping" },
+  { german: "Gibt es einen Rabatt?", chinese: "有折扣吗？", pronunciation: "吉普特 埃斯 艾能 拉巴特", category: "phrase", phraseCategory: "shopping" },
+
+  // 问路
+  { german: "Entschuldigung, wo ist...?", chinese: "抱歉，...在哪里？", pronunciation: "恩特舒尔迪贡, 沃 伊斯特", category: "phrase", phraseCategory: "directions" },
+  { german: "Wo ist die Toilette?", chinese: "洗手间在哪里？", pronunciation: "沃 伊斯特 迪 托亚莱特", category: "phrase", phraseCategory: "directions" },
+  { german: "Wo ist der Bahnhof?", chinese: "火车站在哪里？", pronunciation: "沃 伊斯特 德尔 班霍夫", category: "phrase", phraseCategory: "directions" },
+  { german: "Wo ist die Bushaltestelle?", chinese: "公交站在哪里？", pronunciation: "沃 伊斯特 迪 布斯哈尔特施泰勒", category: "phrase", phraseCategory: "directions" },
+  { german: "Wie komme ich zum/zur...?", chinese: "我怎样才能到...？", pronunciation: "维 科么 伊希 楚姆/楚尔", category: "phrase", phraseCategory: "directions" },
+  { german: "Wie komme ich zum Bahnhof?", chinese: "我怎样才能到火车站？", pronunciation: "维 科么 伊希 楚姆 班霍夫", category: "phrase", phraseCategory: "directions" },
+  { german: "Wie komme ich zum Flughafen?", chinese: "我怎样才能到机场？", pronunciation: "维 科么 伊希 楚姆 弗吕克哈芬", category: "phrase", phraseCategory: "directions" },
+  { german: "Ist das weit von hier?", chinese: "离这里远吗？", pronunciation: "伊斯特 达斯 维特 冯 黑尔", category: "phrase", phraseCategory: "directions" },
+  { german: "Ist es weit?", chinese: "远吗？", pronunciation: "伊斯特 埃斯 维特", category: "phrase", phraseCategory: "directions" },
+  { german: "Es ist ganz in der Nähe.", chinese: "就在附近。", pronunciation: "埃斯 伊斯特 甘茨 因 德尔 内厄", category: "phrase", phraseCategory: "directions" },
+  { german: "Es ist nicht weit.", chinese: "不远。", pronunciation: "埃斯 伊斯特 尼希特 维特", category: "phrase", phraseCategory: "directions" },
+  { german: "Es ist sehr weit.", chinese: "很远。", pronunciation: "埃斯 伊斯特 贼尔 维特", category: "phrase", phraseCategory: "directions" },
+  { german: "Gehen Sie geradeaus.", chinese: "请直走。", pronunciation: "格恩 贼 格拉德奥斯", category: "phrase", phraseCategory: "directions" },
+  { german: "Biegen Sie links ab.", chinese: "请左转。", pronunciation: "比根 贼 琳克思 阿普", category: "phrase", phraseCategory: "directions" },
+  { german: "Biegen Sie rechts ab.", chinese: "请右转。", pronunciation: "比根 贼 雷希茨 阿普", category: "phrase", phraseCategory: "directions" },
+  { german: "Nehmen Sie die U-Bahn.", chinese: "请坐地铁。", pronunciation: "内门 贼 迪 乌-班", category: "phrase", phraseCategory: "directions" },
+  { german: "Nehmen Sie den Bus.", chinese: "请坐公交。", pronunciation: "内门 贼 登 布斯", category: "phrase", phraseCategory: "directions" },
+  { german: "Nehmen Sie ein Taxi.", chinese: "请打车。", pronunciation: "内门 贼 艾因 塔克西", category: "phrase", phraseCategory: "directions" },
+  { german: "Können Sie mir das auf der Karte zeigen?", chinese: "您能在地图上指给我看吗？", pronunciation: "克因恩 贼 米尔 达斯 奥夫 德尔 卡尔特 策根", category: "phrase", phraseCategory: "directions" },
+  { german: "Können Sie das bitte wiederholen?", chinese: "您能再说一遍吗？", pronunciation: "克因恩 贼 达斯 比特 维德尔霍伦", category: "phrase", phraseCategory: "directions" },
+
+  // 紧急情况
+  { german: "Hilfe!", chinese: "救命！/帮助！", pronunciation: "希尔弗", category: "phrase", phraseCategory: "emergency" },
+  { german: "Rufen Sie die Polizei!", chinese: "请叫警察！", pronunciation: "鲁芬 贼 迪 波利蔡", category: "phrase", phraseCategory: "emergency" },
+  { german: "Rufen Sie einen Arzt!", chinese: "请叫医生！", pronunciation: "鲁芬 贼 艾能 阿尔茨特", category: "phrase", phraseCategory: "emergency" },
+  { german: "Ich brauche einen Arzt.", chinese: "我需要医生。", pronunciation: "伊希 布劳赫 艾能 阿尔茨特", category: "phrase", phraseCategory: "emergency" },
+  { german: "Ich brauche Hilfe.", chinese: "我需要帮助。", pronunciation: "伊希 布劳赫 希尔弗", category: "phrase", phraseCategory: "emergency" },
+  { german: "Es ist ein Notfall.", chinese: "这是紧急情况。", pronunciation: "埃斯 伊斯特 艾因 诺特法尔", category: "phrase", phraseCategory: "emergency" },
+  { german: "Ich habe mich verlaufen.", chinese: "我迷路了。", pronunciation: "伊希 哈伯 米希 菲尔劳恩", category: "phrase", phraseCategory: "emergency" },
+  { german: "Ich habe meinen Pass verloren.", chinese: "我丢了护照。", pronunciation: "伊希 哈伯 迈能 帕斯 菲尔洛伦", category: "phrase", phraseCategory: "emergency" },
+  { german: "Ich wurde bestohlen.", chinese: "我被偷了。", pronunciation: "伊希 乌尔达 贝施托伦", category: "phrase", phraseCategory: "emergency" },
+  { german: "Es gibt einen Unfall.", chinese: "发生了事故。", pronunciation: "埃斯 吉普特 艾因 翁法尔", category: "phrase", phraseCategory: "emergency" },
+  { german: "Rufen Sie einen Krankenwagen!", chinese: "请叫救护车！", pronunciation: "鲁芬 贼 艾能 克朗肯瓦根", category: "phrase", phraseCategory: "emergency" },
+  { german: "Wo ist das Krankenhaus?", chinese: "医院在哪里？", pronunciation: "沃 伊斯特 达斯 克朗肯豪斯", category: "phrase", phraseCategory: "emergency" },
+  { german: "Ich brauche Medikamente.", chinese: "我需要药物。", pronunciation: "伊希 布劳赫 梅迪卡门特", category: "phrase", phraseCategory: "emergency" },
+  { german: "Ich bin krank.", chinese: "我生病了。", pronunciation: "伊希 宾 克朗克", category: "phrase", phraseCategory: "emergency" },
+  { german: "Es tut mir weh.", chinese: "我这里疼。", pronunciation: "埃斯 图特 米尔 维", category: "phrase", phraseCategory: "emergency" },
+
+  // 情感表达
+  { german: "Ich liebe dich.", chinese: "我爱你。", pronunciation: "伊希 里伯 迪希", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich hab dich lieb.", chinese: "我喜欢你。", pronunciation: "伊希 哈普 迪希 利普", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich vermisse dich.", chinese: "我想你。", pronunciation: "伊希 菲尔米色 迪希", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin traurig.", chinese: "我很难过。", pronunciation: "伊希 宾 特劳里希", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin froh.", chinese: "我很高兴。", pronunciation: "伊希 宾 弗罗", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin glücklich.", chinese: "我很幸福。", pronunciation: "伊希 宾 格吕克里希", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin müde.", chinese: "我很累。", pronunciation: "伊希 宾 米德", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin hungrig.", chinese: "我饿了。", pronunciation: "伊希 宾 洪格里希", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin durstig.", chinese: "我渴了。", pronunciation: "伊希 宾 杜尔斯蒂希", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin wütend.", chinese: "我很生气。", pronunciation: "伊希 宾 维滕特", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin aufgeregt.", chinese: "我很兴奋。", pronunciation: "伊希 宾 奥弗格雷希特", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin nervös.", chinese: "我很紧张。", pronunciation: "伊希 宾 奈尔沃斯", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin entspannt.", chinese: "我很放松。", pronunciation: "伊希 宾 恩特施潘特", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich bin überrascht.", chinese: "我很惊讶。", pronunciation: "伊希 宾 于伯尔施特", category: "phrase", phraseCategory: "emotions" },
+  { german: "Das macht mir Sorgen.", chinese: "这让我担心。", pronunciation: "达斯 马希特 米尔 佐尔根", category: "phrase", phraseCategory: "emotions" },
+  { german: "Ich mache mir Sorgen um...", chinese: "我担心...", pronunciation: "伊希 马赫 米尔 佐尔根 翁姆", category: "phrase", phraseCategory: "emotions" },
+
+  // 数字相关
+  { german: "Wie viel kostet das?", chinese: "这个多少钱？", pronunciation: "维 菲尔 科斯特 达斯", category: "phrase", phraseCategory: "numbers" },
+  { german: "Wie teuer ist das?", chinese: "这有多贵？", pronunciation: "维 托伊尔 伊斯特 达斯", category: "phrase", phraseCategory: "numbers" },
+  { german: "Es ist kostenlos.", chinese: "这是免费的。", pronunciation: "埃斯 伊斯特 科斯滕洛斯", category: "phrase", phraseCategory: "numbers" },
+  { german: "Es ist umsonst.", chinese: "这是免费的。", pronunciation: "埃斯 伊斯特 翁姆佐恩斯特", category: "phrase", phraseCategory: "numbers" },
+  { german: "Das ist zu teuer für mich.", chinese: "这对我太贵了。", pronunciation: "达斯 伊斯特 茨 托伊尔 菲尔 米希", category: "phrase", phraseCategory: "numbers" },
+  { german: "Haben Sie Kleingeld?", chinese: "您有零钱吗？", pronunciation: "哈本 贼 克莱因格尔特", category: "phrase", phraseCategory: "numbers" },
+  { german: "Kann ich mit Karte zahlen?", chinese: "我能用卡支付吗？", pronunciation: "坎 伊希 米特 卡尔特 察伦", category: "phrase", phraseCategory: "numbers" },
+  { german: "Kann ich in Raten zahlen?", chinese: "我能分期付款吗？", pronunciation: "坎 伊希 因 拉滕 察伦", category: "phrase", phraseCategory: "numbers" },
+  { german: "Gibt es einen Rabatt?", chinese: "有折扣吗？", pronunciation: "吉普特 埃斯 艾能 拉巴特", category: "phrase", phraseCategory: "numbers" },
+  { german: "Ich möchte einen Rabatt.", chinese: "我想打个折。", pronunciation: "伊希 梅希特 艾能 拉巴特", category: "phrase", phraseCategory: "numbers" },
+  { german: "Wie viel Uhr ist es?", chinese: "现在几点了？", pronunciation: "维 菲尔 乌尔 伊斯特 埃斯", category: "phrase", phraseCategory: "numbers" },
+  { german: "Um wie viel Uhr?", chinese: "几点？", pronunciation: "翁姆 维 菲尔 乌尔", category: "phrase", phraseCategory: "numbers" },
+  { german: "Es ist zehn Uhr.", chinese: "十点了。", pronunciation: "埃斯 伊斯特 茨恩 乌尔", category: "phrase", phraseCategory: "numbers" },
+
+  // 时间相关
+  { german: "Wann öffnet das Geschäft?", chinese: "商店什么时候开门？", pronunciation: "万 厄夫内特 达斯 格谢夫特", category: "phrase", phraseCategory: "time" },
+  { german: "Wann schließt das Geschäft?", chinese: "商店什么时候关门？", pronunciation: "万 施利斯特 达斯 格谢夫特", category: "phrase", phraseCategory: "time" },
+  { german: "Das Geschäft ist von 9 bis 18 Uhr geöffnet.", chinese: "商店营业时间是9点到18点。", pronunciation: "达斯 格谢夫特 伊斯特 冯 奈恩 比斯 阿赫特赞 乌尔 格厄弗内特", category: "phrase", phraseCategory: "time" },
+  { german: "Um wie viel Uhr treffen wir uns?", chinese: "我们几点见面？", pronunciation: "翁姆 维 菲尔 乌尔 特雷芬 维尔 翁斯", category: "phrase", phraseCategory: "time" },
+  { german: "Um halb neun.", chinese: "八点半。", pronunciation: "翁姆 哈尔布 奈恩", category: "phrase", phraseCategory: "time" },
+  { german: "Um Viertel vor acht.", chinese: "七点四十五。", pronunciation: "翁姆 菲尔特尔 福尔 阿希特", category: "phrase", phraseCategory: "time" },
+  { german: "Um Viertel nach neun.", chinese: "九点十五。", pronunciation: "翁姆 菲尔特尔 纳赫 奈恩", category: "phrase", phraseCategory: "time" },
+  { german: "Heute.", chinese: "今天。", pronunciation: "霍伊特", category: "phrase", phraseCategory: "time" },
+  { german: "Morgen.", chinese: "明天。", pronunciation: "莫尔根", category: "phrase", phraseCategory: "time" },
+  { german: "Übermorgen.", chinese: "后天。", pronunciation: "于伯尔莫尔根", category: "phrase", phraseCategory: "time" },
+  { german: "Gestern.", chinese: "昨天。", pronunciation: "格斯特恩", category: "phrase", phraseCategory: "time" },
+  { german: "Vorgestern.", chinese: "前天。", pronunciation: "福尔格斯特恩", category: "phrase", phraseCategory: "time" },
+  { german: "Heute Morgen.", chinese: "今天早上。", pronunciation: "霍伊特 莫尔根", category: "phrase", phraseCategory: "time" },
+  { german: "Heute Nachmittag.", chinese: "今天下午。", pronunciation: "霍伊特 纳赫米塔克", category: "phrase", phraseCategory: "time" },
+  { german: "Heute Abend.", chinese: "今天晚上。", pronunciation: "霍伊特 阿本特", category: "phrase", phraseCategory: "time" },
+
+  // 天气相关
+  { german: "Wie ist das Wetter?", chinese: "天气怎么样？", pronunciation: "维 伊斯特 达斯 维特", category: "phrase", phraseCategory: "weather" },
+  { german: "Das Wetter ist schön.", chinese: "天气很好。", pronunciation: "达斯 维特 伊斯特 舍恩", category: "phrase", phraseCategory: "weather" },
+  { german: "Das Wetter ist schlecht.", chinese: "天气不好。", pronunciation: "达斯 维特 伊斯特 施莱希特", category: "phrase", phraseCategory: "weather" },
+  { german: "Es regnet.", chinese: "下雨了。", pronunciation: "埃斯 雷格内特", category: "phrase", phraseCategory: "weather" },
+  { german: "Es schneit.", chinese: "下雪了。", pronunciation: "埃斯 施奈特", category: "phrase", phraseCategory: "weather" },
+  { german: "Es ist sonnig.", chinese: "出太阳了。", pronunciation: "埃斯 伊斯特 佐尼希", category: "phrase", phraseCategory: "weather" },
+  { german: "Es ist wolkig.", chinese: "多云。", pronunciation: "埃斯 伊斯特 沃利基希", category: "phrase", phraseCategory: "weather" },
+  { german: "Es ist windig.", chinese: "有风。", pronunciation: "埃斯 伊斯特 温迪希", category: "phrase", phraseCategory: "weather" },
+  { german: "Es ist kalt.", chinese: "冷。", pronunciation: "埃斯 伊斯特 卡尔特", category: "phrase", phraseCategory: "weather" },
+  { german: "Es ist warm.", chinese: "暖和。", pronunciation: "埃斯 伊斯特 瓦尔姆", category: "phrase", phraseCategory: "weather" },
+  { german: "Es ist heiß.", chinese: "热。", pronunciation: "埃斯 伊斯特 哈伊斯", category: "phrase", phraseCategory: "weather" },
+  { german: "Wie wird das Wetter morgen?", chinese: "明天天气怎么样？", pronunciation: "维 乌尔特 达斯 维特 莫尔根", category: "phrase", phraseCategory: "weather" },
+  { german: "Es soll regnen.", chinese: "据说要下雨。", pronunciation: "埃斯 佐尔 雷格嫩", category: "phrase", phraseCategory: "weather" },
+
+  // 电话相关
+  { german: "Hallo, hier spricht...", chinese: "您好，我是...（电话用语）", pronunciation: "哈洛, 黑尔 施普里希特", category: "phrase", phraseCategory: "phone" },
+  { german: "Mit wem spreche ich?", chinese: "您是哪位？", pronunciation: "米特 维姆 施普雷希 伊希", category: "phrase", phraseCategory: "phone" },
+  { german: "Kann ich bitte... sprechen?", chinese: "我能和...通话吗？", pronunciation: "坎 伊希 比特 施普雷希", category: "phrase", phraseCategory: "phone" },
+  { german: "Einen Moment bitte.", chinese: "请稍等。", pronunciation: "艾能 莫门特 比特", category: "phrase", phraseCategory: "phone" },
+  { german: "Ich rufe später zurück.", chinese: "我稍后打回去。", pronunciation: "伊希 鲁弗 施派特 楚吕克", category: "phrase", phraseCategory: "phone" },
+  { german: "Können Sie eine Nachricht hinterlassen?", chinese: "您能留个言吗？", pronunciation: "克因恩 贼 艾纳 纳赫里希特 欣特拉斯恩", category: "phrase", phraseCategory: "phone" },
+  { german: "Die Nummer ist besetzt.", chinese: "占线。", pronunciation: "迪 怒默 伊斯特 贝泽特", category: "phrase", phraseCategory: "phone" },
+  { german: "Die Verbindung ist schlecht.", chinese: "信号不好。", pronunciation: "迪 弗尔宾杜希 伊斯特 施莱希特", category: "phrase", phraseCategory: "phone" },
+  { german: "Ich habe dich falsch verstanden.", chinese: "我听错了。", pronunciation: "伊希 哈伯 迪希 法尔施 菲尔施坦登", category: "phrase", phraseCategory: "phone" },
+  { german: "Kann ich Ihnen eine Nachricht hinterlassen?", chinese: "我能给您留个言吗？", pronunciation: "坎 伊希 伊hnen 艾纳 纳赫里希特 欣特拉斯恩", category: "phrase", phraseCategory: "phone" },
+  { german: "Auflegen, bitte.", chinese: "请挂电话。", pronunciation: "奥弗莱根, 比特", category: "phrase", phraseCategory: "phone" },
+
+  // 工作/学习
+  { german: "Ich arbeite bei...", chinese: "我在...工作。", pronunciation: "伊希 阿尔拜特 拜", category: "phrase", phraseCategory: "work" },
+  { german: "Ich bin Student.", chinese: "我是学生。", pronunciation: "伊希 宾 施图登特", category: "phrase", phraseCategory: "work" },
+  { german: "Ich studiere an der Universität.", chinese: "我在大学学习。", pronunciation: "伊希 施图迪雷 安 德尔 乌尼维尔齐特", category: "phrase", phraseCategory: "work" },
+  { german: "Ich suche einen Job.", chinese: "我在找工作。", pronunciation: "伊希 祖赫 艾能 乔普", category: "phrase", phraseCategory: "work" },
+  { german: "Ich bin selbstständig.", chinese: "我是自由职业者。", pronunciation: "伊希 宾 泽尔普施特恩迪希", category: "phrase", phraseCategory: "work" },
+  { german: "Was machen Sie beruflich?", chinese: "您是做什么工作的？", pronunciation: "瓦斯 马亨 贼 贝吕弗利希", category: "phrase", phraseCategory: "work" },
+  { german: "Ich arbeite als...", chinese: "我当...（职业）", pronunciation: "伊希 阿尔拜特 阿尔斯", category: "phrase", phraseCategory: "work" },
+  { german: "Wie gefällt Ihnen Ihr Job?", chinese: "您的工作怎么样？", pronunciation: "维 格弗尔特 伊hnen 维尔 乔普", category: "phrase", phraseCategory: "work" },
+  { german: "Ich bin im Urlaub.", chinese: "我在休假。", pronunciation: "伊希 宾 因姆 乌尔劳夫", category: "phrase", phraseCategory: "work" },
+  { german: "Ich bin krankgeschrieben.", chinese: "我病假了。", pronunciation: "伊希 宾 克朗克格施里本", category: "phrase", phraseCategory: "work" },
+  { german: "Haben Sie Arbeitserlaubnis?", chinese: "您有工作许可吗？", pronunciation: "哈本 贼 阿尔贝茨罗伊布尼斯", category: "phrase", phraseCategory: "work" },
+  { german: "Ich möchte mich bewerben.", chinese: "我想申请。", pronunciation: "伊希 梅希特 米希 贝维尔本", category: "phrase", phraseCategory: "work" },
+  { german: "Wo ist das Büro?", chinese: "办公室在哪里？", pronunciation: "沃 伊斯特 达斯 布里奥", category: "phrase", phraseCategory: "work" },
+  { german: "Ich habe einen Termin.", chinese: "我有个预约。", pronunciation: "伊希 哈伯 艾能 泰尔明", category: "phrase", phraseCategory: "work" },
+  { german: "Kann ich einen Termin machen?", chinese: "我能预约吗？", pronunciation: "坎 伊希 艾能 泰尔明 马亨", category: "phrase", phraseCategory: "work" },
+
+  // 兴趣爱好
+  { german: "Was sind Ihre Hobbys?", chinese: "您的爱好是什么？", pronunciation: "瓦斯 辛德 伊雷 霍比斯", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich mag...", chinese: "我喜欢...", pronunciation: "伊希 马克", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich interessiere mich für...", chinese: "我对...感兴趣。", pronunciation: "伊希 因特雷塞雷 米希 菲尔", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich spiele gern...", chinese: "我喜欢玩...（运动/游戏）", pronunciation: "伊希 施皮勒 格尔恩", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich höre gern Musik.", chinese: "我喜欢听音乐。", pronunciation: "伊希 赫雷 格尔恩 穆兹克", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich sehe gern Filme.", chinese: "我喜欢看电影。", pronunciation: "伊希 泽厄 格尔恩 菲尔么", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich lese gern Bücher.", chinese: "我喜欢看书。", pronunciation: "伊希 雷泽 格尔恩 布歇尔", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich treibe gern Sport.", chinese: "我喜欢运动。", pronunciation: "伊希 特里贝 格尔恩 施波尔特", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich reise gern.", chinese: "我喜欢旅行。", pronunciation: "伊希 赖泽 格尔恩", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich koche gern.", chinese: "我喜欢做饭。", pronunciation: "伊希 科赫 格尔恩", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich male gern.", chinese: "我喜欢画画。", pronunciation: "伊希 马勒 格尔恩", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich fotografiere gern.", chinese: "我喜欢摄影。", pronunciation: "伊希 弗托格拉菲尔 格尔恩", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich spiele Gitarre.", chinese: "我弹吉他。", pronunciation: "伊希 施皮勒 吉他雷", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Ich tanze gern.", chinese: "我喜欢跳舞。", pronunciation: "伊希 丹策 格尔恩", category: "phrase", phraseCategory: "hobbies" },
+  { german: "Das ist mein Hobby.", chinese: "这是我的爱好。", pronunciation: "达斯 伊斯特 迈因 霍比", category: "phrase", phraseCategory: "hobbies" },
+
+  // 酒店/住宿
+  { german: "Ich möchte ein Zimmer buchen.", chinese: "我想订一个房间。", pronunciation: "伊希 梅希特 艾因 齐默 布亨", category: "phrase", phraseCategory: "hotel" },
+  { german: "Haben Sie noch freie Zimmer?", chinese: "还有空房吗？", pronunciation: "哈本 贼 诺赫 弗赖 齐默", category: "phrase", phraseCategory: "hotel" },
+  { german: "Ich möchte ein Doppelzimmer.", chinese: "我要一个双人间。", pronunciation: "伊希 梅希特 艾因 多佩尔齐默", category: "phrase", phraseCategory: "hotel" },
+  { german: "Ich möchte ein Einzelzimmer.", chinese: "我要一个单人间。", pronunciation: "伊希 梅希特 艾因 艾因策尔齐默", category: "phrase", phraseCategory: "hotel" },
+  { german: "Mit Frühstück?", chinese: "含早餐吗？", pronunciation: "米特 弗吕什特吕克", category: "phrase", phraseCategory: "hotel" },
+  { german: "Wie viel kostet eine Nacht?", chinese: "一晚多少钱？", pronunciation: "维 菲尔 科斯特 艾纳 纳希特", category: "phrase", phraseCategory: "hotel" },
+  { german: "Ich bleibe für... Nächte.", chinese: "我要住...晚。", pronunciation: "伊希 布莱贝 菲尔 奈赫特", category: "phrase", phraseCategory: "hotel" },
+  { german: "Wo ist mein Zimmer?", chinese: "我的房间在哪里？", pronunciation: "沃 伊斯特 迈因 齐默", category: "phrase", phraseCategory: "hotel" },
+  { german: "Der Schlüssel, bitte.", chinese: "请给我钥匙。", pronunciation: "德尔 施吕塞尔, 比特", category: "phrase", phraseCategory: "hotel" },
+  { german: "Ich möchte auschecken.", chinese: "我想退房。", pronunciation: "伊希 梅希特 奥斯切肯", category: "phrase", phraseCategory: "hotel" },
+  { german: "Kann ich die Rechnung haben?", chinese: "我能看一下账单吗？", pronunciation: "坎 伊希 迪 雷希宁 哈本", category: "phrase", phraseCategory: "hotel" },
+  { german: "Gibt es WLAN?", chinese: "有无线网络吗？", pronunciation: "吉普特 埃斯 维兰", category: "phrase", phraseCategory: "hotel" },
+  { german: "Ist das Frühstück inbegriffen?", chinese: "早餐包含在内吗？", pronunciation: "伊斯特 达斯 弗吕什特吕克 因贝格里芬", category: "phrase", phraseCategory: "hotel" },
+  { german: "Um wie viel Uhr ist das Frühstück?", chinese: "早餐几点开始？", pronunciation: "翁姆 维 菲尔 乌尔 伊斯特 达斯 弗吕什特吕克", category: "phrase", phraseCategory: "hotel" },
+
+  // 身体状况
+  { german: "Ich fühle mich nicht wohl.", chinese: "我感觉不太舒服。", pronunciation: "伊希 菲勒 米希 尼希特 沃尔", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Kopfschmerzen.", chinese: "我头疼。", pronunciation: "伊希 哈伯 科普夫施梅尔岑", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Bauchschmerzen.", chinese: "我肚子疼。", pronunciation: "伊希 哈伯 巴乌希施梅尔岑", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Halsschmerzen.", chinese: "我喉咙疼。", pronunciation: "伊希 哈伯 哈尔斯施梅尔岑", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Fieber.", chinese: "我发烧了。", pronunciation: "伊希 哈伯 菲伯", category: "phrase", phraseCategory: "health" },
+  { german: "Ich huste.", chinese: "我咳嗽。", pronunciation: "伊希 胡斯特", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Schnupfen.", chinese: "我感冒了。", pronunciation: "伊希 哈伯 施努普芬", category: "phrase", phraseCategory: "health" },
+  { german: "Ich bin erkältet.", chinese: "我感冒了。", pronunciation: "伊希 宾 埃尔凯尔泰特", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Durchfall.", chinese: "我拉肚子了。", pronunciation: "伊希 哈伯 杜尔希法尔", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Rückenschmerzen.", chinese: "我背疼。", pronunciation: "伊希 哈伯 吕肯施梅尔岑", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe Zahnschmerzen.", chinese: "我牙疼。", pronunciation: "伊希 哈伯 察恩施梅尔岑", category: "phrase", phraseCategory: "health" },
+  { german: "Ich habe mich verletzt.", chinese: "我受伤了。", pronunciation: "伊希 哈伯 米希 菲尔雷特斯特", category: "phrase", phraseCategory: "health" },
+  { german: "Ich brauche ein Pflaster.", chinese: "我需要创可贴。", pronunciation: "伊希 布劳赫 艾因 普拉斯特", category: "phrase", phraseCategory: "health" },
+  { german: "Ich brauche Schmerztabletten.", chinese: "我需要止痛药。", pronunciation: "伊希 布劳赫 施梅尔斯塔布莱顿", category: "phrase", phraseCategory: "health" },
+];
+
+// ========== 主题对话 ==========
+interface DialogLine {
+  speaker: "A" | "B";  // A=说话者1, B=说话者2
+  german: string;
+  chinese: string;
+  pronunciation?: string;
+}
+
+interface Dialog {
+  id: string;
+  title: string;
+  titleChinese: string;
+  scenario: string;
+  scenarioChinese: string;
+  lines: DialogLine[];
+}
+
+const dialogs: Dialog[] = [
+  // 1. 自我介绍
+  {
+    id: "self-intro",
+    title: "自我介绍",
+    titleChinese: "自我介紹介",
+    scenario: "Sich vorstellen",
+    scenarioChinese: "在社交场合介绍自己",
+    lines: [
+      { speaker: "A", german: "Guten Tag! Ich heiße Lisa Müller.", chinese: "您好！我叫丽莎·米勒。", pronunciation: "古腾 塔克! 伊希 嗨ß 丽莎 米勒" },
+      { speaker: "B", german: "Guten Tag, Lisa! Freut mich. Ich bin Peter Schmidt.", chinese: "您好，丽莎！很高兴认识你。我叫彼得·施密特。", pronunciation: "古腾 塔克, 丽莎! 弗罗伊特 米希. 伊希 宾 彼得 施密特" },
+      { speaker: "A", german: "Freut mich auch, Peter! Woher kommen Sie?", chinese: "我也很高兴认识你，彼得！您来自哪里？", pronunciation: "弗罗伊特 米希 奥希, 彼得! 沃黑尔 科门 贼" },
+      { speaker: "B", german: "Ich komme aus Berlin. Und Sie?", chinese: "我来自柏林。您呢？", pronunciation: "伊希 科么 奥斯 柏林. 翁特 贼" },
+      { speaker: "A", german: "Ich komme aus München. Was machen Sie beruflich?", chinese: "我来自慕尼黑。您是做什么工作的？", pronunciation: "伊希 科么 奥斯 明chen. 瓦斯 马亨 贼 贝吕弗利希" },
+      { speaker: "B", german: "Ich bin Lehrerin. Und Sie?", chinese: "我是老师。您呢？", pronunciation: "伊希 宾 莱雷林. 翁特 贼" },
+      { speaker: "A", german: "Ich bin Studentin. Ich studiere Deutsch an der Universität.", chinese: "我是大学生。我在大学学习德语。", pronunciation: "伊希 宾 施图丁亭. 伊希 施图迪雷 德意志 安 德尔 乌尼维尔齐特" },
+      { speaker: "B", german: "Das ist ja toll! Sprechen Sie gut Deutsch?", chinese: "太棒了！您德语说得很好吗？", pronunciation: "达斯 伊斯特 呀 托尔! 施普雷chen 贼 古特 德意志" },
+      { speaker: "A", german: "Es geht so. Ich lerne erst seit einem Jahr.", chinese: "一般般。我才学了一年。", pronunciation: "埃斯 格特 佐. 伊希 勒尔恩 埃斯特 希特 艾因 姆 雅尔" },
+      { speaker: "B", german: "Das ist schon sehr gut! Weiter so!", chinese: "已经很好！继续加油！", pronunciation: "达斯 伊斯特 雄 贼尔 古特! 维特 尔 佐" },
+    ]
+  },
+  // 2. 问路
+  {
+    id: "asking-directions",
+    title: "问路",
+    titleChinese: "道順を尋ねる",
+    scenario: "Nach dem Weg fragen",
+    scenarioChinese: "在街上询问路线",
+    lines: [
+      { speaker: "A", german: "Entschuldigung, können Sie mir bitte helfen?", chinese: "抱歉，您能帮我一下吗？", pronunciation: "恩特舒尔迪贡, 克因en 贼 米尔 比特 赫尔弗" },
+      { speaker: "B", german: "Ja, natürlich! Was kann ich für Sie tun?", chinese: "当然可以！我能为您做什么？", pronunciation: "呀, 那图尔利希! 瓦斯 坎 伊希 菲尔 贼 敦" },
+      { speaker: "A", german: "Wo ist der Bahnhof, bitte?", chinese: "请问火车站在哪里？", pronunciation: "沃 伊斯特 德尔 班霍夫, 比特" },
+      { speaker: "B", german: "Der Bahnhof? Das ist nicht weit von hier.", chinese: "火车站？离这里不远。", pronunciation: "德尔 班霍夫? 达斯 伊斯特 尼希特 维特 冯 黑尔" },
+      { speaker: "A", german: "Wie komme ich dahin?", chinese: "我怎么去那里？", pronunciation: "维 科么 伊希 达欣" },
+      { speaker: "B", german: "Gehen Sie geradeaus bis zur Ampel. Dann biegen Sie links ab.", chinese: "您直走直到红绿灯。然后左转。", pronunciation: "格恩 贼 格拉德奥斯 比斯 茨尔 阿姆佩尔. 丹 比根 贼 琳克思 阿普" },
+      { speaker: "A", german: "Und dann?", chinese: "然后呢？", pronunciation: "翁特 丹" },
+      { speaker: "B", german: "Dann sehen Sie den Bahnhof auf der rechten Seite.", chinese: "然后您会在右侧看到火车站。", pronunciation: "丹 泽恩 贼 登 班霍夫 奥夫 德尔 雷希ten 赛特" },
+      { speaker: "A", german: "Vielen Dank für Ihre Hilfe!", chinese: "非常感谢您的帮助！", pronunciation: "菲林 丹克 菲尔 伊雷 希尔弗" },
+      { speaker: "B", german: "Keine Ursache! Gute Fahrt!", chinese: "不客气！祝您旅途愉快！", pronunciation: "凯娜 乌尔扎赫! 古特 法尔特" },
+    ]
+  },
+  // 3. 餐厅点餐
+  {
+    id: "restaurant-order",
+    title: "餐厅点餐",
+    titleChinese: "レストランで注文",
+    scenario: "Im Restaurant bestellen",
+    scenarioChinese: "在餐厅吃饭点餐",
+    lines: [
+      { speaker: "A", german: "Guten Tag! Haben Sie einen Tisch für zwei Personen?", chinese: "您好！请问有两人桌吗？", pronunciation: "古腾 塔克! 哈本 贼 艾能 蒂希 菲尔 茨维 佩尔措恩" },
+      { speaker: "B", german: "Ja, haben Sie einen Tisch bestellt?", chinese: "有的，请问您有预订吗？", pronunciation: "呀, 哈本 贼 艾能 蒂希 贝施泰尔特" },
+      { speaker: "A", german: "Nein, leider nicht. Haben Sie noch freie Tische?", chinese: "没有，请问还有空位吗？", pronunciation: "奈恩, 莱德 尼希特. 哈本 贼 诺赫 弗赖 蒂施" },
+      { speaker: "B", german: "Ja, kommen Sie bitte mit. Hier ist Ihr Tisch.", chinese: "有的，请跟我来。这是您的桌子。", pronunciation: "呀, 科门 贼 比特 米特. 黑尔 伊斯特 维尔 蒂希" },
+      { speaker: "A", german: "Danke. Können wir bitte die Speisekarte haben?", chinese: "谢谢。可以给我们菜单吗？", pronunciation: "丹克. 克因 维尔 比特 迪 施派泽卡尔特 哈本" },
+      { speaker: "B", german: "Natürlich! Hier ist die Speisekarte. Ein Herr wird gleich zu Ihnen kommen.", chinese: "当然！这是菜单。服务员马上过来。", pronunciation: "那图尔利希! 黑尔 伊斯特 迪 施派泽卡尔特. 艾因 黑尔 特 格兰 茨 贼 伊hnen 科门" },
+      { speaker: "A", german: "Ich möchte das Schnitzel mit Pommes frites.", chinese: "我想点炸肉排配薯条。", pronunciation: "伊希 梅希特 达斯 施尼策尔 米特 波姆 弗里特斯" },
+      { speaker: "B", german: "Gute Wahl! Und zu trinken?", chinese: "好选择！要喝点什么吗？", pronunciation: "古特 瓦尔! 翁特 茨 特林肯" },
+      { speaker: "A", german: "Ich möchte ein Glas Rotwein, bitte.", chinese: "我要一杯红葡萄酒。", pronunciation: "伊希 梅希特 艾因 格拉斯 罗特瓦因, 比特" },
+      { speaker: "B", german: "Die Rechnung, bitte.", chinese: "请结账。", pronunciation: "迪 雷希宁, 比特" },
+    ]
+  },
+  // 4. 购物
+  {
+    id: "shopping",
+    title: "购物",
+    titleChinese: "買い物",
+    scenario: "Im Geschäft einkaufen",
+    scenarioChinese: "在商店购物",
+    lines: [
+      { speaker: "A", german: "Guten Tag! Kann ich Ihnen helfen?", chinese: "您好！有什么可以帮您的吗？", pronunciation: "古腾 塔克! 坎 伊希 伊hnen 赫尔弗" },
+      { speaker: "B", german: "Ich suche ein Hemd für meinen Mann.", chinese: "我在找一件衬衫给我丈夫。", pronunciation: "伊希 祖赫 艾因 赫姆特 菲尔 迈能 曼" },
+      { speaker: "A", german: "Welche Größe braucht er?", chinese: "他穿什么尺码？", pronunciation: "维勒切 格勒泽 布劳希特 埃尔" },
+      { speaker: "B", german: "Er braucht Größe M.", chinese: "他穿M码。", pronunciation: "埃尔 布劳希特 格勒泽 艾姆" },
+      { speaker: "A", german: "Hier haben wir verschiedene Hemden. Wie gefällt Ihnen dieses?", chinese: "这里有各种衬衫。您觉得这件怎么样？", pronunciation: "黑尔 哈本 维尔 弗尔施ieden 赫门德. 维 格弗尔特 伊hnen 达泽斯" },
+      { speaker: "B", german: "Das sieht gut aus! Was kostet das?", chinese: "这件不错！多少钱？", pronunciation: "达斯 泽特 古特 奥斯! 瓦斯 科斯特 达斯" },
+      { speaker: "A", german: "Das kostet 49,90 Euro.", chinese: "这件49.90欧元。", pronunciation: "达斯 科斯特 菲尔茨伊格 诺伊齐希 奥伊罗" },
+      { speaker: "B", german: "Das ist ja sehr teuer! Gibt es einen Rabatt?", chinese: "好贵啊！有折扣吗？", pronunciation: "达斯 伊斯特 呀 贼尔 托伊尔! 吉普特 埃斯 艾能 拉巴特" },
+      { speaker: "A", german: "Heute haben wir 20% Rabatt auf alle Hemden.", chinese: "今天所有衬衫打8折。", pronunciation: "霍伊特 哈本 维尔 茨万茨伊 普罗岑特 拉巴特 奥夫 阿尔勒 赫门德" },
+      { speaker: "B", german: "Perfekt! Dann nehme ich das.", chinese: "完美！那我要这件。", pronunciation: "佩尔费克特! 丹 内么 伊希 达斯" },
+    ]
+  },
+  // 5. 机场
+  {
+    id: "airport",
+    title: "机场",
+    titleChinese: "空港",
+    scenario: "Am Flughafen",
+    scenarioChinese: "在机场办理登机手续",
+    lines: [
+      { speaker: "A", german: "Guten Tag! Ich möchte meinen Flug nach Berlin checken.", chinese: "您好！我想办理去柏林的登机手续。", pronunciation: "古腾 塔克! 伊希 梅希特 迈能 弗吕格 纳赫 柏林 切肯" },
+      { speaker: "B", german: "Haben Sie Ihren Pass und Ihr Flugticket dabei?", chinese: "您带护照和机票了吗？", pronunciation: "哈本 贼 伊hnen 帕斯 维尔 埃尔 弗吕格提克特 达比" },
+      { speaker: "A", german: "Ja, hier bitte.", chinese: "有的，给您。", pronunciation: "呀, 黑尔 比特" },
+      { speaker: "B", german: "Danke. Möchten Sie einen Fensterplatz oder einen Gangplatz?", chinese: "谢谢。您想要靠窗还是过道座位？", pronunciation: "丹克. 梅希ten 贼 艾能 芬斯特普拉茨 奥德 艾能 刚普拉茨" },
+      { speaker: "A", german: "Einen Fensterplatz, bitte.", chinese: "请给我靠窗的座位。", pronunciation: "艾能 芬斯特普拉茨, 比特" },
+      { speaker: "B", german: "Kein Problem. Hier ist Ihre Bordkarte. Gate B12.", chinese: "没问题。这是您的登机牌。B12登机口。", pronunciation: "凯因 普罗布莱姆. 黑尔 伊斯特 伊雷 博特卡尔特. gate 贝伊 茨沃尔弗" },
+      { speaker: "A", german: "Vielen Dank! Wann boarding?", chinese: "非常感谢！什么时候登机？", pronunciation: "菲林 丹克! 万 博尔丁" },
+      { speaker: "B", german: "Boarding ist um 10:30 Uhr an Gate B12.", chinese: "10:30在B12登机口登机。", pronunciation: "博尔丁 伊斯特 翁姆 茨恩:里斯希 乌尔 安 Gate 贝伊 茨沃尔弗" },
+      { speaker: "A", german: "Vielen Dank für Ihre Hilfe!", chinese: "谢谢您的帮助！", pronunciation: "菲林 丹克 菲尔 伊雷 希尔弗" },
+      { speaker: "B", german: "Gute Reise! Einen schönen Flug!", chinese: "旅途愉快！飞行顺利！", pronunciation: "古特 赖泽! 艾能 舍恩 弗吕克" },
+    ]
+  },
+  // 6. 酒店入住
+  {
+    id: "hotel-checkin",
+    title: "酒店入住",
+    titleChinese: "ホテルチェックイン",
+    scenario: "Im Hotel einchecken",
+    scenarioChinese: "在酒店办理入住",
+    lines: [
+      { speaker: "A", german: "Guten Abend! Ich habe ein Zimmer reserviert.", chinese: "晚上好！我预订了房间。", pronunciation: "古腾 阿本特! 伊希 哈伯 艾因 齐默 雷泽尔维特" },
+      { speaker: "B", german: "Guten Abend! Unter welchem Namen, bitte?", chinese: "晚上好！请问叫什么名字？", pronunciation: "古腾 阿本特! 翁特 维勒谢姆 纳门, 比特" },
+      { speaker: "A", german: "Mein Name ist Zhang Wei.", chinese: "我叫张伟。", pronunciation: "迈因 纳默 伊斯特 张 魏" },
+      { speaker: "B", german: "Einen Moment, bitte. Ja, ich habe Ihr Zimmer. Einzelzimmer oder Doppelzimmer?", chinese: "请稍等。是的，我找到您的房间了。单人间还是双人间？", pronunciation: "艾能 莫门特, 比特. 呀, 伊希 哈伯 维尔 齐默. 艾因策尔齐默 奥德 多佩尔齐默" },
+      { speaker: "A", german: "Doppelzimmer, bitte.", chinese: "双人间。", pronunciation: "多佩尔齐默, 比特" },
+      { speaker: "B", german: "Perfekt! Hier ist Ihr Zimmerschlüssel. Zimmer 502.", chinese: "完美！这是您的钥匙。502房间。", pronunciation: "佩尔费克特! 黑尔 伊斯特 维尔 齐默施吕塞尔. 齐默 菲恩弗" },
+      { speaker: "A", german: "Danke. Ist das Frühstück inbegriffen?", chinese: "谢谢。早餐包含在内吗？", pronunciation: "丹克. 伊斯特 达斯 弗吕什特吕克 因贝格里芬" },
+      { speaker: "B", german: "Ja, das Frühstück ist von 6:30 bis 10:00 Uhr.", chinese: "是的，早餐从6:30到10:00。", pronunciation: "呀, 达斯 弗吕什特吕克 伊斯特 冯 塞希斯:里斯希 比斯 茨恩 乌尔" },
+      { speaker: "A", german: "Vielen Dank! Wo ist der Aufzug?", chinese: "非常感谢！电梯在哪里？", pronunciation: "菲林 丹克! 沃 伊斯特 德尔 奥夫楚克" },
+      { speaker: "B", german: "Der Aufzug ist gleich hier rechts.", chinese: "电梯就在这边右边。", pronunciation: "德尔 奥夫楚克 伊斯特 格兰 黑尔 雷希茨" },
+    ]
+  },
+  // 7. 看医生
+  {
+    id: "doctor",
+    title: "看医生",
+    titleChinese: "医者に行く",
+    scenario: "Beim Arzt",
+    scenarioChinese: "在医院或诊所看病",
+    lines: [
+      { speaker: "A", german: "Guten Tag! Was kann ich für Sie tun?", chinese: "您好！有什么可以帮您的吗？", pronunciation: "古腾 塔克! 瓦斯 坎 伊希 菲尔 贼 敦" },
+      { speaker: "B", german: "Guten Tag, Herr Doktor. Ich fühle mich seit Tagen nicht wohl.", chinese: "您好，医生。我这几天感觉不太舒服。", pronunciation: "古腾 塔克, 海尔 多克托. 伊希 菲勒 米希 扎希特 达根 尼希特 沃尔" },
+      { speaker: "A", german: "Oh, das tut mir leid. Was sind Ihre Symptome?", chinese: "哦，真遗憾。您有什么症状？", pronunciation: "欧, 达斯 图特 米尔 赖特. 瓦斯 辛德 伊雷 兹姆普托梅" },
+      { speaker: "B", german: "Ich habe Husten, Schnupfen und Kopfschmerzen.", chinese: "我咳嗽、流鼻涕和头疼。", pronunciation: "伊希 哈伯 胡斯特, 施努普芬 翁特 科普夫施梅尔岑" },
+      { speaker: "A", german: "Haben Sie auch Fieber?", chinese: "您发烧吗？", pronunciation: "哈本 贼 奥赫 菲伯" },
+      { speaker: "B", german: "Ja, ich habe leichtes Fieber. 37,8 Grad.", chinese: "有的，低烧。37.8度。", pronunciation: "呀, 伊希 哈伯 莱希特斯 菲伯. 德里西-席恩-阿赫特-格拉特" },
+      { speaker: "A", german: "Ich verstehe. Machen Sie bitte den Mund auf. Aaah...", chinese: "我明白了。请张嘴。啊..." , pronunciation: "伊希 菲尔施特 艾. 马亨 贼 登 蒙德 奥弗. 啊..." },
+      { speaker: "B", german: "Aaah...", chinese: "啊...", pronunciation: "啊" },
+      { speaker: "A", german: "Sie haben eine Erkältung. Ich verschreibe Ihnen Medikamente.", chinese: "您感冒了。我给您开点药。", pronunciation: "贼 哈本 艾纳 埃尔凯尔通. 伊希 菲尔施赖伯 伊hnen 梅迪卡门特" },
+      { speaker: "B", german: "Vielen Dank, Herr Doktor. Wie lange soll ich die Medikamente nehmen?", chinese: "谢谢，医生。我要吃多久的药？", pronunciation: "菲林 丹克, 海尔 多克托. 维 朗格 佐尔 伊希 迪 梅迪卡门特 内门" },
+      { speaker: "A", german: "Nehmen Sie die Tabletten dreimal täglich nach dem Essen für sieben Tage.", chinese: "每天三次，饭后服用，吃七天。", pronunciation: "内门 贼 迪 塔布莱顿 德赖马尔 特利希 纳赫 达斯 埃森 菲尔 兹伊本 达格" },
+    ]
+  },
+  // 8. 银行开户
+  {
+    id: "bank",
+    title: "银行开户",
+    titleChinese: "銀行で口座を開く",
+    scenario: "Bei der Bank",
+    scenarioChinese: "在银行开账户",
+    lines: [
+      { speaker: "A", german: "Guten Tag! Kann ich Ihnen helfen?", chinese: "您好！有什么可以帮您的吗？", pronunciation: "古腾 塔克! 坎 伊希 伊hnen 赫尔弗" },
+      { speaker: "B", german: "Ja, ich möchte ein Konto eröffnen.", chinese: "是的，我想开一个账户。", pronunciation: "呀, 伊希 梅希特 艾因 孔托 埃尔厄夫宁" },
+      { speaker: "A", german: "Gerne! Haben Sie Ihren Ausweis dabei?", chinese: "好的！您带身份证了吗？", pronunciation: "格尔呢! 哈本 贼 伊hnen 奥思瓦伊斯 达比" },
+      { speaker: "B", german: "Ja, hier ist mein Personalausweis.", chinese: "有的，这是我的身份证。", pronunciation: "呀, 黑尔 伊斯特 迈因 佩尔措纳劳斯瓦伊斯" },
+      { speaker: "A", german: "Danke. Möchten Sie ein Girokonto oder ein Sparkonto?", chinese: "谢谢。您想要活期账户还是储蓄账户？", pronunciation: "丹克. 梅希ten 贼 艾因 吉罗孔托 奥德 艾因 施帕尔孔托" },
+      { speaker: "B", german: "Ich möchte ein Girokonto.", chinese: "我想开活期账户。", pronunciation: "伊希 梅希特 艾因 吉罗孔托" },
+      { speaker: "A", german: "In Ordnung. Hier sind die Unterlagen. Bitte füllen Sie das Formular aus.", chinese: "好的。这是表格。请填写。", pronunciation: "因 奥德农. 黑尔 辛德 迪 翁特拉克恩. 比特 菲伦 贼 达斯 弗奥尔穆拉尔 奥斯" },
+      { speaker: "B", german: "Alles klar! Wie lange dauert die Kontoeröffnung?", chinese: "好的！开户需要多长时间？", pronunciation: "阿尔拉斯 克拉尔! 维 朗格 多特 迪 孔托埃尔弗农" },
+      { speaker: "A", german: "Das geht sehr schnell. In etwa 30 Minuten ist alles erledigt.", chinese: "很快。大概30分钟就能办好。", pronunciation: "达斯 格特 贼尔 施内尔. 因 艾巴 德里西希 明滕 伊斯特 阿尔拉斯 埃尔莱迪希特" },
+      { speaker: "B", german: "Wunderbar! Vielen Dank für Ihre Hilfe.", chinese: "太好了！谢谢您的帮助。", pronunciation: "温德巴尔! 菲林 丹克 菲尔 伊雷 希尔弗" },
+    ]
+  },
+  // 9. 工作面试
+  {
+    id: "job-interview",
+    title: "工作面试",
+    titleChinese: "面接",
+    scenario: "Bei einem Vorstellungsgespräch",
+    scenarioChinese: "求职面试",
+    lines: [
+      { speaker: "A", german: "Guten Tag! Bitte setzen Sie sich.", chinese: "您好！请坐。", pronunciation: "古腾 塔克! 比特 泽岑 贼 贼希" },
+      { speaker: "B", german: "Danke schön! Guten Tag, Frau Müller.", chinese: "非常感谢！您好，米勒女士。", pronunciation: "丹克 舍恩! 古腾 塔克, 弗劳 米勒" },
+      { speaker: "A", german: "Guten Tag, Herr Zhang. Erzählen Sie mir bitte etwas über sich.", chinese: "您好，张先生。请介绍一下您自己。", pronunciation: "古腾 塔克, 海尔 张. 埃尔策伦 贼 米尔 比特 埃特瓦斯 于伯尔 贼希" },
+      { speaker: "B", german: "Natürlich! Ich bin Zhang Wei, 28 Jahre alt, und ich komme aus China.", chinese: "当然！我叫张伟，28岁，来自中国。", pronunciation: "那图尔利希! 伊希 宾 张 魏, 茨范齐希 阿希特 阿尔特, 翁特 伊希 科么 奥斯 中国" },
+      { speaker: "A", german: "Und was haben Sie vorher gemacht?", chinese: "您之前是做什么的？", pronunciation: "翁特 瓦斯 哈本 贼 福黑尔 gemacht" },
+      { speaker: "B", german: "Ich habe fünf Jahre als Softwareentwickler gearbeitet.", chinese: "我做了五年软件开发工程师。", pronunciation: "伊希 哈伯 芬夫 雅尔 阿尔斯 佐夫特瓦尔恩特维克勒 格尔拜特" },
+      { speaker: "A", german: "Sehr gut! Warum möchten Sie bei unserem Unternehmen arbeiten?", chinese: "很好！您为什么想在我们公司工作？", pronunciation: "贼尔 古特! 瓦鲁姆 梅希ten 贼 贝 昂泽伦 翁特ernen 阿尔贝腾" },
+      { speaker: "B", german: "Weil Ihr Unternehmen sehr bekannt ist und gute Entwicklungsmöglichkeiten bietet.", chinese: "因为贵公司很有名，而且提供很好的发展机会。", pronunciation: "魏尔 埃尔 昂特ernen 贼尔 贝克安特 伊斯特 翁特 古特 恩特维克隆斯梅格力希凯特恩 比特" },
+      { speaker: "A", german: "Wann können Sie anfangen?", chinese: "您什么时候可以开始？", pronunciation: "万 克因 贼 安方根" },
+      { speaker: "B", german: "Ich kann ab nächste Woche anfangen.", chinese: "我可以下周开始。", pronunciation: "伊希 坎 阿普 内赫斯特 沃克 安方根" },
+      { speaker: "A", german: "Perfekt! Wir melden uns bei Ihnen.", chinese: "完美！我们会联系您的。", pronunciation: "佩尔费克特! 维尔 梅尔登 翁斯 贝 伊hnen" },
+    ]
+  },
+  // 10. 朋友聊天
+  {
+    id: "friends-chatting",
+    title: "朋友聊天",
+    titleChinese: "友人との会話",
+    scenario: "Mit einem Freund sprechen",
+    scenarioChinese: "和朋友聊天",
+    lines: [
+      { speaker: "A", german: "Hallo Lisa! Wie geht's?", chinese: "嗨，丽莎！你好吗？", pronunciation: "哈洛 丽莎! 维 格茨" },
+      { speaker: "B", german: "Hallo Peter! Mir geht's gut, danke! Und dir?", chinese: "嗨，彼得！我很好，谢谢！你呢？", pronunciation: "哈洛 彼得! 米尔 格茨 古特, 丹克! 翁特 迪尔" },
+      { speaker: "A", german: "Mir geht's auch gut. Was machst du heute Abend?", chinese: "我也很好。你今晚做什么？", pronunciation: "米尔 格茨 奥希 古特. 瓦斯 马希斯特 杜 霍伊特 阿本特" },
+      { speaker: "B", german: "Ich weiß noch nicht. Warum?", chinese: "我还没想好。为什么问这个？", pronunciation: "伊希 维斯 诺希 尼希特. 瓦鲁姆" },
+      { speaker: "A", german: "Ich dachte, wir könnten zusammen ins Kino gehen.", chinese: "我想我们可以一起去看电影。", pronunciation: "伊希 达希特, 维尔 克因ten 楚扎门 因斯 基诺 格恩" },
+      { speaker: "B", german: "Das ist eine gute Idee! Welcher Film läuft gerade?", chinese: "好主意！正在上映什么电影？", pronunciation: "达斯 伊斯特 艾纳 古特 伊德! 维尔希尔 菲尔姆 勒弗特 格拉德" },
+      { speaker: "A", german: "Ein neuer Actionfilm. Der heißt 'Rettung um Mitternacht'.", chinese: "一部新的动作片。叫《午夜营救》。", pronunciation: "艾因 诺伊尔 埃克松菲尔姆. 德尔 嗨ßt 雷通 翁 米特恩纳希特" },
+      { speaker: "B", german: "Oh, klingt spannend! Um wie viel Uhr?", chinese: "哦，听起来很刺激！几点？", pronunciation: "欧, 克林特 施潘登特! 翁姆 维 菲尔 乌尔" },
+      { speaker: "A", german: "Um 19:30 Uhr. Treffen wir uns um 19:00 Uhr vor dem Kino.", chinese: "19:30。我们19:00在电影院门口见。", pronunciation: "翁姆 泽本齐希:里斯希 乌尔. 特雷芬 维尔 翁斯 翁姆 泽本齐希 乌尔 福尔 达斯 基诺" },
+      { speaker: "B", german: "Einverstanden! Bis später!", chinese: "一言为定！待会儿见！", pronunciation: "艾因菲尔施坦登! 比斯 施派特" },
+    ]
+  },
+];
+
+// 对话分类
+const dialogCategories = [
+  { id: "all", name: "全部对话" },
+  { id: "daily", name: "日常社交" },
+  { id: "travel", name: "旅行交通" },
+  { id: "dining", name: "餐饮" },
+  { id: "shopping", name: "购物" },
+  { id: "health", name: "医疗健康" },
+  { id: "work", name: "工作商务" },
 ];
 
 const categories = [
@@ -508,6 +1048,30 @@ const categories = [
   { id: "color", name: "颜色" },
   { id: "family", name: "家庭" },
   { id: "verb", name: "动词" },
+  { id: "phrase", name: "常用短句" },
+  { id: "dialog", name: "主题对话" },
+];
+
+// 短句子分类
+const phraseCategories = [
+  { id: "greeting", name: "问候" },
+  { id: "farewell", name: "告别" },
+  { id: "gratitude", name: "感谢" },
+  { id: "apology", name: "道歉" },
+  { id: "polite", name: "礼貌用语" },
+  { id: "restaurant", name: "餐厅点餐" },
+  { id: "shopping", name: "购物" },
+  { id: "directions", name: "问路" },
+  { id: "emergency", name: "紧急情况" },
+  { id: "emotions", name: "情感表达" },
+  { id: "numbers", name: "数字相关" },
+  { id: "time", name: "时间相关" },
+  { id: "weather", name: "天气" },
+  { id: "phone", name: "电话" },
+  { id: "work", name: "工作学习" },
+  { id: "hobbies", name: "兴趣爱好" },
+  { id: "hotel", name: "酒店住宿" },
+  { id: "health", name: "身体状况" },
 ];
 
 // 动词子分类
@@ -595,12 +1159,13 @@ export default function GermanLearning() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedVerbSubcategory, setSelectedVerbSubcategory] = useState<string | null>(null); // 动词子分类
   const [selectedNumberSubcategory, setSelectedNumberSubcategory] = useState<string | null>(null); // 数字子分类
+  const [selectedPhraseSubcategory, setSelectedPhraseSubcategory] = useState<string | null>(null); // 短句子分类
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic" | "phoneNumber">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic" | "phoneNumber" | "dialogListen">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -692,6 +1257,46 @@ export default function GermanLearning() {
 
   // 是否显示电话号码的德语读法
   const [showPhoneNumberText, setShowPhoneNumberText] = useState(false);
+
+  // 对话听力练习数据
+  const [dialogListenData, setDialogListenData] = useState<{
+    dialogId: string;
+    question: string; // 播放的句子
+    questionChinese: string;
+    options: { german: string; chinese: string; isCorrect: boolean }[];
+    dialogTitle: string;
+  } | null>(null);
+
+  // 是否显示对话听力题目
+  const [showDialogListenQuestion, setShowDialogListenQuestion] = useState(false);
+
+  // 对话学习状态
+  const [selectedDialogCategory, setSelectedDialogCategory] = useState("all"); // 对话分类
+  const [currentDialogIndex, setCurrentDialogIndex] = useState(0); // 当前对话索引
+  const [showDialogChinese, setShowDialogChinese] = useState(true); // 是否显示中文
+  const [showDialogPronunciation, setShowDialogPronunciation] = useState(true); // 是否显示发音
+  const [currentDialogLineIndex, setCurrentDialogLineIndex] = useState(0); // 当前对话行索引
+
+  // 根据分类筛选对话
+  const getFilteredDialogs = () => {
+    if (selectedDialogCategory === "all") {
+      return dialogs;
+    }
+    // 将对话分类映射到对话ID
+    const categoryMap: Record<string, string[]> = {
+      daily: ["self-intro", "friends-chatting"],
+      travel: ["asking-directions", "airport"],
+      dining: ["restaurant-order"],
+      shopping: ["shopping"],
+      health: ["doctor"],
+      work: ["job-interview", "bank"],
+    };
+    const allowedIds = categoryMap[selectedDialogCategory] || [];
+    return dialogs.filter(d => allowedIds.includes(d.id));
+  };
+
+  // 获取筛选后的对话列表
+  const filteredDialogs = getFilteredDialogs();
 
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
@@ -990,6 +1595,10 @@ export default function GermanLearning() {
     // 如果是数字分类且选中了子分类
     if (selectedCategory === "number" && selectedNumberSubcategory) {
       result = result.filter(w => w.numberSubcategory === selectedNumberSubcategory);
+    }
+    // 如果是短句分类且选中了子分类
+    if (selectedCategory === "phrase" && selectedPhraseSubcategory) {
+      result = result.filter(w => w.phraseCategory === selectedPhraseSubcategory);
     }
     return result;
   })();
@@ -1460,6 +2069,75 @@ export default function GermanLearning() {
       return;
     }
 
+    // 对话听力理解题型
+    if (quizType === "dialogListen") {
+      // 使用筛选后的对话列表
+      const availableDialogs = getFilteredDialogs();
+      if (availableDialogs.length === 0) {
+        alert("没有可用的对话，请先选择对话分类");
+        return;
+      }
+
+      // 随机选择一个对话
+      const randomDialog = availableDialogs[Math.floor(Math.random() * availableDialogs.length)];
+
+      // 随机选择对话中的一个句子作为听力内容
+      const randomLineIndex = Math.floor(Math.random() * randomDialog.lines.length);
+      const correctLine = randomDialog.lines[randomLineIndex];
+
+      // 生成错误选项（从其他对话中随机选择句子）
+      const otherDialogs = dialogs.filter(d => d.id !== randomDialog.id);
+      const wrongOptions: { german: string; chinese: string; isCorrect: boolean }[] = [];
+
+      while (wrongOptions.length < 3 && otherDialogs.length > 0) {
+        const randomOtherDialog = otherDialogs[Math.floor(Math.random() * otherDialogs.length)];
+        const randomOtherLine = randomOtherDialog.lines[Math.floor(Math.random() * randomOtherDialog.lines.length)];
+
+        // 确保不重复
+        if (!wrongOptions.some(opt => opt.german === randomOtherLine.german)) {
+          wrongOptions.push({
+            german: randomOtherLine.german,
+            chinese: randomOtherLine.chinese,
+            isCorrect: false
+          });
+        }
+        // 移除已使用的对话，防止无限循环
+        otherDialogs.splice(otherDialogs.indexOf(randomOtherDialog), 1);
+      }
+
+      // 组合选项并打乱
+      const allOptions = [
+        { german: correctLine.german, chinese: correctLine.chinese, isCorrect: true },
+        ...wrongOptions
+      ].sort(() => Math.random() - 0.5);
+
+      setDialogListenData({
+        dialogId: randomDialog.id,
+        question: correctLine.german,
+        questionChinese: correctLine.chinese,
+        options: allOptions,
+        dialogTitle: randomDialog.title
+      });
+      setShowDialogListenQuestion(false);
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+
+      // 播放听力句子
+      setTimeout(() => {
+        setIsPlayingAudio(true);
+        speak(correctLine.german);
+        setTimeout(() => {
+          setIsPlayingAudio(false);
+          setShowDialogListenQuestion(true);
+        }, 2000);
+      }, 500);
+
+      return;
+    }
+
     // AI 出题模式（仅拼写纠错题型支持）
     if (useAiQuiz && quizType === "spelling") {
       // 调用 AI 生成题目
@@ -1861,6 +2539,7 @@ export default function GermanLearning() {
              quizType === "weekdayLogic" ? "星期逻辑推理" :
              quizType === "monthLogic" ? "月份逻辑推理" :
              quizType === "phoneNumber" ? "电话号码听力" :
+             quizType === "dialogListen" ? "对话听力理解" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -2182,6 +2861,16 @@ export default function GermanLearning() {
                   >
                     月份听力推理
                   </button>
+                  <button
+                    onClick={() => setQuizType("dialogListen")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "dialogListen"
+                        ? "bg-purple-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-purple-50"
+                    }`}
+                  >
+                    对话听力
+                  </button>
                 </div>
 
                 {/* 词汇基础组 */}
@@ -2329,6 +3018,7 @@ export default function GermanLearning() {
                     setSelectedCategory(cat.id);
                     setSelectedVerbSubcategory(null);
                     setSelectedNumberSubcategory(null);
+                    setSelectedPhraseSubcategory(null);
                     setCurrentIndex(0);
                     setIsFlipped(false);
                   }}
@@ -2436,12 +3126,128 @@ export default function GermanLearning() {
               </div>
             )}
 
-            <button
-              onClick={startQuiz}
-              className="px-6 py-2 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition text-base"
-            >
-              开始答题 →
-            </button>
+            {/* 短句分类筛选 */}
+            {selectedCategory === "phrase" && (
+              <div className="flex flex-wrap justify-center gap-1 mb-3">
+                <button
+                  onClick={() => {
+                    setSelectedPhraseSubcategory(null);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs transition ${
+                    selectedPhraseSubcategory === null
+                      ? "bg-rose-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-rose-50"
+                  }`}
+                >
+                  全部短句
+                  <span className="ml-0.5 text-xs opacity-70">
+                    ({words.filter(w => w.category === "phrase").length})
+                  </span>
+                </button>
+                {phraseCategories.map((subcat) => {
+                  const count = words.filter(w => w.category === "phrase" && w.phraseCategory === subcat.id).length;
+                  return (
+                    <button
+                      key={subcat.id}
+                      onClick={() => {
+                        setSelectedPhraseSubcategory(subcat.id);
+                        setCurrentIndex(0);
+                        setIsFlipped(false);
+                      }}
+                      className={`px-2 py-1 rounded-lg text-xs transition ${
+                        selectedPhraseSubcategory === subcat.id
+                          ? "bg-rose-600 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-rose-50"
+                      }`}
+                    >
+                      {subcat.name}
+                      <span className="ml-0.5 text-xs opacity-70">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 对话分类筛选 */}
+            {selectedCategory === "dialog" && (
+              <div className="flex flex-wrap justify-center gap-1 mb-3">
+                <button
+                  onClick={() => {
+                    setSelectedDialogCategory("all");
+                    setCurrentDialogIndex(0);
+                    setCurrentDialogLineIndex(0);
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs transition ${
+                    selectedDialogCategory === "all"
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-purple-50"
+                  }`}
+                >
+                  全部对话
+                  <span className="ml-0.5 text-xs opacity-70">({dialogs.length})</span>
+                </button>
+                {dialogCategories.map((cat) => {
+                  // 计算该分类下的对话数量
+                  const categoryMap: Record<string, string[]> = {
+                    daily: ["self-intro", "friends-chatting"],
+                    travel: ["asking-directions", "airport"],
+                    dining: ["restaurant-order"],
+                    shopping: ["shopping"],
+                    health: ["doctor"],
+                    work: ["job-interview", "bank"],
+                  };
+                  const allowedIds = categoryMap[cat.id] || [];
+                  const count = dialogs.filter(d => allowedIds.includes(d.id)).length;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        setSelectedDialogCategory(cat.id);
+                        setCurrentDialogIndex(0);
+                        setCurrentDialogLineIndex(0);
+                      }}
+                      className={`px-2 py-1 rounded-lg text-xs transition ${
+                        selectedDialogCategory === cat.id
+                          ? "bg-purple-600 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-purple-50"
+                      }`}
+                    >
+                      {cat.name}
+                      <span className="ml-0.5 text-xs opacity-70">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 对话列表（未选择对话时显示） */}
+            {selectedCategory === "dialog" && filteredDialogs.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <p>没有找到符合条件的对话</p>
+              </div>
+            )}
+
+            {/* 对话模式下的开始答题按钮 */}
+            {selectedCategory === "dialog" ? (
+              <button
+                onClick={() => {
+                  setQuizType("dialogListen");
+                  startQuiz();
+                }}
+                className="px-6 py-2 bg-purple-500 text-white rounded-full font-medium hover:bg-purple-600 transition text-base"
+              >
+                开始对话听力 →
+              </button>
+            ) : (
+              <button
+                onClick={startQuiz}
+                className="px-6 py-2 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition text-base"
+              >
+                开始答题 →
+              </button>
+            )}
           </div>
         )}
 
@@ -2464,6 +3270,7 @@ export default function GermanLearning() {
                   setSelectedCategory(cat.id);
                   setSelectedVerbSubcategory(null);
                   setSelectedNumberSubcategory(null);
+                  setSelectedPhraseSubcategory(null);
                   setCurrentIndex(0);
                   setIsFlipped(false);
                 }}
@@ -2476,7 +3283,7 @@ export default function GermanLearning() {
                 {cat.name}
                 {cat.id !== "all" && (
                   <span className="ml-1 text-xs opacity-70">
-                    ({words.filter(w => w.category === cat.id).length})
+                    ({cat.id === "dialog" ? dialogs.length : words.filter(w => w.category === cat.id).length})
                   </span>
                 )}
               </button>
@@ -2562,6 +3369,50 @@ export default function GermanLearning() {
                     selectedNumberSubcategory === subcat.id
                       ? "bg-teal-600 text-white"
                       : "bg-white text-gray-700 border border-gray-300 hover:bg-teal-50"
+                  }`}
+                >
+                  {subcat.name}
+                  <span className="ml-1 text-xs opacity-70">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 学习模式：短句分类筛选 */}
+        {mode === "learn" && selectedCategory === "phrase" && (
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            <button
+              onClick={() => {
+                setSelectedPhraseSubcategory(null);
+                setCurrentIndex(0);
+                setIsFlipped(false);
+              }}
+              className={`px-3 py-1.5 rounded-full text-sm transition ${
+                selectedPhraseSubcategory === null
+                  ? "bg-rose-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-rose-50"
+              }`}
+            >
+              全部短句
+              <span className="ml-1 text-xs opacity-70">
+                ({words.filter(w => w.category === "phrase").length})
+              </span>
+            </button>
+            {phraseCategories.map((subcat) => {
+              const count = words.filter(w => w.category === "phrase" && w.phraseCategory === subcat.id).length;
+              return (
+                <button
+                  key={subcat.id}
+                  onClick={() => {
+                    setSelectedPhraseSubcategory(subcat.id);
+                    setCurrentIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-sm transition ${
+                    selectedPhraseSubcategory === subcat.id
+                      ? "bg-rose-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-rose-50"
                   }`}
                 >
                   {subcat.name}
@@ -3340,6 +4191,130 @@ export default function GermanLearning() {
                   </div>
                 )}
               </div>
+            ) : quizType === "dialogListen" ? (
+              // 对话听力理解题型
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                {/* 对话标题 */}
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400 mb-2 block">
+                    来自：{dialogListenData?.dialogTitle}
+                  </span>
+                </div>
+
+                {/* 播放按钮 */}
+                <div className="text-center mb-6">
+                  <button
+                    onClick={() => {
+                      if (dialogListenData?.question) {
+                        setIsPlayingAudio(true);
+                        speak(dialogListenData.question);
+                        setTimeout(() => setIsPlayingAudio(false), 2000);
+                      }
+                    }}
+                    disabled={isPlayingAudio || !showDialogListenQuestion}
+                    className={`px-8 py-4 rounded-full transition ${
+                      isPlayingAudio
+                        ? "bg-green-100 text-green-600"
+                        : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                    }`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🎧 播放句子"}
+                  </button>
+                </div>
+
+                {/* 题目区域 */}
+                {showDialogListenQuestion && dialogListenData && (
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500 mb-4">
+                      你刚才听到的句子是什么意思？
+                    </p>
+
+                    {/* 选项 */}
+                    <div className="space-y-3">
+                      {dialogListenData.options.map((option, idx) => {
+                        const isSelected = selectedOption === idx;
+                        const showResult = quizResult !== null;
+                        const isCorrect = option.isCorrect;
+
+                        let buttonClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                        if (showResult) {
+                          if (isCorrect) {
+                            buttonClass += "bg-green-500 text-white";
+                          } else if (isSelected && !isCorrect) {
+                            buttonClass += "bg-red-500 text-white";
+                          } else {
+                            buttonClass += "bg-gray-100 text-gray-400 cursor-not-allowed";
+                          }
+                        } else {
+                          buttonClass += isSelected
+                            ? "bg-purple-500 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-purple-50 border-2 border-purple-200";
+                        }
+
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              if (showResult) return;
+                              setSelectedOption(idx);
+                              const isAnswerCorrect = option.isCorrect;
+
+                              if (isAnswerCorrect) {
+                                setQuizResult("correct");
+                                playSound("correct");
+                                setQuizRecords(prev => [...prev, {
+                                  german: dialogListenData!.question,
+                                  chinese: dialogListenData!.questionChinese,
+                                  selected: option.chinese,
+                                  isCorrect: true,
+                                  isTimeout: false,
+                                  gender: undefined
+                                }]);
+                              } else {
+                                setQuizResult("wrong");
+                                playSound("wrong");
+                                setQuizRecords(prev => [...prev, {
+                                  german: dialogListenData!.question,
+                                  chinese: dialogListenData!.questionChinese,
+                                  selected: option.chinese,
+                                  isCorrect: false,
+                                  isTimeout: false,
+                                  gender: undefined
+                                }]);
+                              }
+                            }}
+                            disabled={showResult}
+                            className={buttonClass}
+                          >
+                            {option.chinese}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* 显示正确答案（答题后） */}
+                    {quizResult !== null && (
+                      <div className="mt-4 bg-blue-50 rounded-xl p-4 text-center">
+                        <p className="text-gray-600 mb-2">正确答案：</p>
+                        <p className="text-xl font-bold text-blue-600 mb-2">
+                          {dialogListenData?.question}
+                        </p>
+                        <p className="text-gray-500">
+                          {dialogListenData?.questionChinese}
+                        </p>
+
+                        {/* 下一题按钮 */}
+                        <button
+                          onClick={nextQuiz}
+                          className="mt-4 w-full py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
+                        >
+                          下一题 →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             ) : quizType === "sentence" ? (
               // 句子填空题型
               <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
@@ -3602,10 +4577,125 @@ export default function GermanLearning() {
           </div>
         )}
 
+        {/* 学习模式：对话学习界面 */}
+        {mode === "learn" && selectedCategory === "dialog" && filteredDialogs.length > 0 && (
+          <div className="max-w-2xl mx-auto">
+            {/* 对话标题和场景 */}
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                {filteredDialogs[currentDialogIndex]?.title}
+              </h2>
+              <p className="text-sm text-gray-500">
+                {filteredDialogs[currentDialogIndex]?.scenarioChinese}
+              </p>
+            </div>
+
+            {/* 对话内容 */}
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 mb-4 max-h-96 overflow-y-auto">
+              {filteredDialogs[currentDialogIndex]?.lines.map((line, idx) => (
+                <div
+                  key={idx}
+                  className={`mb-3 ${
+                    line.speaker === "A" ? "text-left" : "text-right"
+                  }`}
+                >
+                  <div
+                    className={`inline-block max-w-[85%] rounded-lg p-3 ${
+                      line.speaker === "A"
+                        ? "bg-blue-500 text-white"
+                        : "bg-purple-500 text-white"
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{line.german}</div>
+                    {showDialogPronunciation && line.pronunciation && (
+                      <div className="text-xs opacity-80 mt-1">
+                        {line.pronunciation}
+                      </div>
+                    )}
+                    {showDialogChinese && (
+                      <div className="text-xs opacity-90 mt-1 border-t border-white/20 pt-1">
+                        {line.chinese}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 控制按钮 */}
+            <div className="flex justify-center gap-2 mb-4">
+              <button
+                onClick={() => setShowDialogChinese(!showDialogChinese)}
+                className={`px-3 py-1 rounded-lg text-xs transition ${
+                  showDialogChinese
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                中文
+              </button>
+              <button
+                onClick={() => setShowDialogPronunciation(!showDialogPronunciation)}
+                className={`px-3 py-1 rounded-lg text-xs transition ${
+                  showDialogPronunciation
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                发音
+              </button>
+            </div>
+
+            {/* 对话导航 */}
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() => {
+                  setCurrentDialogIndex((prev) => (prev > 0 ? prev - 1 : filteredDialogs.length - 1));
+                  setCurrentDialogLineIndex(0);
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                上一段
+              </button>
+              <span className="text-sm text-gray-500">
+                {currentDialogIndex + 1} / {filteredDialogs.length}
+              </span>
+              <button
+                onClick={() => {
+                  setCurrentDialogIndex((prev) => (prev < filteredDialogs.length - 1 ? prev + 1 : 0));
+                  setCurrentDialogLineIndex(0);
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                下一段
+              </button>
+            </div>
+
+            {/* 播放对话语音 */}
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={() => {
+                  const dialog = filteredDialogs[currentDialogIndex];
+                  if (dialog) {
+                    dialog.lines.forEach((line, idx) => {
+                      setTimeout(() => {
+                        speak(line.german);
+                      }, idx * 2000);
+                    });
+                  }
+                }}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
+              >
+                <span>🔊</span> 播放对话
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* 学习模式：单词卡片 */}
-        {mode === "learn" && (
+        {mode === "learn" && selectedCategory !== "dialog" && (
           <>
-        {/* 单词卡片 */}
+            {/* 单词卡片 */}
         <div className="mb-6 text-center text-gray-600">
           {filteredWords.length} 个单词
         </div>
@@ -3719,13 +4809,13 @@ export default function GermanLearning() {
             ))}
           </div>
         </div>
+          </>
+        )}
 
         {/* 返回首页 */}
         <div className="text-center mt-8">
           <a href="/" className="text-blue-600 hover:underline">← 返回首页</a>
         </div>
-          </>
-        )}
       </div>
 
       <style jsx global>{`
