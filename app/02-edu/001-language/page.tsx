@@ -690,6 +690,9 @@ export default function GermanLearning() {
   // 用户输入的电话号码
   const [phoneNumberInput, setPhoneNumberInput] = useState("");
 
+  // 是否显示电话号码的德语读法
+  const [showPhoneNumberText, setShowPhoneNumberText] = useState(false);
+
   // 从 localStorage 加载 API Key 和错题本
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1634,6 +1637,7 @@ export default function GermanLearning() {
     setShowWeekdayLogicText(false); // 重置星期推理显示状态
     setPhoneNumberData(null); // 重置电话号码数据
     setPhoneNumberInput(""); // 重置电话号码输入
+    setShowPhoneNumberText(false); // 重置电话号码读法显示状态
     await generateQuiz();
   };
 
@@ -3189,6 +3193,29 @@ export default function GermanLearning() {
                 <div className="text-center mb-4">
                   <span className="text-sm text-gray-400 mb-2 block">听电话号码，输入数字</span>
                 </div>
+
+                {/* 显示/隐藏德语读法按钮 */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowPhoneNumberText(!showPhoneNumberText)}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      showPhoneNumberText
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                    }`}
+                  >
+                    {showPhoneNumberText ? "🙈 隐藏读法" : "👁️ 显示读法"}
+                  </button>
+                </div>
+
+                {/* 显示德语读法 */}
+                {showPhoneNumberText && phoneNumberData && (
+                  <div className="bg-teal-50 rounded-xl p-4 mb-4 text-center">
+                    <p className="text-lg text-gray-800 font-medium">
+                      {phoneNumberData.germanText}
+                    </p>
+                  </div>
+                )}
 
                 {/* 播放按钮 */}
                 <div className="text-center mb-6">
