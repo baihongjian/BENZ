@@ -1,65 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { spawn } from 'child_process';
-import path from 'path';
+
+const TTS_SERVER_URL = 'http://localhost:8000';
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, lang = 'de' } = await request.json();
+    const body = await request.json();
+    const text = body.text;
+    const lang = body.lang || 'de';
 
     if (!text) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
-    // 生成唯一的输出文件名
-    const timestamp = Date.now();
-    const outputFile = path.join(process.cwd(), 'app', '02-edu', '001-language', `tts_${timestamp}.mp3`);
+    console.log('[TTS] 请求文本:', text.substring(0, 30));
 
-    // 调用 Python 脚本
-    const result = await new Promise<{ success: boolean; base64?: string; error?: string }>((resolve) => {
-      const pythonProcess = spawn('python3', [
-        path.join(process.cwd(), 'app', '02-edu', '001-language', 'tts_server.py'),
-        text,
-        lang,
-        outputFile
-      ]);
-
-      let output = '';
-      let errorOutput = '';
-
-      pythonProcess.stdout.on('data', (data) => {
-        output += data.toString();
-      });
-
-      pythonProcess.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-      });
-
-      pythonProcess.on('close', (code) => {
-        if (code === 0) {
-          // 从输出中提取 base64 数据
-          const base64Match = output.match(/BASE64_START(.+?)BASE64_END/);
-          if (base64Match) {
-            resolve({ success: true, base64: base64Match[1] });
-          } else {
-            resolve({ success: true });
-          }
-        } else {
-          resolve({ success: false, error: errorOutput || 'Python script failed' });
-        }
-      });
+    // 调用本地 Edge TTS 服务器
+    const response = await fetch(`${TTS_SERVER_URL}/tts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text, lang }),
     });
 
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+    console.log('[TTS] 响应状态:', response.status);
+
+    if (!response.ok) {
+      throw new Error(`TTS server returned ${response.status}`);
     }
 
-    return NextResponse.json({
-      success: true,
-      audio: result.base64 ? `data:audio/mp3;base64,${result.base64}` : null
-    });
+    const data = await response.json();
+    console.log('[TTS] 成功:', data.success);
 
-  } catch (error) {
-    console.error('TTS Error:', error);
-    return NextResponse.json({ error: 'Failed to generate speech' }, { status: 500 });
+    if (data.success && data.audio) {
+      return NextResponse.json({
+        success: true,
+        audio: data.audio
+      });
+    } else {
+      console.log('[TTS] 错误:', data.error);
+      return NextResponse.json({
+        success: false,
+        error: data.error || 'TTS server unavailable'
+      });
+    }
+
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[TTS] 错误:', errorMessage);
+    return NextResponse.json({
+      success: false,
+      error: errorMessage
+    }, { status: 500 });
   }
 }

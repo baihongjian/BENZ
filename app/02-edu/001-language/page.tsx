@@ -2,12 +2,13 @@
 
 import { useState, useCallback, useEffect } from "react";
 
-// 发音函数 - 使用 Python gTTS API
+// 发音函数 - 使用 Edge TTS 服务器
 const speak = async (text: string) => {
   if (typeof window === "undefined") return;
 
   try {
-    const response = await fetch('/02-edu/001-language/api/tts', {
+    // 直接调用本地 Edge TTS 服务器
+    const response = await fetch('http://localhost:8000/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, lang: 'de' })
@@ -19,7 +20,6 @@ const speak = async (text: string) => {
       const audio = new Audio(data.audio);
       await audio.play();
     } else {
-      // 如果API失败，回退到浏览器语音
       fallbackSpeak(text);
     }
   } catch {
