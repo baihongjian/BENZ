@@ -1049,6 +1049,7 @@ const categories = [
   { id: "family", name: "家庭" },
   { id: "verb", name: "动词" },
   { id: "phrase", name: "常用短句" },
+  { id: "selfIntro", name: "自我介绍" },
   { id: "dialog", name: "主题对话" },
 ];
 
@@ -1072,6 +1073,75 @@ const phraseCategories = [
   { id: "hobbies", name: "兴趣爱好" },
   { id: "hotel", name: "酒店住宿" },
   { id: "health", name: "身体状况" },
+];
+
+// 自我介绍常用短句
+const selfIntroPhrases = [
+  // 问候与介绍
+  { german: "Guten Tag! Ich heiße Lisa Müller.", chinese: "您好！我叫丽莎·米勒。", pronunciation: "古腾 塔克! 伊希 嗨ß 丽莎 米勒", category: "greeting" },
+  { german: "Freut mich. Ich bin Peter Schmidt.", chinese: "很高兴认识你。我叫彼得·施密特。", pronunciation: "弗罗伊特 米希. 伊希 宾 彼得 施密特", category: "greeting" },
+  { german: "Freut mich auch! Schön, Sie kennenzulernen.", chinese: "我也很高兴！很高兴认识您。", pronunciation: "弗罗伊特 米希 奥希! 舍恩, 贼 肯嫩茨柳尔嫩", category: "greeting" },
+
+  // 来自哪里
+  { german: "Ich komme aus Berlin.", chinese: "我来自柏林。", pronunciation: "伊希 科么 奥斯 柏林", category: "origin" },
+  { german: "Ich komme aus München.", chinese: "我来自慕尼黑。", pronunciation: "伊希 科么 奥斯 明兴", category: "origin" },
+  { german: "Woher kommen Sie?", chinese: "您来自哪里？", pronunciation: "沃黑尔 科门 贼", category: "origin" },
+  { german: "Ich komme aus China.", chinese: "我来自中国。", pronunciation: "伊希 科么 奥斯 希纳", category: "origin" },
+
+  // 年龄
+  { german: "Ich bin 25 Jahre alt.", chinese: "我25岁。", pronunciation: "伊希 宾 茨万茨弗 雅雷 阿尔特", category: "age" },
+  { german: "Ich bin erst 18 Jahre alt.", chinese: "我才18岁。", pronunciation: "伊希 宾 埃斯特 茨万茨弗 雅雷 阿尔特", category: "age" },
+  { german: "Wie alt sind Sie?", chinese: "您多大了？", pronunciation: "维 阿尔特 辛德 贼", category: "age" },
+
+  // 职业
+  { german: "Ich bin Lehrerin.", chinese: "我是老师。", pronunciation: "伊希 宾 莱雷林", category: "job" },
+  { german: "Ich bin Studentin.", chinese: "我是大学生。", pronunciation: "伊希 宾 施图丁亭", category: "job" },
+  { german: "Ich bin Arzt.", chinese: "我是医生。", pronunciation: "伊希 宾 阿尔茨特", category: "job" },
+  { german: "Ich bin Ingenieur.", chinese: "我是工程师。", pronunciation: "伊希 宾 因格尼奥尔", category: "job" },
+  { german: "Was machen Sie beruflich?", chinese: "您是做什么工作的？", pronunciation: "瓦斯 马亨 贼 贝吕弗利希", category: "job" },
+
+  // 学习
+  { german: "Ich studiere Deutsch an der Universität.", chinese: "我在大学学习德语。", pronunciation: "伊希 施图迪雷 德意志 安 德尔 乌尼维尔齐特", category: "study" },
+  { german: "Ich studiere Informatik.", chinese: "我学习计算机科学。", pronunciation: "伊希 施图迪雷 因弗尔马蒂克", category: "study" },
+  { german: "Ich lerne Deutsch erst seit einem Jahr.", chinese: "我才学了一年德语。", pronunciation: "伊希 勒尔恩 德意志 埃斯特 希特 艾因 姆 雅尔", category: "study" },
+
+  // 德语水平
+  { german: "Sprechen Sie gut Deutsch?", chinese: "您德语说得很好吗？", pronunciation: "施普雷chen 贼 古特 德意志", category: "germanLevel" },
+  { german: "Mein Deutsch ist noch nicht so gut.", chinese: "我的德语还不是很好。", pronunciation: "迈因 德意志 伊斯特 诺希 尼希特 佐 古特", category: "germanLevel" },
+  { german: "Ich spreche ein bisschen Deutsch.", chinese: "我说一点德语。", pronunciation: "伊希 施普雷赫 艾因 比申 德意志", category: "germanLevel" },
+
+  // 兴趣爱好
+  { german: "Mein Hobby ist Musik hören.", chinese: "我的爱好是听音乐。", pronunciation: "迈因 霍比 伊斯特 穆济克 赫伦", category: "hobby" },
+  { german: "Ich mag Filme sehen.", chinese: "我喜欢看电影。", pronunciation: "伊希 马克 菲尔梅 泽恩", category: "hobby" },
+  { german: "Ich spiele gern Fußball.", chinese: "我喜欢踢足球。", pronunciation: "伊希 施皮勒 格兰 福特巴尔", category: "hobby" },
+  { german: "Was sind Ihre Hobbys?", chinese: "您的爱好是什么？", pronunciation: "瓦斯 辛德 伊雷 霍比斯", category: "hobby" },
+
+  // 住宿
+  { german: "Ich wohne in Berlin.", chinese: "我住在柏林。", pronunciation: "伊希 沃内 因 柏林", category: "living" },
+  { german: "Ich wohne bei meiner Familie.", chinese: "我和家人住在一起。", pronunciation: "伊希 沃内 拜 迈纳 法米利", category: "living" },
+
+  // 家庭
+  { german: "Ich habe eine Schwester.", chinese: "我有一个姐姐。", pronunciation: "伊希 哈伯 艾纳 施韦斯特尔", category: "family" },
+  { german: "Meine Familie ist sehr klein.", chinese: "我的家人很少。", pronunciation: "迈纳 法米利 伊斯特 贼尔 克莱因", category: "family" },
+
+  // 结束语
+  { german: "Das ist schon sehr gut! Weiter so!", chinese: "已经很好！继续加油！", pronunciation: "达斯 伊斯特 雄 贼尔 古特! 维特 尔 佐", category: "closing" },
+  { german: "Schön, Sie kennenzulernen.", chinese: "很高兴认识您。", pronunciation: "舍恩, 贼 肯嫩茨柳尔嫩", category: "closing" },
+];
+
+// 自我介绍短句子分类
+const selfIntroCategories = [
+  { id: "all", name: "全部" },
+  { id: "greeting", name: "问候介绍" },
+  { id: "origin", name: "来自哪里" },
+  { id: "age", name: "年龄" },
+  { id: "job", name: "职业" },
+  { id: "study", name: "学习" },
+  { id: "germanLevel", name: "德语水平" },
+  { id: "hobby", name: "兴趣爱好" },
+  { id: "living", name: "居住" },
+  { id: "family", name: "家庭" },
+  { id: "closing", name: "结束语" },
 ];
 
 // 动词子分类
@@ -1165,7 +1235,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic" | "phoneNumber" | "dialogListen">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic" | "phoneNumber" | "dialogListen" | "dialogKeyword" | "selfIntro">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -1277,6 +1347,12 @@ export default function GermanLearning() {
   const [showDialogPronunciation, setShowDialogPronunciation] = useState(true); // 是否显示发音
   const [currentDialogLineIndex, setCurrentDialogLineIndex] = useState(0); // 当前对话行索引
 
+  // 自我介绍学习状态
+  const [selectedSelfIntroCategory, setSelectedSelfIntroCategory] = useState("all"); // 自我介绍分类
+  const [currentSelfIntroIndex, setCurrentSelfIntroIndex] = useState(0); // 当前自我介绍短句索引
+  const [showSelfIntroChinese, setShowSelfIntroChinese] = useState(true); // 是否显示中文
+  const [showSelfIntroPronunciation, setShowSelfIntroPronunciation] = useState(true); // 是否显示发音
+
   // 根据分类筛选对话
   const getFilteredDialogs = () => {
     if (selectedDialogCategory === "all") {
@@ -1293,6 +1369,14 @@ export default function GermanLearning() {
     };
     const allowedIds = categoryMap[selectedDialogCategory] || [];
     return dialogs.filter(d => allowedIds.includes(d.id));
+  };
+
+  // 根据分类筛选自我介绍短句
+  const getFilteredSelfIntroPhrases = () => {
+    if (selectedSelfIntroCategory === "all") {
+      return selfIntroPhrases;
+    }
+    return selfIntroPhrases.filter(p => p.category === selectedSelfIntroCategory);
   };
 
   // 获取筛选后的对话列表
@@ -2138,6 +2222,60 @@ export default function GermanLearning() {
       return;
     }
 
+    // 自我介绍题型
+    if (quizType === "selfIntro") {
+      const availablePhrases = getFilteredSelfIntroPhrases();
+      if (availablePhrases.length === 0) {
+        alert("没有可用的自我介绍短句，请先选择分类");
+        return;
+      }
+
+      // 随机选择一个短句
+      const randomPhrase = availablePhrases[Math.floor(Math.random() * availablePhrases.length)];
+
+      // 生成错误选项
+      const wrongPhrases = availablePhrases.filter(p => p.german !== randomPhrase.german);
+      const wrongOptions: { german: string; chinese: string; isCorrect: boolean }[] = [];
+
+      while (wrongOptions.length < 3 && wrongPhrases.length > 0) {
+        const randomIndex = Math.floor(Math.random() * wrongPhrases.length);
+        const wrongPhrase = wrongPhrases[randomIndex];
+        wrongPhrases.splice(randomIndex, 1);
+
+        if (!wrongOptions.some(opt => opt.german === wrongPhrase.german)) {
+          wrongOptions.push({
+            german: wrongPhrase.german,
+            chinese: wrongPhrase.chinese,
+            isCorrect: false
+          });
+        }
+      }
+
+      // 组合选项并打乱
+      const allOptions: QuizOption[] = [
+        { word: { german: randomPhrase.german, chinese: randomPhrase.chinese, pronunciation: randomPhrase.pronunciation || "", category: "selfIntro" }, isCorrect: true },
+        ...wrongOptions.map(wp => ({
+          word: { german: wp.german, chinese: wp.chinese, pronunciation: "", category: "selfIntro" as const },
+          isCorrect: false
+        }))
+      ].sort(() => Math.random() - 0.5);
+
+      setQuizWord({
+        german: randomPhrase.german,
+        chinese: randomPhrase.chinese,
+        pronunciation: randomPhrase.pronunciation || "",
+        category: "selfIntro"
+      });
+      setQuizOptions(allOptions);
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+
+      return;
+    }
+
     // AI 出题模式（仅拼写纠错题型支持）
     if (useAiQuiz && quizType === "spelling") {
       // 调用 AI 生成题目
@@ -2540,6 +2678,8 @@ export default function GermanLearning() {
              quizType === "monthLogic" ? "月份逻辑推理" :
              quizType === "phoneNumber" ? "电话号码听力" :
              quizType === "dialogListen" ? "对话听力理解" :
+             quizType === "dialogKeyword" ? "对话关键词记忆" :
+             quizType === "selfIntro" ? "自我介绍短句" :
              "选择正确的中文翻译"}
           </p>
         </header>
@@ -2871,6 +3011,16 @@ export default function GermanLearning() {
                   >
                     对话听力
                   </button>
+                  <button
+                    onClick={() => setQuizType("selfIntro")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "selfIntro"
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-green-50"
+                    }`}
+                  >
+                    自我介绍
+                  </button>
                 </div>
 
                 {/* 词汇基础组 */}
@@ -3170,6 +3320,138 @@ export default function GermanLearning() {
               </div>
             )}
 
+            {/* 自我介绍分类筛选 */}
+            {selectedCategory === "selfIntro" && (
+              <div className="flex flex-wrap justify-center gap-1 mb-3">
+                <button
+                  onClick={() => {
+                    setSelectedSelfIntroCategory("all");
+                    setCurrentSelfIntroIndex(0);
+                  }}
+                  className={`px-2 py-1 rounded-lg text-xs transition ${
+                    selectedSelfIntroCategory === "all"
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-green-50"
+                  }`}
+                >
+                  全部
+                  <span className="ml-0.5 text-xs opacity-70">({selfIntroPhrases.length})</span>
+                </button>
+                {selfIntroCategories.map((cat) => {
+                  const count = selfIntroPhrases.filter(p => p.category === cat.id).length;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        setSelectedSelfIntroCategory(cat.id);
+                        setCurrentSelfIntroIndex(0);
+                      }}
+                      className={`px-2 py-1 rounded-lg text-xs transition ${
+                        selectedSelfIntroCategory === cat.id
+                          ? "bg-green-600 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-green-50"
+                      }`}
+                    >
+                      {cat.name}
+                      <span className="ml-0.5 text-xs opacity-70">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 自我介绍学习界面 */}
+            {selectedCategory === "selfIntro" && (mode as string) === "learn" && (
+              <div className="max-w-2xl mx-auto">
+                {/* 当前短句 */}
+                {(() => {
+                  const phrases = getFilteredSelfIntroPhrases();
+                  const currentPhrase = phrases[currentSelfIntroIndex];
+                  if (!currentPhrase) return null;
+
+                  return (
+                    <>
+                      <div className="text-center mb-4">
+                        <span className="text-sm text-gray-400">
+                          {selfIntroCategories.find(c => c.id === currentPhrase.category)?.name || "自我介绍"}
+                        </span>
+                      </div>
+
+                      {/* 短句卡片 */}
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 mb-6 text-center">
+                        <div className="text-2xl font-bold text-gray-800 mb-4">{currentPhrase.german}</div>
+                        {showSelfIntroPronunciation && currentPhrase.pronunciation && (
+                          <div className="text-lg text-gray-500 mb-4">{currentPhrase.pronunciation}</div>
+                        )}
+                        {showSelfIntroChinese && (
+                          <div className="text-xl text-green-700">{currentPhrase.chinese}</div>
+                        )}
+                      </div>
+
+                      {/* 控制按钮 */}
+                      <div className="flex justify-center gap-2 mb-6">
+                        <button
+                          onClick={() => setShowSelfIntroChinese(!showSelfIntroChinese)}
+                          className={`px-3 py-1 rounded-lg text-xs transition ${
+                            showSelfIntroChinese
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          中文
+                        </button>
+                        <button
+                          onClick={() => setShowSelfIntroPronunciation(!showSelfIntroPronunciation)}
+                          className={`px-3 py-1 rounded-lg text-xs transition ${
+                            showSelfIntroPronunciation
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-200 text-gray-600"
+                          }`}
+                        >
+                          发音
+                        </button>
+                      </div>
+
+                      {/* 导航按钮 */}
+                      <div className="flex justify-between items-center mb-6">
+                        <button
+                          onClick={() => setCurrentSelfIntroIndex(prev => {
+                            const phrases = getFilteredSelfIntroPhrases();
+                            return prev > 0 ? prev - 1 : phrases.length - 1;
+                          })}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                        >
+                          上一句
+                        </button>
+                        <span className="text-sm text-gray-500">
+                          {currentSelfIntroIndex + 1} / {phrases.length}
+                        </span>
+                        <button
+                          onClick={() => setCurrentSelfIntroIndex(prev => {
+                            const phrases = getFilteredSelfIntroPhrases();
+                            return prev < phrases.length - 1 ? prev + 1 : 0;
+                          })}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                        >
+                          下一句
+                        </button>
+                      </div>
+
+                      {/* 播放发音按钮 */}
+                      <div className="flex justify-center">
+                        <button
+                          onClick={() => speak(currentPhrase.german)}
+                          className="px-6 py-3 bg-green-600 text-white rounded-full hover:bg-green-700 transition flex items-center gap-2"
+                        >
+                          <span>🔊</span> 播放发音
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
             {/* 对话分类筛选 */}
             {selectedCategory === "dialog" && (
               <div className="flex flex-wrap justify-center gap-1 mb-3">
@@ -3239,6 +3521,16 @@ export default function GermanLearning() {
                 className="px-6 py-2 bg-purple-500 text-white rounded-full font-medium hover:bg-purple-600 transition text-base"
               >
                 开始对话听力 →
+              </button>
+            ) : selectedCategory === "selfIntro" ? (
+              <button
+                onClick={() => {
+                  setQuizType("selfIntro");
+                  startQuiz();
+                }}
+                className="px-6 py-2 bg-green-500 text-white rounded-full font-medium hover:bg-green-600 transition text-base"
+              >
+                开始答题 →
               </button>
             ) : (
               <button
@@ -4408,11 +4700,11 @@ export default function GermanLearning() {
                      quizType === "verb" ? quizWord.chinese :
                      quizWord.german}
                   </h2>
-                  {(quizType === "chinese" || quizType === "spelling" || quizType === "input" || quizType === "verb") && (
+                  {(quizType === "chinese" || quizType === "spelling" || quizType === "input" || quizType === "verb" || quizType === "selfIntro") && (
                     <button
                       onClick={() => speak(quizWord.german)}
                       className="p-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
-                      title="发音"
+                      title="播放发音"
                     >
                       🔊
                     </button>
