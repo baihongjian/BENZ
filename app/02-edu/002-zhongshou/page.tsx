@@ -19,10 +19,32 @@ interface Pagination {
   totalPages: number;
 }
 
+// 学校详情类型
+interface SchoolDetail {
+  school: {
+    id: number;
+    school_id: string;
+    name: string;
+    deviation: number;
+    sex: string;
+    prefecture: string;
+    category: string;
+  };
+  exams: {
+    id: number;
+    exam_date: string;
+    extra: string;
+  }[];
+}
+
 export default function ZhongshouPage() {
   const [schools, setSchools] = useState<School[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(true);
+
+  // 学校详情弹窗状态
+  const [selectedSchool, setSelectedSchool] = useState<SchoolDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   // 筛选条件
   const [filters, setFilters] = useState({
@@ -169,6 +191,27 @@ export default function ZhongshouPage() {
       case '女子': return 'bg-pink-100 text-pink-700';
       default: return 'bg-gray-100 text-gray-700';
     }
+  };
+
+  // 获取学校详情
+  const fetchSchoolDetail = async (schoolId: number) => {
+    setDetailLoading(true);
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/school-list/${schoolId}`);
+      const data = await response.json();
+      if (data.success) {
+        setSelectedSchool(data.data);
+      }
+    } catch (error) {
+      console.error('获取学校详情失败:', error);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  // 关闭详情弹窗
+  const closeDetail = () => {
+    setSelectedSchool(null);
   };
 
   return (
@@ -341,7 +384,11 @@ export default function ZhongshouPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {schools.map((school) => (
-                  <tr key={school.id} className="hover:bg-gray-50">
+                  <tr
+                    key={school.id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => fetchSchoolDetail(school.id)}
+                  >
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-sm font-bold rounded ${getDeviationColor(school.deviation)}`}>
                         {school.deviation}
@@ -369,6 +416,99 @@ export default function ZhongshouPage() {
           </div>
         )}
       </div>
+
+      {/* 学校详情弹窗 */}
+      {selectedSchool && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={closeDetail}>
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            {/* 弹窗头部 */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+              <h3 className="text-lg font-bold">{selectedSchool.school.name}</h3>
+              <button
+                onClick={closeDetail}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 弹窗内容 */}
+            <div className="p-6">
+              {detailLoading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                  <p className="mt-2 text-gray-500">加载中...</p>
+                </div>
+              ) : (
+                <>
+                  {/* 学校信息 */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">学校信息</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">偏差値</div>
+                        <div className={`text-2xl font-bold ${selectedSchool.school.deviation >= 70 ? 'text-red-600' : selectedSchool.school.deviation >= 60 ? 'text-orange-600' : 'text-green-600'}`}>
+                          {selectedSchool.school.deviation}
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">类型</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.sex}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">学校ID</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.school_id}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">考试次数</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.exams.length} 回</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 考试信息 */}
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">考试日期</h4>
+                    <div className="space-y-2">
+                      {selectedSchool.exams.length > 0 ? (
+                        selectedSchool.exams.map((exam, index) => (
+                          <div key={exam.id} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                            <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-bold text-gray-800">{exam.exam_date}</div>
+                              {exam.extra && (
+                                <div className="text-sm text-gray-600">{exam.extra}</div>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          暂无考试信息
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* 弹窗底部 */}
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-3 border-t flex justify-end">
+              <button
+                onClick={closeDetail}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* Footer */}
