@@ -3,28 +3,28 @@
  * study1.jp 偏差値数据 - 批量获取并保存到 SQLite
  */
 
-const path = require('path');
-const sqlite3 = require('sqlite3');
+const path = require("path");
+const sqlite3 = require("sqlite3");
+const cheerio = require("cheerio");
 
-const DB_PATH = path.join(__dirname, 'study1.db');
+const DB_PATH = path.join(__dirname, "study1.db");
 
 // 性别类型映射 (从 alt 属性)
 const SEX_MAP = {
-  '男子校': '男子',
-  '女子校': '女子',
-  '共学校': '共通',
+  男子校: "男子",
+  女子校: "女子",
+  共学校: "共通",
 };
 
 // 办学类型映射 (从 alt 属性)
 const CATEGORY_MAP = {
-  '私立中学': '私立',
-  '国立中学': '国立',
-  '公立中学': '公立',
+  私立中学: "私立",
+  国立中学: "国立",
+  公立中学: "公立",
 };
 
 // API 基础 URL (当前服务)
-const API_URL = 'http://localhost:3000/api/02-edu/002-zhongshou/study1';
-
+const API_URL = "http://localhost:3000/api/02-edu/002-zhongshou/study1";
 
 // 调试日志函数
 function debug(message, data = null) {
@@ -46,51 +46,53 @@ function logError(message, err = null) {
   }
 }
 
-
 /**
  * 连接数据库
  */
 function connectDb() {
   return new Promise((resolve, reject) => {
-    debug('Connecting to database...', { DB_PATH });
+    debug("Connecting to database...", { DB_PATH });
     const db = new sqlite3.Database(DB_PATH, (err) => {
       if (err) {
-        logError('Failed to connect to database', err);
+        logError("Failed to connect to database", err);
         reject(err);
         return;
       }
-      debug('Database connected successfully');
+      debug("Database connected successfully");
       resolve(db);
     });
   });
 }
-
 
 /**
  * 解析 HTML，提取学校信息
  * @param {string} html - HTML 内容
  * @param {string} baseUrl - 基础 URL (用于解析相对链接)
  */
-function parseHtml(html, baseUrl = 'https://study1.jp') {
-  debug('Parsing HTML...', { htmlLength: html.length });
+function parseHtml(html, baseUrl = "https://study1.jp") {
+  debug("Parsing HTML...", { htmlLength: html.length });
 
   const schools = [];
   let deviation = null;
 
   // 匹配外层 tr，包含偏差值 td 和学校列表 table
-  const rowPattern =/<tr>\s*<td[^>]*class="dev"[^>]*>(\d+)<\/td>\s*<td[^>]*colspan="3"[^>]*>([\s\S]*?<\/table>)[\s\S]*?<\/td>\s*<\/tr>/g;
+  const rowPattern =
+    /<tr>\s*<td[^>]*class="dev"[^>]*>(\d+)<\/td>\s*<td[^>]*colspan="3"[^>]*>([\s\S]*?<\/table>)[\s\S]*?<\/td>\s*<\/tr>/g;
   let rowMatch;
   while ((rowMatch = rowPattern.exec(html)) !== null) {
     // 提取偏差值
     const devValue = rowMatch[1];
-    if (devValue === '-' || devValue === '') continue; // 跳过无效偏差值
+    if (devValue === "-" || devValue === "") continue; // 跳过无效偏差值
     deviation = parseInt(devValue);
     const tableContent = rowMatch[2]; // 整个 <table>...</table>
 
-    debug('Processing deviation', { deviation, tableLength: tableContent.length });
+    debug("Processing deviation", {
+      deviation,
+      tableLength: tableContent.length,
+    });
 
     // 从表格中提取学校 tr - 去掉 <table> 和 </table> 标签
-    const tableBody = tableContent.replace(/<\/?table>/g, '');
+    const tableBody = tableContent.replace(/<\/?table>/g, "");
     const schoolPattern = /<tr\b[^>]*>([\s\S]*?)(?=<tr\b|$)/gi;
     let schoolMatch;
 
@@ -98,17 +100,21 @@ function parseHtml(html, baseUrl = 'https://study1.jp') {
       const schoolRow = schoolMatch[1];
 
       // 提取学校名称和链接
-      const nameMatch = /<td[^>]*class="name"[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/.exec(schoolRow);
+      const nameMatch =
+        /<td[^>]*class="name"[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/.exec(
+          schoolRow
+        );
       if (!nameMatch) continue;
 
       const schoolUrl = nameMatch[1]; // 如 /kanto/school/B13P009/
-      const schoolCode = schoolUrl.replace(/\/$/, '').split('/').pop();
+      const schoolCode = schoolUrl.replace(/\/$/, "").split("/").pop();
       const name = nameMatch[2].trim();
 
       // 提取类型图标 alt 属性 (img 是自闭合的 />)
-      const typeMatches = schoolRow.match(/<img[^>]*alt="([^"]+)"[^>]*\/?>/g) || [];
-      let sexType = '共通';
-      let category = '私立';
+      const typeMatches =
+        schoolRow.match(/<img[^>]*alt="([^"]+)"[^>]*\/?>/g) || [];
+      let sexType = "共通";
+      let category = "私立";
 
       for (const img of typeMatches) {
         const altMatch = /alt="([^"]+)"/.exec(img);
@@ -123,8 +129,8 @@ function parseHtml(html, baseUrl = 'https://study1.jp') {
       }
 
       // 提取地区
-      const adMatch =/<td[^>]*class="ad"[^>]*>\s*([^<\n\r]+)/i.exec(schoolRow);
-      const prefecture = adMatch ? adMatch[1].trim() : '';
+      const adMatch = /<td[^>]*class="ad"[^>]*>\s*([^<\n\r]+)/i.exec(schoolRow);
+      const prefecture = adMatch ? adMatch[1].trim() : "";
 
       const school = {
         school_code: schoolCode,
@@ -133,11 +139,11 @@ function parseHtml(html, baseUrl = 'https://study1.jp') {
         prefecture: prefecture,
         category: category,
         sex_type: sexType,
-        website: '',
+        website: "",
         schoolUrl: schoolUrl,
       };
 
-      debug('School found', {
+      debug("School found", {
         code: schoolCode,
         name: name,
         deviation: deviation,
@@ -150,34 +156,32 @@ function parseHtml(html, baseUrl = 'https://study1.jp') {
     }
   }
 
-  debug('HTML parsing complete', { schoolCount: schools.length });
+  debug("HTML parsing complete", { schoolCount: schools.length });
   return schools;
 }
-
 
 /**
  * 调用 API 获取 HTML
  * @param {string} url - 要获取的 URL
  */
 async function fetchHtml(url) {
-  debug('Fetching URL via API', { url });
+  debug("Fetching URL via API", { url });
 
   const apiUrl = `${API_URL}?url=${encodeURIComponent(url)}&raw=true`;
-  debug('API endpoint', { apiUrl });
+  debug("API endpoint", { apiUrl });
 
   const response = await fetch(apiUrl);
 
   if (!response.ok) {
-    logError('API request failed', { status: response.status, url });
+    logError("API request failed", { status: response.status, url });
     throw new Error(`HTTP ${response.status}`);
   }
 
   const html = await response.text();
-  debug('API response received', { htmlLength: html.length });
+  debug("API response received", { htmlLength: html.length });
 
   return html;
 }
-
 
 /**
  * 保存到数据库
@@ -186,13 +190,13 @@ async function fetchHtml(url) {
  */
 async function saveToDb(db, schools) {
   return new Promise((resolve, reject) => {
-    debug('Starting database save', { schoolCount: schools.length });
+    debug("Starting database save", { schoolCount: schools.length });
 
     db.serialize(() => {
       let processed = 0;
 
       for (const school of schools) {
-        debug('Processing school', {
+        debug("Processing school", {
           school_code: school.school_code,
           name: school.name,
           deviation: school.deviation,
@@ -201,18 +205,21 @@ async function saveToDb(db, schools) {
 
         // 检查学校是否已存在
         db.get(
-          'SELECT id FROM schools WHERE school_code = ?',
+          "SELECT id FROM schools WHERE school_code = ?",
           [school.school_code],
           (err, row) => {
             if (err) {
-              logError('Database query failed', err);
+              logError("Database query failed", err);
               reject(err);
               return;
             }
 
             if (row) {
               // 更新现有学校
-              debug('Updating existing school', { school_code: school.school_code, dbId: row.id });
+              debug("Updating existing school", {
+                school_code: school.school_code,
+                dbId: row.id,
+              });
               db.run(
                 `UPDATE schools SET
                   name = ?,
@@ -233,11 +240,13 @@ async function saveToDb(db, schools) {
                 ],
                 (err) => {
                   if (err) {
-                    logError('Update failed', err);
+                    logError("Update failed", err);
                     reject(err);
                     return;
                   }
-                  debug('School updated successfully', { school_code: school.school_code });
+                  debug("School updated successfully", {
+                    school_code: school.school_code,
+                  });
                   processed++;
                   if (processed === schools.length) {
                     resolve();
@@ -246,7 +255,7 @@ async function saveToDb(db, schools) {
               );
             } else {
               // 插入新学校
-              debug('Inserting new school', {
+              debug("Inserting new school", {
                 school_code: school.school_code,
                 name: school.name,
               });
@@ -271,11 +280,11 @@ async function saveToDb(db, schools) {
                 ],
                 function (err) {
                   if (err) {
-                    logError('Insert failed', err);
+                    logError("Insert failed", err);
                     reject(err);
                     return;
                   }
-                  debug('School inserted', {
+                  debug("School inserted", {
                     school_code: school.school_code,
                     newId: this.lastID,
                   });
@@ -293,48 +302,47 @@ async function saveToDb(db, schools) {
   });
 }
 
-
 /**
  * 显示统计信息
  * @param {object} db - 数据库连接
  */
 function showStats(db) {
   return new Promise((resolve) => {
-    debug('Fetching statistics...');
+    debug("Fetching statistics...");
 
-    db.get('SELECT COUNT(*) as count FROM schools', (err, row) => {
+    db.get("SELECT COUNT(*) as count FROM schools", (err, row) => {
       if (err) {
-        logError('Failed to get schools count', err);
+        logError("Failed to get schools count", err);
         resolve();
         return;
       }
 
       const schoolCount = row.count;
-      debug('Statistics', { totalSchools: schoolCount });
+      debug("Statistics", { totalSchools: schoolCount });
       console.log(`\n📊 学校总数: ${schoolCount}`);
 
       // 按偏差值统计
       db.all(
-        'SELECT deviation, COUNT(*) as cnt FROM schools GROUP BY deviation ORDER BY deviation DESC',
+        "SELECT deviation, COUNT(*) as cnt FROM schools GROUP BY deviation ORDER BY deviation DESC",
         (err, rows) => {
           if (err) {
-            logError('Failed to get deviation stats', err);
+            logError("Failed to get deviation stats", err);
             resolve();
             return;
           }
 
-          console.log('\n📈 偏差值分布:');
+          console.log("\n📈 偏差值分布:");
           rows.forEach((r) => {
             console.log(`  ${r.deviation}: ${r.cnt} 所学校`);
           });
 
           // 显示学校列表
-          console.log('\n📋 学校列表:');
+          console.log("\n📋 学校列表:");
           db.all(
-            'SELECT school_code, name, deviation, prefecture, sex_type FROM schools ORDER BY deviation DESC LIMIT 20',
+            "SELECT school_code, name, deviation, prefecture, sex_type FROM schools ORDER BY deviation DESC LIMIT 20",
             (err, rows) => {
               if (err) {
-                logError('Failed to get school list', err);
+                logError("Failed to get school list", err);
                 resolve();
                 return;
               }
@@ -358,25 +366,24 @@ function showStats(db) {
   });
 }
 
-
 /**
  * 主函数
  */
 async function main() {
   const startTime = Date.now();
 
-  console.log('='.repeat(50));
-  console.log('study1.jp 偏差値データ - バッチ取得');
-  console.log('='.repeat(50));
-  debug('Script started', { DB_PATH, API_URL });
+  console.log("=".repeat(50));
+  console.log("study1.jp 偏差値データ - バッチ取得");
+  console.log("=".repeat(50));
+  debug("Script started", { DB_PATH, API_URL });
 
   // 要获取的页面
-  const pageUrl = 'https://study1.jp/kanto/list/deviation.html';
-  const pageName = '関東 偏差値一覧';
+  const pageUrl = "https://study1.jp/kanto/list/deviation.html";
+  const pageName = "関東 偏差値一覧";
 
   try {
     // 连接数据库
-    debug('Connecting to database...');
+    debug("Connecting to database...");
     const db = await connectDb();
 
     let allSchools = [];
@@ -384,60 +391,120 @@ async function main() {
     let totalErrors = 0;
 
     // 获取页面
-    debug('Fetching page', { url: pageUrl, name: pageName });
+    debug("Fetching page", { url: pageUrl, name: pageName });
 
     try {
       const html = await fetchHtml(pageUrl);
-      const schools = parseHtml(html, 'https://study1.jp');
+      const schools = parseHtml(html, "https://study1.jp");
 
       totalFetched = schools.length;
-      debug('Page parsed', { schoolsFound: schools.length });
+      debug("Page parsed", { schoolsFound: schools.length });
       console.log(`\n🌐 ${pageName}`);
       console.log(`  解析到 ${schools.length} 所学校`);
+
+      // 获取每个学校的详情页
+      console.log(`\n📋 开始获取学校详情...`);
+      for (let i = 0; i < schools.length; i++) {
+        const school = schools[i];
+        const detailUrl = "https://study1.jp" + school.schoolUrl;
+
+        console.log(`  [${i + 1}/${schools.length}] ${school.name}`);
+
+        try {
+          const detailHtml = await fetchHtml(detailUrl);
+
+          // 提取学校官网 URL
+          const urlMatch =
+            /<td[^>]*id="url"[^>]*>[\s\S]*?href="([^"]+)"[^>]*>[\s\S]*?<\/a>/i.exec(
+              detailHtml
+            );
+          if (urlMatch) {
+            school.website = urlMatch[1];
+            console.log(`    ✓ 官网: ${school.website}`);
+          } else {
+            console.log(`    - 无官网链接`);
+          }
+
+          // 使用 cheerio 解析学费信息
+          const $ = cheerio.load(detailHtml);
+          const tuitionSection = $("#tuition");
+
+          if (tuitionSection.length > 0) {
+            // 获取所有 td 中的金额
+            const tuitionRow = tuitionSection.find("table tr").eq(1);
+
+            const tds = tuitionRow.find("td");
+
+            // const tds = tuitionSection.find("td").toArray();
+            if (tds.length >= 2) {
+              let firstYearText = $(tds[0]).text().trim();
+              let annualText = $(tds[1]).text().trim();
+
+              school.first_year_total = firstYearText;
+              school.annual_fee = annualText;
+
+              console.log(
+                `    ✓ 初年度: ${school.first_year_total} 円, 年間: ${school.annual_fee} 円`
+              );
+            } else {
+              console.log(`    - 无学费信息`);
+            }
+          } else {
+            console.log(`    - 无学费信息`);
+          }
+        } catch (error) {
+          console.error(`    ✗ 获取失败: ${error.message}`);
+        }
+
+        // 避免请求过快
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+
       allSchools = schools;
     } catch (error) {
       totalErrors++;
-      logError('Failed to fetch page', error);
+      logError("Failed to fetch page", error);
       console.error(`  ❌ 获取失败: ${error.message}`);
     }
 
-
-
     if (allSchools.length > 0) {
       console.log(`\n💾 保存到数据库...`);
-      debug('Starting database save', { schoolCount: allSchools.length });
+      debug("Starting database save", { schoolCount: allSchools.length });
 
       await saveToDb(db, allSchools);
 
       console.log(`✅ 保存完成`);
-      debug('Database save completed');
+      debug("Database save completed");
 
       await showStats(db);
     } else {
-      console.log('\n⚠️ 没有获取到任何数据');
-      debug('No data was fetched', { totalErrors });
+      console.log("\n⚠️ 没有获取到任何数据");
+      debug("No data was fetched", { totalErrors });
     }
 
     // 关闭数据库
-    debug('Closing database connection...');
+    debug("Closing database connection...");
     db.close((err) => {
       if (err) {
-        logError('Error closing database', err);
+        logError("Error closing database", err);
       }
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-      debug('Script completed', { duration: `${duration}s`, totalFetched, totalErrors });
+      debug("Script completed", {
+        duration: `${duration}s`,
+        totalFetched,
+        totalErrors,
+      });
       console.log(
         `\n✅ 完成! (耗时: ${duration}秒, 获取: ${totalFetched}所学校, 错误: ${totalErrors})`
       );
     });
   } catch (error) {
-    logError('Fatal error', error);
+    logError("Fatal error", error);
     console.error(`\n❌ 错误: ${error.message}`);
     process.exit(1);
   }
 }
-
 
 // 导出函数供其他模块使用
 module.exports = { parseHtml, fetchHtml, saveToDb };
