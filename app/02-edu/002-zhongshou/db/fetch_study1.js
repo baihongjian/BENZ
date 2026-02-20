@@ -266,7 +266,7 @@ async function saveToDb(db, schools) {
                     school_code: school.school_code,
                   });
                   // 保存考试信息
-                  saveExamsToDb(db, school.school_code, school.exams)
+                  saveExamsToDb(db, school.school_code, school.exams, school.website)
                     .then(() => {
                       processed++;
                       if (processed === schools.length) {
@@ -354,7 +354,7 @@ async function saveToDb(db, schools) {
  * @param {string} schoolCode - 学校代码
  * @param {Array} exams - 考试信息数组
  */
-function saveExamsToDb(db, schoolCode, exams) {
+function saveExamsToDb(db, schoolCode, exams, website) {
   return new Promise((resolve, reject) => {
     if (!exams || exams.length === 0) {
       resolve();
@@ -363,28 +363,23 @@ function saveExamsToDb(db, schoolCode, exams) {
 
     let processed = 0;
     for (const exam of exams) {
+      // 使用学校官网的入試要项URL，如果不存在则使用 学校的website
+      const sourceUrl = exam.source_url || website;
+
       db.run(
         `INSERT OR REPLACE INTO exams (
           school_code,
           exam_name,
           exam_date,
           start_time,
-          application_period,
-          result_announcement,
-          fee,
-          subjects,
           source_url
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?)`,
         [
           schoolCode,
           exam.exam_name || null,
           exam.exam_date || null,
           exam.start_time || null,
-          exam.application_period || null,
-          exam.result_announcement || null,
-          exam.fee || null,
-          exam.subjects || null,
-          `https://study1.jp/kanto/school/${schoolCode}/exam/`,
+          sourceUrl,
         ],
         function (err) {
           if (err) {
@@ -602,6 +597,17 @@ async function main() {
           const exams = [];
           const examTable = $exam("table.info.mb20");
 
+          // 获取学校官网入試要项 URL
+          let examSourceUrl = "";
+          const infoUrlDiv = $exam("div.info_url");
+          if (infoUrlDiv.length > 0) {
+            const link = infoUrlDiv.find("a").attr("href");
+            if (link) {
+              examSourceUrl = link;
+              console.log(`    ✓ 入試要项: ${examSourceUrl}`);
+            }
+          }
+
           if (examTable.length > 0) {
             // 查找包含 rowspan 的 td (考试名称和日期)
             const examNameTds = examTable.find("td.da3-td").toArray();
@@ -635,6 +641,7 @@ async function main() {
                 exam_name: examName,
                 exam_date: examDate,
                 start_time: startTime,
+                source_url: examSourceUrl,
               });
 
               console.log(
