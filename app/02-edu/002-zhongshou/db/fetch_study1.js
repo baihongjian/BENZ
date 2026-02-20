@@ -227,6 +227,15 @@ async function saveToDb(db, schools) {
                   prefecture = ?,
                   category = ?,
                   sex_type = ?,
+                  website = ?,
+                  first_year_total = ?,
+                  annual_fee = ?,
+                  university_todai_keidai = ?,
+                  university_ichihashi_tokyo_5 = ?,
+                  university_national_public = ?,
+                  university_waseda_keio_socie = ?,
+                  university_gmarch = ?,
+                  university_medical = ?,
                   source_url = ?
                 WHERE id = ?`,
                 [
@@ -235,6 +244,15 @@ async function saveToDb(db, schools) {
                   school.prefecture,
                   school.category,
                   school.sex_type,
+                  school.website || null,
+                  school.first_year_total || null,
+                  school.annual_fee || null,
+                  school.university_todai_keidai || 0,
+                  school.university_ichihashi_tokyo_5 || 0,
+                  school.university_national_public || 0,
+                  school.university_waseda_keio_socie || 0,
+                  school.university_gmarch || 0,
+                  school.university_medical || 0,
                   school.source_url,
                   row.id,
                 ],
@@ -247,10 +265,15 @@ async function saveToDb(db, schools) {
                   debug("School updated successfully", {
                     school_code: school.school_code,
                   });
-                  processed++;
-                  if (processed === schools.length) {
-                    resolve();
-                  }
+                  // 保存考试信息
+                  saveExamsToDb(db, school.school_code, school.exams)
+                    .then(() => {
+                      processed++;
+                      if (processed === schools.length) {
+                        resolve();
+                      }
+                    })
+                    .catch(reject);
                 }
               );
             } else {
@@ -267,8 +290,17 @@ async function saveToDb(db, schools) {
                   prefecture,
                   category,
                   sex_type,
+                  website,
+                  first_year_total,
+                  annual_fee,
+                  university_todai_keidai,
+                  university_ichihashi_tokyo_5,
+                  university_national_public,
+                  university_waseda_keio_socie,
+                  university_gmarch,
+                  university_medical,
                   source_url
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                   school.school_code,
                   school.name,
@@ -276,7 +308,16 @@ async function saveToDb(db, schools) {
                   school.prefecture,
                   school.category,
                   school.sex_type,
-                  school.source_url,
+                  school.website || null,
+                  school.first_year_total || null,
+                  school.annual_fee || null,
+                  school.university_todai_keidai || 0,
+                  school.university_ichihashi_tokyo_5 || 0,
+                  school.university_national_public || 0,
+                  school.university_waseda_keio_socie || 0,
+                  school.university_gmarch || 0,
+                  school.university_medical || 0,
+                  school.schoolUrl || school.source_url || null,
                 ],
                 function (err) {
                   if (err) {
@@ -288,10 +329,15 @@ async function saveToDb(db, schools) {
                     school_code: school.school_code,
                     newId: this.lastID,
                   });
-                  processed++;
-                  if (processed === schools.length) {
-                    resolve();
-                  }
+                  // 保存考试信息
+                  saveExamsToDb(db, school.school_code, school.exams)
+                    .then(() => {
+                      processed++;
+                      if (processed === schools.length) {
+                        resolve();
+                      }
+                    })
+                    .catch(reject);
                 }
               );
             }
@@ -299,6 +345,60 @@ async function saveToDb(db, schools) {
         );
       }
     });
+  });
+}
+
+/**
+ * 保存考试信息到数据库
+ * @param {object} db - 数据库连接
+ * @param {string} schoolCode - 学校代码
+ * @param {Array} exams - 考试信息数组
+ */
+function saveExamsToDb(db, schoolCode, exams) {
+  return new Promise((resolve, reject) => {
+    if (!exams || exams.length === 0) {
+      resolve();
+      return;
+    }
+
+    let processed = 0;
+    for (const exam of exams) {
+      db.run(
+        `INSERT OR REPLACE INTO exams (
+          school_code,
+          exam_name,
+          exam_date,
+          start_time,
+          application_period,
+          result_announcement,
+          fee,
+          subjects,
+          source_url
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          schoolCode,
+          exam.exam_name || null,
+          exam.exam_date || null,
+          exam.start_time || null,
+          exam.application_period || null,
+          exam.result_announcement || null,
+          exam.fee || null,
+          exam.subjects || null,
+          `https://study1.jp/kanto/school/${schoolCode}/exam/`,
+        ],
+        function (err) {
+          if (err) {
+            logError("Exam insert failed", err);
+            reject(err);
+            return;
+          }
+          processed++;
+          if (processed === exams.length) {
+            resolve();
+          }
+        }
+      );
+    }
   });
 }
 
@@ -413,6 +513,9 @@ async function main() {
         try {
           const detailHtml = await fetchHtml(detailUrl);
 
+          // 使用 cheerio 解析
+          const $detail = cheerio.load(detailHtml);
+
           // 提取学校官网 URL
           const urlMatch =
             /<td[^>]*id="url"[^>]*>[\s\S]*?href="([^"]+)"[^>]*>[\s\S]*?<\/a>/i.exec(
@@ -426,19 +529,18 @@ async function main() {
           }
 
           // 使用 cheerio 解析学费信息
-          const $ = cheerio.load(detailHtml);
-          const tuitionSection = $("#tuition");
+          const tuitionSection = $detail("#tuition");
 
           if (tuitionSection.length > 0) {
-            // 获取所有 td 中的金额
             const tuitionRow = tuitionSection.find("table tr").eq(1);
-
             const tds = tuitionRow.find("td");
 
-            // const tds = tuitionSection.find("td").toArray();
             if (tds.length >= 2) {
-              let firstYearText = $(tds[0]).text().trim();
-              let annualText = $(tds[1]).text().trim();
+              let firstYearText = $detail(tds[0]).text().trim();
+              let annualText = $detail(tds[1]).text().trim();
+
+              if (firstYearText === "-") firstYearText = "0";
+              if (annualText === "-") annualText = "0";
 
               school.first_year_total = firstYearText;
               school.annual_fee = annualText;
@@ -452,6 +554,98 @@ async function main() {
           } else {
             console.log(`    - 无学费信息`);
           }
+
+          // 获取大学合格実績
+          const univPassUrl = detailUrl + "univ_pass/";
+          console.log(`    📊 获取大学合格実績...`);
+
+          const univHtml = await fetchHtml(univPassUrl);
+          const $univ = cheerio.load(univHtml);
+
+          // 查找包含 6 个分类的表格
+          const univTable = $univ("div#summary");
+
+          if (univTable.length > 0) {
+            const rows = univTable.find("tr").toArray();
+
+            // 获取第一行数据（最新年份）
+            if (rows.length >= 2) {
+              const firstRow = $univ(rows[1]);
+              const tds = firstRow.find("td").toArray();
+
+              // tds 顺序: 東大・京大, 一橋・東京科学・旧５帝大, 国公立大学, 早稲田・慶應・上智, GMARCH, 医学部
+              if (tds.length >= 6) {
+                school.university_todai_keidai = parseInt($univ(tds[0]).text().trim()) || 0;
+                school.university_ichihashi_tokyo_5 = parseInt($univ(tds[1]).text().trim()) || 0;
+                school.university_national_public = parseInt($univ(tds[2]).text().trim()) || 0;
+                school.university_waseda_keio_socie = parseInt($univ(tds[3]).text().trim()) || 0;
+                school.university_gmarch = parseInt($univ(tds[4]).text().trim()) || 0;
+                school.university_medical = parseInt($univ(tds[5]).text().trim()) || 0;
+
+                console.log(
+                  `    ✓ 東大・京大: ${school.university_todai_keidai}, GMARCH: ${school.university_gmarch}, 医学部: ${school.university_medical}`
+                );
+              }
+            }
+          } else {
+            console.log(`    - 无大学合格実績`);
+          }
+
+          // 获取考试信息
+          const examUrl = detailUrl + "exam/";
+          console.log(`    📝 获取考试信息...`);
+
+          const examHtml = await fetchHtml(examUrl);
+          const $exam = cheerio.load(examHtml);
+
+          // 解析考试信息表格
+          const exams = [];
+          const examTable = $exam("table.info.mb20");
+
+          if (examTable.length > 0) {
+            // 查找包含 rowspan 的 td (考试名称和日期)
+            const examNameTds = examTable.find("td.da3-td").toArray();
+
+            for (const nameTd of examNameTds) {
+              const $nameTd = $exam(nameTd);
+              const examName = $nameTd.text().trim();
+
+              // 只处理包含"年度入試"、"入試"、或"一次/二次"等格式的行
+              if (!examName.includes("年度") && !examName.includes("入試") &&
+                  !examName.match(/^[一二三四五六七八九十]+次$/)) {
+                continue;
+              }
+
+              // 获取同一行的日期 td
+              const parentRow = $nameTd.closest("tr");
+              const dateTd = parentRow.find("td.da3-td").eq(1); // 第二个 da3-td 是日期
+
+              // 解析日期和时间
+              let examDate = "";
+              let startTime = "";
+              if (dateTd.length > 0) {
+                const dateHtml = dateTd.html() || "";
+                const parts = dateHtml.split(/<br\s*\/?>/i);
+                examDate = parts[0] ? parts[0].trim() : "";
+                startTime = parts[1] ? parts[1].trim() : "";
+              }
+
+
+              exams.push({
+                exam_name: examName,
+                exam_date: examDate,
+                start_time: startTime,
+              });
+
+              console.log(
+                `    ✓ 試験: ${examName} - ${examDate} ${startTime}`
+              );
+            }
+          } else {
+            console.log(`    - 无考试信息`);
+          }
+
+          school.exams = exams;
         } catch (error) {
           console.error(`    ✗ 获取失败: ${error.message}`);
         }
