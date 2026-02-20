@@ -5,11 +5,33 @@ import { useState, useEffect, useCallback } from 'react';
 // 学校类型
 interface School {
   id: number;
-  school_id: string;
+  school_code: string;
   name: string;
   deviation: number;
-  sex: string;
-  exam_dates: string;
+  sex_type: string;
+  prefecture: string;
+  category: string;
+  website: string;
+  region: string;
+  // 学费信息
+  first_year_total: string;
+  annual_fee: string;
+  // 进学实绩
+  university_todai_keidai: number;
+  university_ichihashi_tokyo_5: number;
+  university_national_public: number;
+  university_waseda_keio_socie: number;
+  university_gmarch: number;
+  university_medical: number;
+  exams: Exam[];
+}
+
+interface Exam {
+  id: number;
+  exam_name: string;
+  exam_date: string;
+  start_time: string;
+  source_url: string;
 }
 
 interface Pagination {
@@ -21,20 +43,8 @@ interface Pagination {
 
 // 学校详情类型
 interface SchoolDetail {
-  school: {
-    id: number;
-    school_id: string;
-    name: string;
-    deviation: number;
-    sex: string;
-    prefecture: string;
-    category: string;
-  };
-  exams: {
-    id: number;
-    exam_date: string;
-    extra: string;
-  }[];
+  school: School;
+  exams: Exam[];
 }
 
 export default function ZhongshouPage() {
@@ -51,6 +61,7 @@ export default function ZhongshouPage() {
     minDeviation: '',
     maxDeviation: '',
     sex: 'all',
+    region: 'all',
     examDate: '',
     search: '',
   });
@@ -62,12 +73,6 @@ export default function ZhongshouPage() {
     maleSchools: number;
     femaleSchools: number;
   } | null>(null);
-
-  // 四谷大塚 HTML 相关状态
-  const [yotsuyaHtml, setYotsuyaHtml] = useState<string>('');
-  const [fetchingYotsuya, setFetchingYotsuya] = useState(false);
-  const [yotsuyaUrl, setYotsuyaUrl] = useState<string>('https://www.yotsuyaotsuka.com/njc/deviation_top.php');
-  const [displayMode, setDisplayMode] = useState<'text' | 'iframe'>('text');
 
   // 获取学校列表
   const fetchSchools = useCallback(async () => {
@@ -81,10 +86,11 @@ export default function ZhongshouPage() {
       if (filters.minDeviation) params.append('minDeviation', filters.minDeviation);
       if (filters.maxDeviation) params.append('maxDeviation', filters.maxDeviation);
       if (filters.sex !== 'all') params.append('sex', filters.sex);
+      if (filters.region !== 'all') params.append('region', filters.region);
       if (filters.examDate) params.append('examDate', filters.examDate);
       if (filters.search) params.append('search', filters.search);
 
-      const response = await fetch(`/api/02-edu/002-zhongshou/school-list?${params}`);
+      const response = await fetch(`/api/02-edu/002-zhongshou/schools-study1?${params}`);
       const data = await response.json();
 
       if (data.success) {
@@ -106,12 +112,12 @@ export default function ZhongshouPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/02-edu/002-zhongshou/school-list?limit=9999');
+        const response = await fetch(`/api/02-edu/002-zhongshou/schools-study1?limit=9999`);
         const data = await response.json();
         if (data.success) {
           const schools = data.data;
-          const male = schools.filter((s: School) => s.sex === '男子').length;
-          const female = schools.filter((s: School) => s.sex === '女子').length;
+          const male = schools.filter((s: School) => s.sex_type === '男子').length;
+          const female = schools.filter((s: School) => s.sex_type === '女子').length;
           const avgDev = schools.length > 0
             ? Math.round(schools.reduce((sum: number, s: School) => sum + s.deviation, 0) / schools.length)
             : 0;
@@ -130,37 +136,10 @@ export default function ZhongshouPage() {
     fetchStats();
   }, []);
 
-  // 获取四谷大塚页面HTML
-  const fetchYotsuyaHtml = async () => {
-    const url = yotsuyaUrl || 'https://www.yotsuyaotsuka.com/njc/deviation_top.php';
-
-    try {
-      setYotsuyaHtml('loading');
-      setFetchingYotsuya(true);
-      setDisplayMode('iframe');
-
-      const response = await fetch(`/api/02-edu/002-zhongshou/school?url=${encodeURIComponent(url)}&raw=true`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const html = await response.text();
-      setYotsuyaHtml(html);
-
-    } catch (error) {
-      console.error('获取四谷大塚HTML失败:', error);
-      setYotsuyaHtml('<!DOCTYPE html><html><body><h1>Error</h1><p>' + String(error) + '</p></body></html>');
-      setDisplayMode('text');
-    } finally {
-      setFetchingYotsuya(false);
-    }
-  };
-
   // 筛选条件变更
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination(prev => ({ ...prev, page: 1 })); // 重置到第一页
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   // 重置筛选
@@ -169,6 +148,7 @@ export default function ZhongshouPage() {
       minDeviation: '',
       maxDeviation: '',
       sex: 'all',
+      region: 'all',
       examDate: '',
       search: '',
     });
@@ -193,11 +173,20 @@ export default function ZhongshouPage() {
     }
   };
 
+  // 地区徽章
+  const getRegionBadge = (region: string) => {
+    switch (region) {
+      case '関東': return 'bg-blue-100 text-blue-700';
+      case '関西': return 'bg-orange-100 text-orange-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   // 获取学校详情
   const fetchSchoolDetail = async (schoolId: number) => {
     setDetailLoading(true);
     try {
-      const response = await fetch(`/api/02-edu/002-zhongshou/school-list/${schoolId}`);
+      const response = await fetch(`/api/02-edu/002-zhongshou/schools-study1/${schoolId}`);
       const data = await response.json();
       if (data.success) {
         setSelectedSchool(data.data);
@@ -219,8 +208,8 @@ export default function ZhongshouPage() {
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-6">
         <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-2xl font-bold">🇯🇵 中学受験 偏差値排行榜</h1>
-          <p className="mt-1 opacity-90">四谷大塚データ</p>
+          <h1 className="text-2xl font-bold">中学受験 偏差値排行榜</h1>
+          <p className="mt-1 opacity-90">スタディ データ</p>
         </div>
       </header>
 
@@ -253,9 +242,9 @@ export default function ZhongshouPage() {
       {/* 筛选区域 */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">🔍 筛选条件</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-4">筛选条件</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             {/* 学校名称搜索 */}
             <div>
               <label className="block text-xs text-gray-500 mb-1">学校名称</label>
@@ -305,6 +294,20 @@ export default function ZhongshouPage() {
               </select>
             </div>
 
+            {/* 地区筛选 */}
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">地区</label>
+              <select
+                value={filters.region}
+                onChange={(e) => handleFilterChange('region', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              >
+                <option value="all">全部</option>
+                <option value="関東">関東</option>
+                <option value="関西">関西</option>
+              </select>
+            </div>
+
             {/* 考试日期 */}
             <div>
               <label className="block text-xs text-gray-500 mb-1">考试日期</label>
@@ -334,7 +337,7 @@ export default function ZhongshouPage() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold text-gray-800">
-            📋 学校列表
+            学校列表
             <span className="text-sm font-normal text-gray-500 ml-2">
               ({pagination.total} 所学校)
             </span>
@@ -379,7 +382,8 @@ export default function ZhongshouPage() {
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">偏差値</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">学校名</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">类型</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">考试日期</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">地区</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">考试信息</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -395,19 +399,32 @@ export default function ZhongshouPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-medium text-gray-900">{school.name}</span>
+                      <div className="font-medium text-gray-900">{school.name}</div>
+                      <div className="text-xs text-gray-500">{school.prefecture}</div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getSexBadge(school.sex)}`}>
-                        {school.sex}
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getSexBadge(school.sex_type)}`}>
+                        {school.sex_type}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${getRegionBadge(school.region)}`}>
+                        {school.region}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {school.exam_dates ? school.exam_dates.split(' | ').map((date: string, i: number) => (
-                        <span key={i} className="inline-block mr-2">
-                          {date.trim()}
-                        </span>
-                      )) : '-'}
+                      {school.exams && school.exams.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {school.exams.slice(0, 3).map((exam, i) => (
+                            <span key={i} className="inline-block bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs">
+                              {exam.exam_date}
+                            </span>
+                          ))}
+                          {school.exams.length > 3 && (
+                            <span className="text-xs text-gray-500">+{school.exams.length - 3}</span>
+                          )}
+                        </div>
+                      ) : '-'}
                     </td>
                   </tr>
                 ))}
@@ -420,7 +437,7 @@ export default function ZhongshouPage() {
       {/* 学校详情弹窗 */}
       {selectedSchool && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={closeDetail}>
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
             {/* 弹窗头部 */}
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
               <h3 className="text-lg font-bold">{selectedSchool.school.name}</h3>
@@ -446,7 +463,7 @@ export default function ZhongshouPage() {
                   {/* 学校信息 */}
                   <div className="mb-6">
                     <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">学校信息</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="bg-gray-50 rounded-lg p-3">
                         <div className="text-xs text-gray-500">偏差値</div>
                         <div className={`text-2xl font-bold ${selectedSchool.school.deviation >= 70 ? 'text-red-600' : selectedSchool.school.deviation >= 60 ? 'text-orange-600' : 'text-green-600'}`}>
@@ -455,15 +472,77 @@ export default function ZhongshouPage() {
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
                         <div className="text-xs text-gray-500">类型</div>
-                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.sex}</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.sex_type}</div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-xs text-gray-500">学校ID</div>
-                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.school_id}</div>
+                        <div className="text-xs text-gray-500">地区</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.region}</div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-xs text-gray-500">考试次数</div>
-                        <div className="text-lg font-bold text-gray-800">{selectedSchool.exams.length} 回</div>
+                        <div className="text-xs text-gray-500">学校代码</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.school_code}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">地区</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.prefecture}</div>
+                      </div>
+                      {selectedSchool.school.website && (
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-xs text-gray-500">官网</div>
+                          <a href={selectedSchool.school.website} target="_blank" rel="noopener noreferrer" className="text-lg font-bold text-blue-600 hover:underline">
+                            访问官网
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 学费信息 */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">学费信息</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-green-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">初年度納入金合計</div>
+                        <div className="text-xl font-bold text-green-700">
+                          {selectedSchool.school.first_year_total || '-'}
+                        </div>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">年間学費</div>
+                        <div className="text-xl font-bold text-green-700">
+                          {selectedSchool.school.annual_fee || '-'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 进学实绩 */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">大学合格実績</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">東大・京大</div>
+                        <div className="text-xl font-bold text-purple-700">{selectedSchool.school.university_todai_keidai || 0}</div>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">一橋・東京科学・旧５帝大</div>
+                        <div className="text-xl font-bold text-purple-700">{selectedSchool.school.university_ichihashi_tokyo_5 || 0}</div>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">国公立大学</div>
+                        <div className="text-xl font-bold text-purple-700">{selectedSchool.school.university_national_public || 0}</div>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">早稲田・慶應・上智</div>
+                        <div className="text-xl font-bold text-purple-700">{selectedSchool.school.university_waseda_keio_socie || 0}</div>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">GMARCH</div>
+                        <div className="text-xl font-bold text-purple-700">{selectedSchool.school.university_gmarch || 0}</div>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">医学部</div>
+                        <div className="text-xl font-bold text-purple-700">{selectedSchool.school.university_medical || 0}</div>
                       </div>
                     </div>
                   </div>
@@ -474,14 +553,19 @@ export default function ZhongshouPage() {
                     <div className="space-y-2">
                       {selectedSchool.exams.length > 0 ? (
                         selectedSchool.exams.map((exam, index) => (
-                          <div key={exam.id} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                          <div key={exam.id || index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
                             <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                               {index + 1}
                             </div>
                             <div className="flex-1">
-                              <div className="font-bold text-gray-800">{exam.exam_date}</div>
-                              {exam.extra && (
-                                <div className="text-sm text-gray-600">{exam.extra}</div>
+                              <div className="font-bold text-gray-800">{exam.exam_name}</div>
+                              <div className="text-sm text-gray-600">
+                                {exam.exam_date} {exam.start_time}
+                              </div>
+                              {exam.source_url && (
+                                <a href={exam.source_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
+                                  入試要项
+                                </a>
                               )}
                             </div>
                           </div>
@@ -510,11 +594,10 @@ export default function ZhongshouPage() {
         </div>
       )}
 
-
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-6 mt-8">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-sm opacity-70">データソース: 四谷大塚</p>
+          <p className="text-sm opacity-70">データソース: スタディ</p>
           <p className="text-xs opacity-50 mt-2">© 2025 中学受験ガイド</p>
         </div>
       </footer>
