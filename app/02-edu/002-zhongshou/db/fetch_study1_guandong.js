@@ -183,172 +183,6 @@ async function fetchHtml(url) {
   return html;
 }
 
-/**
- * 保存到数据库
- * @param {object} db - 数据库连接
- * @param {Array} schools - 学校数组
- */
-async function saveToDb(db, schools) {
-  return new Promise((resolve, reject) => {
-    debug("Starting database save", { schoolCount: schools.length });
-
-    db.serialize(() => {
-      let processed = 0;
-
-      for (const school of schools) {
-        debug("Processing school", {
-          school_code: school.school_code,
-          name: school.name,
-          deviation: school.deviation,
-          progress: `${processed + 1}/${schools.length}`,
-        });
-
-        // 检查学校是否已存在
-        db.get(
-          "SELECT id FROM schools WHERE school_code = ?",
-          [school.school_code],
-          (err, row) => {
-            if (err) {
-              logError("Database query failed", err);
-              reject(err);
-              return;
-            }
-
-            if (row) {
-              // 更新现有学校
-              debug("Updating existing school", {
-                school_code: school.school_code,
-                dbId: row.id,
-              });
-              db.run(
-                `UPDATE schools SET
-                  name = ?,
-                  deviation = ?,
-                  prefecture = ?,
-                  category = ?,
-                  sex_type = ?,
-                  website = ?,
-                  first_year_total = ?,
-                  annual_fee = ?,
-                  university_todai_keidai = ?,
-                  university_ichihashi_tokyo_5 = ?,
-                  university_national_public = ?,
-                  university_waseda_keio_socie = ?,
-                  university_gmarch = ?,
-                  university_medical = ?,
-                  source_url = ?,
-                  region = '関東'
-                WHERE id = ?`,
-                [
-                  school.name,
-                  school.deviation,
-                  school.prefecture,
-                  school.category,
-                  school.sex_type,
-                  school.website || null,
-                  school.first_year_total || null,
-                  school.annual_fee || null,
-                  school.university_todai_keidai || 0,
-                  school.university_ichihashi_tokyo_5 || 0,
-                  school.university_national_public || 0,
-                  school.university_waseda_keio_socie || 0,
-                  school.university_gmarch || 0,
-                  school.university_medical || 0,
-                  school.source_url,
-                  row.id,
-                ],
-                (err) => {
-                  if (err) {
-                    logError("Update failed", err);
-                    reject(err);
-                    return;
-                  }
-                  debug("School updated successfully", {
-                    school_code: school.school_code,
-                  });
-                  // 保存考试信息
-                  saveExamsToDb(db, school.school_code, school.exams, school.website)
-                    .then(() => {
-                      processed++;
-                      if (processed === schools.length) {
-                        resolve();
-                      }
-                    })
-                    .catch(reject);
-                }
-              );
-            } else {
-              // 插入新学校
-              debug("Inserting new school", {
-                school_code: school.school_code,
-                name: school.name,
-              });
-              db.run(
-                `INSERT INTO schools (
-                  school_code,
-                  name,
-                  deviation,
-                  prefecture,
-                  category,
-                  sex_type,
-                  website,
-                  first_year_total,
-                  annual_fee,
-                  university_todai_keidai,
-                  university_ichihashi_tokyo_5,
-                  university_national_public,
-                  university_waseda_keio_socie,
-                  university_gmarch,
-                  university_medical,
-                  source_url,
-                  region
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '関東')`,
-                [
-                  school.school_code,
-                  school.name,
-                  school.deviation,
-                  school.prefecture,
-                  school.category,
-                  school.sex_type,
-                  school.website || null,
-                  school.first_year_total || null,
-                  school.annual_fee || null,
-                  school.university_todai_keidai || 0,
-                  school.university_ichihashi_tokyo_5 || 0,
-                  school.university_national_public || 0,
-                  school.university_waseda_keio_socie || 0,
-                  school.university_gmarch || 0,
-                  school.university_medical || 0,
-                  school.schoolUrl || school.source_url || null,
-                ],
-                function (err) {
-                  if (err) {
-                    logError("Insert failed", err);
-                    reject(err);
-                    return;
-                  }
-                  debug("School inserted", {
-                    school_code: school.school_code,
-                    newId: this.lastID,
-                  });
-                  // 保存考试信息
-                  saveExamsToDb(db, school.school_code, school.exams)
-                    .then(() => {
-                      processed++;
-                      if (processed === schools.length) {
-                        resolve();
-                      }
-                    })
-                    .catch(reject);
-                }
-              );
-            }
-          }
-        );
-      }
-    });
-  });
-}
 
 /**
  * 保存考试信息到数据库
@@ -745,11 +579,6 @@ async function main() {
               const $nameTd = $exam(nameTd);
               const examName = $nameTd.text().trim();
 
-              // 只处理包含"年度入試"、"入試"、或"一次/二次"等格式的行
-              if (!examName.includes("年度") && !examName.includes("入試") &&
-                  !examName.match(/^[一二三四五六七八九十]+次$/)) {
-                continue;
-              }
 
               // 获取同一行的日期 td
               const parentRow = $nameTd.closest("tr");
@@ -781,7 +610,12 @@ async function main() {
             console.log(`    - 无考试信息`);
           }
 
+          // 输出该学校所有考试时间列表
           school.exams = exams;
+          if (exams.length > 0) {
+            const examList = exams.map(e => `${e.exam_name}(${e.exam_date})`).join(', ');
+            console.log(`    📋 考试列表: ${examList}`);
+          }
 
           // 立即保存到数据库
           console.log(`    💾 保存到数据库...`);
@@ -829,7 +663,7 @@ async function main() {
 }
 
 // 导出函数供其他模块使用
-module.exports = { parseHtml, fetchHtml, saveToDb };
+module.exports = { parseHtml, fetchHtml };
 
 // 运行主函数
 main();
