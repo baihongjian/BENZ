@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * study1.jp 偏差値数据 - 批量获取并保存到 SQLite
+ * study1.jp 获取首都圈的学校数据 - 批量获取并保存到 SQLite
  */
 
 const path = require("path");
@@ -236,7 +236,8 @@ async function saveToDb(db, schools) {
                   university_waseda_keio_socie = ?,
                   university_gmarch = ?,
                   university_medical = ?,
-                  source_url = ?
+                  source_url = ?,
+                  region = '関東'
                 WHERE id = ?`,
                 [
                   school.name,
@@ -299,8 +300,9 @@ async function saveToDb(db, schools) {
                   university_waseda_keio_socie,
                   university_gmarch,
                   university_medical,
-                  source_url
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                  source_url,
+                  region
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '関東')`,
                 [
                   school.school_code,
                   school.name,
@@ -433,7 +435,8 @@ function saveSchoolToDb(db, school) {
               university_waseda_keio_socie = ?,
               university_gmarch = ?,
               university_medical = ?,
-              source_url = ?
+              source_url = ?,
+              region = '関東'
             WHERE id = ?`,
             [
               school.name,
@@ -484,8 +487,9 @@ function saveSchoolToDb(db, school) {
               university_waseda_keio_socie,
               university_gmarch,
               university_medical,
-              source_url
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              source_url,
+              region
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '関東')`,
             [
               school.school_code,
               school.name,
