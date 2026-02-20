@@ -398,6 +398,131 @@ function saveExamsToDb(db, schoolCode, exams, website) {
 }
 
 /**
+ * 保存单个学校信息到数据库（包含考试信息）
+ * @param {object} db - 数据库连接
+ * @param {object} school - 学校信息对象
+ */
+function saveSchoolToDb(db, school) {
+  return new Promise((resolve, reject) => {
+    // 检查学校是否已存在
+    db.get(
+      "SELECT id FROM schools WHERE school_code = ?",
+      [school.school_code],
+      (err, row) => {
+        if (err) {
+          logError("Database query failed", err);
+          reject(err);
+          return;
+        }
+
+        if (row) {
+          // 更新现有学校
+          db.run(
+            `UPDATE schools SET
+              name = ?,
+              deviation = ?,
+              prefecture = ?,
+              category = ?,
+              sex_type = ?,
+              website = ?,
+              first_year_total = ?,
+              annual_fee = ?,
+              university_todai_keidai = ?,
+              university_ichihashi_tokyo_5 = ?,
+              university_national_public = ?,
+              university_waseda_keio_socie = ?,
+              university_gmarch = ?,
+              university_medical = ?,
+              source_url = ?
+            WHERE id = ?`,
+            [
+              school.name,
+              school.deviation,
+              school.prefecture,
+              school.category,
+              school.sex_type,
+              school.website || null,
+              school.first_year_total || null,
+              school.annual_fee || null,
+              school.university_todai_keidai || 0,
+              school.university_ichihashi_tokyo_5 || 0,
+              school.university_national_public || 0,
+              school.university_waseda_keio_socie || 0,
+              school.university_gmarch || 0,
+              school.university_medical || 0,
+              school.schoolUrl || school.source_url || null,
+              row.id,
+            ],
+            (err) => {
+              if (err) {
+                logError("Update failed", err);
+                reject(err);
+                return;
+              }
+              // 保存考试信息
+              saveExamsToDb(db, school.school_code, school.exams, school.website)
+                .then(resolve)
+                .catch(reject);
+            }
+          );
+        } else {
+          // 插入新学校
+          db.run(
+            `INSERT INTO schools (
+              school_code,
+              name,
+              deviation,
+              prefecture,
+              category,
+              sex_type,
+              website,
+              first_year_total,
+              annual_fee,
+              university_todai_keidai,
+              university_ichihashi_tokyo_5,
+              university_national_public,
+              university_waseda_keio_socie,
+              university_gmarch,
+              university_medical,
+              source_url
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              school.school_code,
+              school.name,
+              school.deviation,
+              school.prefecture,
+              school.category,
+              school.sex_type,
+              school.website || null,
+              school.first_year_total || null,
+              school.annual_fee || null,
+              school.university_todai_keidai || 0,
+              school.university_ichihashi_tokyo_5 || 0,
+              school.university_national_public || 0,
+              school.university_waseda_keio_socie || 0,
+              school.university_gmarch || 0,
+              school.university_medical || 0,
+              school.schoolUrl || school.source_url || null,
+            ],
+            function (err) {
+              if (err) {
+                logError("Insert failed", err);
+                reject(err);
+                return;
+              }
+              // 保存考试信息
+              saveExamsToDb(db, school.school_code, school.exams, school.website)
+                .then(resolve)
+                .catch(reject);
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
+/**
  * 显示统计信息
  * @param {object} db - 数据库连接
  */
@@ -653,58 +778,50 @@ async function main() {
           }
 
           school.exams = exams;
+
+          // 立即保存到数据库
+          console.log(`    💾 保存到数据库...`);
+          await saveSchoolToDb(db, school);
+          console.log(`    ✅ 保存完成`);
         } catch (error) {
+          totalErrors++;
           console.error(`    ✗ 获取失败: ${error.message}`);
         }
 
         // 避免请求过快
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
-
-      allSchools = schools;
     } catch (error) {
       totalErrors++;
       logError("Failed to fetch page", error);
       console.error(`  ❌ 获取失败: ${error.message}`);
     }
 
-    if (allSchools.length > 0) {
-      console.log(`\n💾 保存到数据库...`);
-      debug("Starting database save", { schoolCount: allSchools.length });
-
-      await saveToDb(db, allSchools);
-
-      console.log(`✅ 保存完成`);
-      debug("Database save completed");
-
-      await showStats(db);
-    } else {
-      console.log("\n⚠️ 没有获取到任何数据");
-      debug("No data was fetched", { totalErrors });
-    }
-
-    // 关闭数据库
-    debug("Closing database connection...");
-    db.close((err) => {
-      if (err) {
-        logError("Error closing database", err);
-      }
-
-      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-      debug("Script completed", {
-        duration: `${duration}s`,
-        totalFetched,
-        totalErrors,
-      });
-      console.log(
-        `\n✅ 完成! (耗时: ${duration}秒, 获取: ${totalFetched}所学校, 错误: ${totalErrors})`
-      );
-    });
+    // 显示统计信息
+    console.log(`\n📊 统计信息`);
+    await showStats(db);
+    console.log(`\n✅ 完成! (获取: ${totalFetched}所学校, 错误: ${totalErrors})`);
   } catch (error) {
     logError("Fatal error", error);
     console.error(`\n❌ 错误: ${error.message}`);
     process.exit(1);
   }
+
+  // 关闭数据库
+  debug("Closing database connection...");
+  db.close((err) => {
+    if (err) {
+      logError("Error closing database", err);
+    }
+
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    debug("Script completed", {
+      duration: `${duration}s`,
+      totalFetched,
+      totalErrors,
+    });
+    console.log(`\n✅ 完成! (耗时: ${duration}秒)`);
+  });
 }
 
 // 导出函数供其他模块使用
