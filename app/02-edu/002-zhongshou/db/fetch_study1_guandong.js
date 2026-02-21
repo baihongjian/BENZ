@@ -24,7 +24,7 @@ const CATEGORY_MAP = {
 };
 
 // API 基础 URL (当前服务)
-const API_URL = "http://localhost:3000/api/02-edu/002-zhongshou/study1";
+const API_URL = "http://localhost:3000/api/02-edu/002-zhongshou/school";
 
 // 调试日志函数
 function debug(message, data = null) {

@@ -6,6 +6,7 @@
 
 const path = require('path');
 const sqlite3 = require('sqlite3');
+const cheerio = require('cheerio');
 
 const DB_PATH = path.join(__dirname, 'yotsuya.db');
 
@@ -145,7 +146,7 @@ async function fetchHtml(url) {
 
 
 /**
- * 从详情页获取官网 URL
+ * 从详情页获取官网 URL (使用 cheerio)
  * @param {string} schoolId - 学校 ID
  */
 async function fetchSchoolWebUrl(schoolId) {
@@ -154,32 +155,52 @@ async function fetchSchoolWebUrl(schoolId) {
   try {
     const html = await fetchHtml(url);
 
-    // 匹配 公式サイト 的 URL
-    // 常见模式: <a href="http://xxx" target="_blank">公式サイト</a>
-    // 或者: <a href="xxx" class="official-link">公式サイト</a>
-    const patterns = [
-      // 匹配包含 "公式サイト" 的链接
-      /<a[^>]*href="([^"]+)"[^>]*>公式サイト<\/a>/i,
-      /<a[^>]*>公式サイト<\/a[^>]*href="([^"]+)"/i,
-      // 匹配可能在 td 或 div 中的官方链接
-      /<td[^>]*class="[^"]*official[^"]*"[^>]*>[\s\S]*?<a[^>]*href="([^"]+)"/i,
-      // 匹配 data-detail 或类似结构中的 URL
-      /"official_url"\s*:\s*"([^"]+)"/i,
-      /"url"\s*:\s*"([^"]+)"/i,
-    ];
+    // 使用 cheerio 解析 HTML
+    const $ = cheerio.load(html);
 
-    for (const pattern of patterns) {
-      const match = pattern.exec(html);
-      if (match) {
-        return match[1];
+    // 方法1: 查找包含 "公式サイト" 文本的链接
+    const officialLink = $('a').filter((i, el) => {
+      return $(el).text().includes('公式サイト');
+    });
+
+    if (officialLink.length > 0) {
+      const href = officialLink.attr('href');
+      if (href) {
+        return href;
       }
     }
 
-    // 如果没有匹配到，尝试匹配任何指向外部的链接（不是 yotsuyaotsuka.com 的）
-    const externalLinkPattern = /<a[^>]*href="(https?:\/\/(?!.*yotsuyaotsuka\.com)[^"]+)"[^>]*>/i;
-    const externalMatch = externalLinkPattern.exec(html);
-    if (externalMatch) {
-      return externalMatch[1];
+    // 方法2: 查找包含 "official" 类的链接
+    const officialClassLink = $('a.official, a.official-link, a.btn-official').first();
+    if (officialClassLink.length > 0) {
+      const href = officialClassLink.attr('href');
+      if (href) {
+        return href;
+      }
+    }
+
+    // 方法3: 查找表格或 div 中包含官方链接的元素
+    const tableOfficialLink = $('table a, td a, div a').filter((i, el) => {
+      const text = $(el).text();
+      const href = $(el).attr('href');
+      // 排除 yotsuyaotsuka.com 内部的链接
+      return text.includes('公式') || (href && !href.includes('yotsuyaotsuka.com'));
+    });
+
+    if (tableOfficialLink.length > 0) {
+      const href = tableOfficialLink.first().attr('href');
+      if (href && !href.includes('yotsuyaotsuka.com')) {
+        return href;
+      }
+    }
+
+    // 方法4: 查找第一个外部链接（不是 yotsuyaotsuka.com 的）
+    const allLinks = $('a[href^="http"]');
+    for (let i = 0; i < allLinks.length; i++) {
+      const href = $(allLinks[i]).attr('href');
+      if (href && !href.includes('yotsuyaotsuka.com')) {
+        return href;
+      }
     }
 
     return null;
@@ -191,7 +212,104 @@ async function fetchSchoolWebUrl(schoolId) {
 
 
 /**
- * 保存到数据库
+ * 保存单个学校到数据库
+ */
+async function saveSchoolToDb(db, school) {
+  return new Promise((resolve, reject) => {
+    debug('Processing school', {
+      school_id: school.school_id,
+      name: school.name,
+      deviation: school.deviation,
+      webURL: school.webURL,
+    });
+
+    db.get('SELECT id FROM schools WHERE school_id = ?', [school.school_id], (err, row) => {
+      if (err) {
+        logError('Database query failed', err);
+        reject(err);
+        return;
+      }
+
+      if (row) {
+        // 更新学校信息
+        debug('Updating existing school', { school_id: school.school_id, dbId: row.id });
+        db.run(
+          'UPDATE schools SET name = ?, deviation = ?, sex = ?, webURL = ? WHERE id = ?',
+          [school.name, school.deviation, school.sex, school.webURL || null, row.id],
+          (err) => {
+            if (err) {
+              logError('Update failed', err);
+              reject(err);
+              return;
+            }
+            debug('School updated successfully', { school_id: school.school_id });
+            // 保存考试信息
+            saveExamsForSchool(db, row.id, school.exams, resolve, reject);
+          }
+        );
+      } else {
+        // 插入新学校
+        debug('Inserting new school', { school_id: school.school_id, name: school.name });
+        db.run(
+          'INSERT OR REPLACE INTO schools (school_id, name, deviation, sex, webURL) VALUES (?, ?, ?, ?, ?)',
+          [school.school_id, school.name, school.deviation, school.sex, school.webURL || null],
+          function (err) {
+            if (err) {
+              logError('Insert failed', err);
+              reject(err);
+              return;
+            }
+            debug('School saved (insert or replace)', { school_id: school.school_id, lastID: this.lastID });
+            // 保存考试信息
+            saveExamsForSchool(db, this.lastID, school.exams, resolve, reject);
+          }
+        );
+      }
+    });
+  });
+}
+
+
+/**
+ * 保存单个学校的考试信息
+ */
+function saveExamsForSchool(db, schoolId, exams, resolve, reject) {
+  db.run('DELETE FROM exams WHERE school_id = ?', [schoolId], (err) => {
+    if (err) {
+      logError('Failed to delete existing exams', err);
+      reject(err);
+      return;
+    }
+
+    if (!exams || exams.length === 0) {
+      resolve();
+      return;
+    }
+
+    let examProcessed = 0;
+    const stmt = db.prepare('INSERT INTO exams (school_id, exam_date, extra) VALUES (?, ?, ?)');
+
+    for (const exam of exams) {
+      stmt.run(schoolId, exam.exam_date, exam.extra, (err) => {
+        if (err) {
+          logError('Failed to insert exam', err);
+          reject(err);
+          return;
+        }
+
+        examProcessed++;
+        if (examProcessed === exams.length) {
+          stmt.finalize();
+          resolve();
+        }
+      });
+    }
+  });
+}
+
+
+/**
+ * 保存到数据库 (批量)
  */
 async function saveToDb(db, schools) {
   return new Promise((resolve, reject) => {
@@ -398,6 +516,32 @@ async function main() {
         debug(`Page ${i + 1} parsed`, { schoolsFound: schools.length });
         console.log(`\n🌐 [${i + 1}/${urls.length}] ${url}`);
         console.log(`  解析到 ${schools.length} 所学校`);
+
+        // 对每个学校：获取官网URL -> 立即保存到数据库
+        console.log(`  📡 开始获取学校详情...`);
+        for (let j = 0; j < schools.length; j++) {
+          const school = schools[j];
+
+          try {
+            // 获取官网 URL
+            const webUrl = await fetchSchoolWebUrl(school.school_id);
+            if (webUrl) {
+              school.webURL = webUrl;
+              console.log(`    🌐 ${school.name}: ${webUrl}`);
+            } else {
+              console.log(`    - ${school.name}: 无官网链接`);
+            }
+          } catch (error) {
+            console.log(`    ✗ ${school.name}: 获取失败`);
+          }
+
+          // 避免请求过快
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+          // 立即保存到数据库
+          await saveSchoolToDb(db, school);
+        }
+
         allSchools = allSchools.concat(schools);
       } catch (err) {
         totalErrors++;
@@ -409,34 +553,7 @@ async function main() {
     debug('All pages fetched', { totalUrls: urls.length, totalErrors, totalSchools: allSchools.length });
 
     if (allSchools.length > 0) {
-      // 获取每个学校的官网 URL
-      console.log(`\n🌐 开始获取学校官网 URL...`);
-      for (let i = 0; i < allSchools.length; i++) {
-        const school = allSchools[i];
-        try {
-          const webUrl = await fetchSchoolWebUrl(school.school_id);
-          if (webUrl) {
-            school.webURL = webUrl;
-            console.log(`  [${i + 1}/${allSchools.length}] ${school.name}: ${webUrl}`);
-          } else {
-            console.log(`  [${i + 1}/${allSchools.length}] ${school.name}: 无官网链接`);
-          }
-        } catch (error) {
-          console.log(`  [${i + 1}/${allSchools.length}] ${school.name}: 获取失败`);
-        }
-
-        // 避免请求过快
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-
-      console.log(`\n💾 保存到数据库...`);
-      debug('Starting database save', { schoolCount: allSchools.length });
-
-      await saveToDb(db, allSchools);
-
       console.log(`✅ 保存完成`);
-      debug('Database save completed');
-
       await showStats(db);
     } else {
       console.log('\n⚠️ 没有获取到任何数据');
