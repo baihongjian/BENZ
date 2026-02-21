@@ -471,20 +471,24 @@ export default function ZhongshouPage() {
                         </div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-xs text-gray-500">类型</div>
+                        <div className="text-xs text-gray-500">学校类型</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.category}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">性别类型</div>
                         <div className="text-lg font-bold text-gray-800">{selectedSchool.school.sex_type}</div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-xs text-gray-500">地区</div>
+                        <div className="text-xs text-gray-500">区域</div>
                         <div className="text-lg font-bold text-gray-800">{selectedSchool.school.region}</div>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-xs text-gray-500">学校代码</div>
-                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.school_code}</div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
                         <div className="text-xs text-gray-500">地区</div>
                         <div className="text-lg font-bold text-gray-800">{selectedSchool.school.prefecture}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">学校代码</div>
+                        <div className="text-lg font-bold text-gray-800">{selectedSchool.school.school_code}</div>
                       </div>
                       {selectedSchool.school.website && (
                         <div className="bg-gray-50 rounded-lg p-3">
