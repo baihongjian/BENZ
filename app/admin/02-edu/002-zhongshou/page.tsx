@@ -36,8 +36,16 @@ interface Exam {
   source_url: string;
 }
 
+// 关联学校类型
+interface LinkedSchool {
+  name: string;
+  study1: Study1School | null;
+  yotsuya: YotsuyaSchool | null;
+  matchedBy: 'exact' | 'fuzzy' | 'study1' | 'yotsuya';
+}
+
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'study1' | 'yotsuya'>('study1');
+  const [activeTab, setActiveTab] = useState<'study1' | 'yotsuya' | 'linked'>('study1');
 
   // study1.db 数据
   const [study1Schools, setStudy1Schools] = useState<Study1School[]>([]);
@@ -47,6 +55,11 @@ export default function AdminPage() {
   // yotsuya.db 数据
   const [yotsuyaSchools, setYotsuyaSchools] = useState<YotsuyaSchool[]>([]);
   const [selectedYotsuyaSchool, setSelectedYotsuyaSchool] = useState<YotsuyaSchool | null>(null);
+
+  // 关联数据
+  const [linkedSchools, setLinkedSchools] = useState<LinkedSchool[]>([]);
+  const [linkedFilter, setLinkedFilter] = useState<'all' | 'exact' | 'fuzzy' | 'both' | 'study1_only' | 'yotsuya_only'>('all');
+  const [regionFilter, setRegionFilter] = useState<'all' | '関東' | '関西'>('all');
 
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -147,10 +160,165 @@ export default function AdminPage() {
   useEffect(() => {
     if (activeTab === 'study1') {
       fetchStudy1Schools();
-    } else {
+    } else if (activeTab === 'yotsuya') {
       fetchYotsuyaSchools();
+    } else if (activeTab === 'linked') {
+      // 关联视图：获取两个数据库的数据并关联
+      fetchBothDatabases();
     }
   }, [activeTab, fetchStudy1Schools, fetchYotsuyaSchools]);
+
+  // 标准化学校名称（去除后缀）
+  const normalizeName = (name: string): string => {
+    // 常见后缀列表
+    const suffixes = [
+      '中学校',
+      '中等部',
+      '中学',
+      '高等部',
+      '高校',
+      '学校',
+      '学園',
+    ];
+
+    let normalized = name;
+    for (const suffix of suffixes) {
+      if (normalized.endsWith(suffix)) {
+        normalized = normalized.slice(0, -suffix.length);
+        break; // 只去除一个最长的后缀
+      }
+    }
+    return normalized;
+  };
+
+  // 获取两个数据库并关联（支持模糊匹配）
+  const fetchBothDatabases = async () => {
+    setLoading(true);
+    try {
+      // 并行获取两个数据库
+      const [study1Res, yotsuyaRes] = await Promise.all([
+        fetch(`/api/02-edu/002-zhongshou/schools-study1?limit=9999`),
+        fetch(`/api/02-edu/002-zhongshou/school-list?limit=9999`),
+      ]);
+
+      const study1Data = await study1Res.json();
+      const yotsuyaData = await yotsuyaRes.json();
+
+      const study1List: Study1School[] = study1Data.success ? study1Data.data : [];
+      const yotsuyaList: YotsuyaSchool[] = yotsuyaData.success ? yotsuyaData.data : [];
+
+      // 创建标准化名称映射（用于模糊匹配）
+      const study1NormalizedMap = new Map<string, Study1School[]>();
+      study1List.forEach((s) => {
+        const normalized = normalizeName(s.name);
+        if (!study1NormalizedMap.has(normalized)) {
+          study1NormalizedMap.set(normalized, []);
+        }
+        study1NormalizedMap.get(normalized)!.push(s);
+      });
+
+      const yotsuyaNormalizedMap = new Map<string, YotsuyaSchool[]>();
+      yotsuyaList.forEach((s) => {
+        const normalized = normalizeName(s.name);
+        if (!yotsuyaNormalizedMap.has(normalized)) {
+          yotsuyaNormalizedMap.set(normalized, []);
+        }
+        yotsuyaNormalizedMap.get(normalized)!.push(s);
+      });
+
+      // 用于跟踪已匹配的学校
+      const matchedYotsuya = new Set<string>();
+      const matchedStudy1 = new Set<string>();
+
+      // 创建关联数据
+      const linked: LinkedSchool[] = [];
+
+      // 首先处理精确匹配（两个数据库中名称完全相同的学校）
+      study1List.forEach((study1) => {
+        const yotsuya = yotsuyaList.find(y => y.name === study1.name);
+        if (yotsuya) {
+          linked.push({
+            name: study1.name,
+            study1,
+            yotsuya,
+            matchedBy: 'exact',
+          });
+          matchedStudy1.add(study1.name);
+          matchedYotsuya.add(yotsuya.name);
+        }
+      });
+
+      console.log(`\n=== After Exact Match ===`);
+      console.log(`  Matched study1: ${matchedStudy1.size}`);
+      console.log(`  Matched yotsuya: ${matchedYotsuya.size}`);
+
+      // 处理模糊匹配 - 对标准化后的名称进行匹配
+      let fuzzyMatchCount = 0;
+      study1NormalizedMap.forEach((study1Schools, normalizedName) => {
+        const yotsuyaSchools = yotsuyaNormalizedMap.get(normalizedName);
+        if (!yotsuyaSchools || yotsuyaSchools.length === 0) return;
+
+        // 匹配所有未匹配的组合
+        study1Schools.forEach((study1) => {
+          // 如果已精确匹配，跳过
+          if (matchedStudy1.has(study1.name)) return;
+
+          // 找一个未匹配的 yotsuya 学校
+          const yotsuya = yotsuyaSchools.find(y => !matchedYotsuya.has(y.name));
+          if (!yotsuya) return;
+
+          // 进行模糊匹配
+          linked.push({
+            name: `${study1.name} ↔ ${yotsuya.name}`,
+            study1,
+            yotsuya,
+            matchedBy: 'fuzzy',
+          });
+          matchedStudy1.add(study1.name);
+          matchedYotsuya.add(yotsuya.name);
+          fuzzyMatchCount++;
+        });
+      });
+
+      console.log(`\n=== After Fuzzy Match ===`);
+      console.log(`  Fuzzy matches: ${fuzzyMatchCount}`);
+      console.log(`  Total matched study1: ${matchedStudy1.size}`);
+      console.log(`  Total matched yotsuya: ${matchedYotsuya.size}`);
+
+      // 添加仅在 study1 中的未匹配学校
+      study1List.forEach((s) => {
+        if (!matchedStudy1.has(s.name)) {
+          linked.push({
+            name: s.name,
+            study1: s,
+            yotsuya: null,
+            matchedBy: 'study1',
+          });
+        }
+      });
+
+      // 添加仅在 yotsuya 中的未匹配学校
+      yotsuyaList.forEach((s) => {
+        if (!matchedYotsuya.has(s.name)) {
+          linked.push({
+            name: s.name,
+            study1: null,
+            yotsuya: s,
+            matchedBy: 'yotsuya',
+          });
+        }
+      });
+
+      // 按名称排序
+      linked.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+
+      setLinkedSchools(linked);
+    } catch (error) {
+      console.error('获取关联数据失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchStats();
@@ -217,6 +385,12 @@ export default function AdminPage() {
           style={activeTab === 'yotsuya' ? activeTabStyle : tabStyle}
         >
           yotsuya.db (四谷大塚)
+        </button>
+        <button
+          onClick={() => setActiveTab('linked')}
+          style={activeTab === 'linked' ? activeTabStyle : tabStyle}
+        >
+          关联对比
         </button>
       </div>
 
@@ -397,6 +571,123 @@ export default function AdminPage() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* 关联对比视图 */}
+      {activeTab === 'linked' && (
+        <>
+          {/* 关联筛选 */}
+          <div style={filterContainerStyle}>
+            <div style={filterRowStyle}>
+              <div style={filterItemStyle}>
+                <label>匹配:</label>
+                <select
+                  value={linkedFilter}
+                  onChange={(e) => setLinkedFilter(e.target.value as any)}
+                  style={selectStyle}
+                >
+                  <option value="all">全部</option>
+                  <option value="exact">精确匹配</option>
+                  <option value="fuzzy">模糊匹配</option>
+                  <option value="both">两库都有</option>
+                  <option value="study1_only">仅 study1.db</option>
+                  <option value="yotsuya_only">仅 yotsuya.db</option>
+                </select>
+              </div>
+
+              <div style={filterItemStyle}>
+                <label>区域:</label>
+                <select
+                  value={regionFilter}
+                  onChange={(e) => setRegionFilter(e.target.value as any)}
+                  style={selectStyle}
+                >
+                  <option value="all">全部</option>
+                  <option value="関東">関東</option>
+                  <option value="関西">関西</option>
+                </select>
+              </div>
+
+              <div style={{ marginLeft: '20px', color: '#666' }}>
+                共 {linkedSchools.length} 所学校
+                (精确匹配: {linkedSchools.filter(s => s.matchedBy === 'exact').length} |
+                模糊匹配: {linkedSchools.filter(s => s.matchedBy === 'fuzzy').length} |
+                仅 study1: {linkedSchools.filter(s => s.matchedBy === 'study1').length} |
+                仅 yotsuya: {linkedSchools.filter(s => s.matchedBy === 'yotsuya').length})
+              </div>
+            </div>
+          </div>
+
+          {/* 关联表格 */}
+          {loading ? (
+            <div>加载中...</div>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={{ ...thStyle, width: '25%' }}>学校名</th>
+                  <th style={{ ...thStyle, width: '15%', background: '#e3f2fd' }}>study1.db 偏差值</th>
+                  <th style={{ ...thStyle, width: '10%', background: '#e3f2fd' }}>区域</th>
+                  <th style={{ ...thStyle, width: '10%', background: '#e3f2fd' }}>性别</th>
+                  <th style={{ ...thStyle, width: '15%', background: '#fff3e0' }}>yotsuya.db 偏差值</th>
+                  <th style={{ ...thStyle, width: '10%', background: '#fff3e0' }}>性别</th>
+                  <th style={{ ...thStyle, width: '15%' }}>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linkedSchools
+                  .filter(s => {
+                    // 匹配类型筛选
+                    let matchTypeFiltered = true;
+                    if (linkedFilter === 'exact') matchTypeFiltered = s.matchedBy === 'exact';
+                    else if (linkedFilter === 'fuzzy') matchTypeFiltered = s.matchedBy === 'fuzzy';
+                    else if (linkedFilter === 'both') matchTypeFiltered = s.study1 && s.yotsuya;
+                    else if (linkedFilter === 'study1_only') matchTypeFiltered = s.study1 && !s.yotsuya;
+                    else if (linkedFilter === 'yotsuya_only') matchTypeFiltered = !s.study1 && s.yotsuya;
+
+                    // 区域筛选 - 只从 study1 中获取区域信息
+                    let regionFiltered = true;
+                    if (regionFilter !== 'all' && s.study1) {
+                      regionFiltered = s.study1.region === regionFilter;
+                    }
+
+                    return matchTypeFiltered && regionFiltered;
+                  })
+                  .map((school) => (
+                    <tr key={`${school.study1?.school_code || ''}-${school.yotsuya?.school_id || ''}-${school.name}`} style={trStyle}>
+                      <td style={tdStyle}>{school.name}</td>
+                      <td style={{ ...tdStyle, background: '#e3f2fd', textAlign: 'center' }}>
+                        {school.study1?.deviation || '-'}
+                      </td>
+                      <td style={{ ...tdStyle, background: '#e3f2fd', textAlign: 'center' }}>
+                        {school.study1?.region || '-'}
+                      </td>
+                      <td style={{ ...tdStyle, background: '#e3f2fd', textAlign: 'center' }}>
+                        {school.study1?.sex_type || '-'}
+                      </td>
+                      <td style={{ ...tdStyle, background: '#fff3e0', textAlign: 'center' }}>
+                        {school.yotsuya?.deviation || '-'}
+                      </td>
+                      <td style={{ ...tdStyle, background: '#fff3e0', textAlign: 'center' }}>
+                        {school.yotsuya?.sex || '-'}
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}>
+                        {school.matchedBy === 'exact' ? (
+                          <span style={statusBothStyle}>精确匹配</span>
+                        ) : school.matchedBy === 'fuzzy' ? (
+                          <span style={statusFuzzyStyle}>模糊匹配</span>
+                        ) : school.study1 ? (
+                          <span style={statusStudy1OnlyStyle}>仅 study1</span>
+                        ) : (
+                          <span style={statusYotsuyaOnlyStyle}>仅 yotsuya</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+        </>
       )}
 
       {/* study1 学校详情弹窗 */}
@@ -690,4 +981,36 @@ const detailTableStyle: React.CSSProperties = {
   width: '100%',
   borderCollapse: 'collapse',
   fontSize: '13px',
+};
+
+const statusBothStyle: React.CSSProperties = {
+  padding: '3px 8px',
+  background: '#4caf50',
+  color: '#fff',
+  borderRadius: '4px',
+  fontSize: '11px',
+};
+
+const statusStudy1OnlyStyle: React.CSSProperties = {
+  padding: '3px 8px',
+  background: '#2196f3',
+  color: '#fff',
+  borderRadius: '4px',
+  fontSize: '11px',
+};
+
+const statusYotsuyaOnlyStyle: React.CSSProperties = {
+  padding: '3px 8px',
+  background: '#ff9800',
+  color: '#fff',
+  borderRadius: '4px',
+  fontSize: '11px',
+};
+
+const statusFuzzyStyle: React.CSSProperties = {
+  padding: '3px 8px',
+  background: '#9c27b0',
+  color: '#fff',
+  borderRadius: '4px',
+  fontSize: '11px',
 };
