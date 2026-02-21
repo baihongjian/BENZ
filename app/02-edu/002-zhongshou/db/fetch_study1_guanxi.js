@@ -65,96 +65,75 @@ function connectDb() {
 }
 
 /**
- * 解析 HTML，提取学校信息
+ * 解析 HTML，提取学校信息 (使用 cheerio)
  * @param {string} html - HTML 内容
  * @param {string} baseUrl - 基础 URL (用于解析相对链接)
  */
 function parseHtml(html, baseUrl = "https://study1.jp") {
-  debug("Parsing HTML...", { htmlLength: html.length });
+  debug("Parsing HTML with cheerio...", { htmlLength: html.length });
 
+  const $ = cheerio.load(html);
   const schools = [];
-  let deviation = null;
 
-  // 匹配外层 tr，包含偏差值 td 和学校列表 table
-  const rowPattern =
-    /<tr>\s*<td[^>]*class="dev"[^>]*>(\d+)<\/td>\s*<td[^>]*colspan="3"[^>]*>([\s\S]*?<\/table>)[\s\S]*?<\/td>\s*<\/tr>/g;
-  let rowMatch;
-  while ((rowMatch = rowPattern.exec(html)) !== null) {
+  // 查找表格中的所有行 tr
+  $("table tr").each((i, row) => {
+    const $row = $(row);
+
+    // 跳过表头行（包含 th）
+    if ($row.find("th").length > 0) return;
+
+    // 提取学校名称和链接
+    const nameCell = $row.find("td.name a");
+    if (nameCell.length === 0) return;
+
+    const schoolUrl = nameCell.attr("href");
+    const schoolCode = schoolUrl ? schoolUrl.replace(/\/$/, "").split("/").pop() : "";
+    const name = nameCell.text().trim();
+
     // 提取偏差值
-    const devValue = rowMatch[1];
-    if (devValue === "-" || devValue === "") continue; // 跳过无效偏差值
-    deviation = parseInt(devValue);
-    const tableContent = rowMatch[2]; // 整个 <table>...</table>
+    const devCell = $row.find("td.dev");
+    const deviationText = devCell.text().trim();
+    const deviation = (deviationText === "-" || deviationText === "") ? null : parseInt(deviationText);
 
-    debug("Processing deviation", {
-      deviation,
-      tableLength: tableContent.length,
+    // 提取类型图标 alt 属性
+    let sexType = "共通";
+    let category = "私立";
+
+    $row.find("td.type img").each((idx, img) => {
+      const alt = $(img).attr("alt");
+      if (alt && SEX_MAP[alt]) {
+        sexType = SEX_MAP[alt];
+      } else if (alt && CATEGORY_MAP[alt]) {
+        category = CATEGORY_MAP[alt];
+      }
     });
 
-    // 从表格中提取学校 tr - 去掉 <table> 和 </table> 标签
-    const tableBody = tableContent.replace(/<\/?table>/g, "");
-    const schoolPattern = /<tr\b[^>]*>([\s\S]*?)(?=<tr\b|$)/gi;
-    let schoolMatch;
+    // 提取地区
+    const adCell = $row.find("td.ad");
+    const prefecture = adCell.text().trim();
 
-    while ((schoolMatch = schoolPattern.exec(tableBody)) !== null) {
-      const schoolRow = schoolMatch[1];
+    const school = {
+      school_code: schoolCode,
+      name: name,
+      deviation: deviation,
+      prefecture: prefecture,
+      category: category,
+      sex_type: sexType,
+      website: "",
+      schoolUrl: schoolUrl,
+    };
 
-      // 提取学校名称和链接
-      const nameMatch =
-        /<td[^>]*class="name"[^>]*>\s*<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/.exec(
-          schoolRow
-        );
-      if (!nameMatch) continue;
+    debug("School found", {
+      code: schoolCode,
+      name: name,
+      deviation: deviation,
+      prefecture: prefecture,
+      category: category,
+      sex_type: sexType,
+    });
 
-      const schoolUrl = nameMatch[1]; // 如 /kanto/school/B13P009/
-      const schoolCode = schoolUrl.replace(/\/$/, "").split("/").pop();
-      const name = nameMatch[2].trim();
-
-      // 提取类型图标 alt 属性 (img 是自闭合的 />)
-      const typeMatches =
-        schoolRow.match(/<img[^>]*alt="([^"]+)"[^>]*\/?>/g) || [];
-      let sexType = "共通";
-      let category = "私立";
-
-      for (const img of typeMatches) {
-        const altMatch = /alt="([^"]+)"/.exec(img);
-        if (altMatch) {
-          const alt = altMatch[1];
-          if (SEX_MAP[alt]) {
-            sexType = SEX_MAP[alt];
-          } else if (CATEGORY_MAP[alt]) {
-            category = CATEGORY_MAP[alt];
-          }
-        }
-      }
-
-      // 提取地区
-      const adMatch = /<td[^>]*class="ad"[^>]*>\s*([^<\n\r]+)/i.exec(schoolRow);
-      const prefecture = adMatch ? adMatch[1].trim() : "";
-
-      const school = {
-        school_code: schoolCode,
-        name: name,
-        deviation: deviation,
-        prefecture: prefecture,
-        category: category,
-        sex_type: sexType,
-        website: "",
-        schoolUrl: schoolUrl,
-      };
-
-      debug("School found", {
-        code: schoolCode,
-        name: name,
-        deviation: deviation,
-        prefecture: prefecture,
-        category: category,
-        sex_type: sexType,
-      });
-
-      schools.push(school);
-    }
-  }
+    schools.push(school);
+  });
 
   debug("HTML parsing complete", { schoolCount: schools.length });
   return schools;
@@ -270,7 +249,7 @@ function saveSchoolToDb(db, school) {
               university_gmarch = ?,
               university_medical = ?,
               source_url = ?,
-              region = '関東'
+              region = '関西'
             WHERE id = ?`,
             [
               school.name,
@@ -323,7 +302,7 @@ function saveSchoolToDb(db, school) {
               university_medical,
               source_url,
               region
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '関東')`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '関西')`,
             [
               school.school_code,
               school.name,
