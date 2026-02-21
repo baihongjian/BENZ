@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-// 学校类型
-interface School {
+// study1.db 学校类型
+interface Study1School {
   id: number;
   school_code: string;
   name: string;
@@ -18,6 +18,16 @@ interface School {
   source_url: string | null;
 }
 
+// yotsuya.db 学校类型
+interface YotsuyaSchool {
+  id: number;
+  school_id: string;
+  name: string;
+  deviation: number;
+  sex: string;
+  exam_dates: string;
+}
+
 interface Exam {
   id: number;
   exam_name: string;
@@ -27,9 +37,17 @@ interface Exam {
 }
 
 export default function AdminPage() {
-  const [schools, setSchools] = useState<School[]>([]);
-  const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
-  const [exams, setExams] = useState<Exam[]>([]);
+  const [activeTab, setActiveTab] = useState<'study1' | 'yotsuya'>('study1');
+
+  // study1.db 数据
+  const [study1Schools, setStudy1Schools] = useState<Study1School[]>([]);
+  const [selectedStudy1School, setSelectedStudy1School] = useState<Study1School | null>(null);
+  const [study1Exams, setStudy1Exams] = useState<Exam[]>([]);
+
+  // yotsuya.db 数据
+  const [yotsuyaSchools, setYotsuyaSchools] = useState<YotsuyaSchool[]>([]);
+  const [selectedYotsuyaSchool, setSelectedYotsuyaSchool] = useState<YotsuyaSchool | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -39,7 +57,6 @@ export default function AdminPage() {
     maxDeviation: '',
     sex: 'all',
     region: 'all',
-    category: 'all',
     search: '',
   });
 
@@ -52,13 +69,11 @@ export default function AdminPage() {
     kanto: number;
   } | null>(null);
 
-  // 获取学校列表
-  const fetchSchools = useCallback(async () => {
+  // 获取 study1.db 学校列表
+  const fetchStudy1Schools = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        limit: '9999',
-      });
+      const params = new URLSearchParams({ limit: '9999' });
 
       if (filters.minDeviation) params.append('minDeviation', filters.minDeviation);
       if (filters.maxDeviation) params.append('maxDeviation', filters.maxDeviation);
@@ -70,7 +85,7 @@ export default function AdminPage() {
       const data = await response.json();
 
       if (data.success) {
-        setSchools(data.data);
+        setStudy1Schools(data.data);
       }
     } catch (error) {
       console.error('获取学校列表失败:', error);
@@ -79,48 +94,78 @@ export default function AdminPage() {
     }
   }, [filters]);
 
-  useEffect(() => {
-    fetchSchools();
-  }, [fetchSchools]);
+  // 获取 yotsuya.db 学校列表
+  const fetchYotsuyaSchools = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: '9999' });
+
+      if (filters.minDeviation) params.append('minDeviation', filters.minDeviation);
+      if (filters.maxDeviation) params.append('maxDeviation', filters.maxDeviation);
+      if (filters.sex !== 'all') params.append('sex', filters.sex);
+      if (filters.search) params.append('search', filters.search);
+
+      const response = await fetch(`/api/02-edu/002-zhongshou/school-list?${params}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setYotsuyaSchools(data.data);
+      }
+    } catch (error) {
+      console.error('获取学校列表失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
 
   // 获取统计信息
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`/api/02-edu/002-zhongshou/schools-study1?limit=9999`);
-        const data = await response.json();
-        if (data.success) {
-          const schools = data.data;
-          const withDev = schools.filter((s: School) => s.deviation !== null && s.deviation > 0).length;
-          const withoutDev = schools.filter((s: School) => !s.deviation || s.deviation === 0).length;
-          const kansai = schools.filter((s: School) => s.region === '関西').length;
-          const kanto = schools.filter((s: School) => s.region === '関東').length;
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/schools-study1?limit=9999`);
+      const data = await response.json();
+      if (data.success) {
+        const schools = data.data;
+        const withDev = schools.filter((s: Study1School) => s.deviation !== null && s.deviation > 0).length;
+        const withoutDev = schools.filter((s: Study1School) => !s.deviation || s.deviation === 0).length;
+        const kansai = schools.filter((s: Study1School) => s.region === '関西').length;
+        const kanto = schools.filter((s: Study1School) => s.region === '関東').length;
 
-          setStats({
-            total: data.pagination.total,
-            withDeviation: withDev,
-            withoutDeviation: withoutDev,
-            kansai,
-            kanto,
-          });
-        }
-      } catch (error) {
-        console.error('获取统计信息失败:', error);
+        setStats({
+          total: data.pagination.total,
+          withDeviation: withDev,
+          withoutDeviation: withoutDev,
+          kansai,
+          kanto,
+        });
       }
-    };
-    fetchStats();
+    } catch (error) {
+      console.error('获取统计信息失败:', error);
+    }
   }, []);
 
-  // 获取学校详情（包含考试信息）
-  const fetchSchoolDetail = async (schoolCode: string) => {
+  // 监听 tab 切换和数据变化
+  useEffect(() => {
+    if (activeTab === 'study1') {
+      fetchStudy1Schools();
+    } else {
+      fetchYotsuyaSchools();
+    }
+  }, [activeTab, fetchStudy1Schools, fetchYotsuyaSchools]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  // 获取 study1 学校详情
+  const fetchStudy1Detail = async (schoolCode: string) => {
     setDetailLoading(true);
     try {
       const response = await fetch(`/api/02-edu/002-zhongshou/schools-study1/${schoolCode}`);
       const data = await response.json();
 
       if (data.success) {
-        setSelectedSchool(data.data.school);
-        setExams(data.data.exams || []);
+        setSelectedStudy1School(data.data.school);
+        setStudy1Exams(data.data.exams || []);
       }
     } catch (error) {
       console.error('获取学校详情失败:', error);
@@ -141,23 +186,42 @@ export default function AdminPage() {
       maxDeviation: '',
       sex: 'all',
       region: 'all',
-      category: 'all',
       search: '',
     });
   };
 
   // 关闭详情弹窗
   const closeDetail = () => {
-    setSelectedSchool(null);
-    setExams([]);
+    setSelectedStudy1School(null);
+    setStudy1Exams([]);
+    setSelectedYotsuyaSchool(null);
   };
+
+  // 当前显示的学校列表
+  const currentSchools = activeTab === 'study1' ? study1Schools : yotsuyaSchools;
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>中学校データ管理画面</h1>
 
+      {/* 标签页切换 */}
+      <div style={tabContainerStyle}>
+        <button
+          onClick={() => setActiveTab('study1')}
+          style={activeTab === 'study1' ? activeTabStyle : tabStyle}
+        >
+          study1.db (関東・関西)
+        </button>
+        <button
+          onClick={() => setActiveTab('yotsuya')}
+          style={activeTab === 'yotsuya' ? activeTabStyle : tabStyle}
+        >
+          yotsuya.db (四谷大塚)
+        </button>
+      </div>
+
       {/* 统计信息 */}
-      {stats && (
+      {activeTab === 'study1' && stats && (
         <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <div style={cardStyle}>
             <div style={cardNumberStyle}>{stats.total}</div>
@@ -218,18 +282,20 @@ export default function AdminPage() {
             </select>
           </div>
 
-          <div style={filterItemStyle}>
-            <label>区域:</label>
-            <select
-              value={filters.region}
-              onChange={(e) => handleFilterChange('region', e.target.value)}
-              style={selectStyle}
-            >
-              <option value="all">全部</option>
-              <option value="関東">関東</option>
-              <option value="関西">関西</option>
-            </select>
-          </div>
+          {activeTab === 'study1' && (
+            <div style={filterItemStyle}>
+              <label>区域:</label>
+              <select
+                value={filters.region}
+                onChange={(e) => handleFilterChange('region', e.target.value)}
+                style={selectStyle}
+              >
+                <option value="all">全部</option>
+                <option value="関東">関東</option>
+                <option value="関西">関西</option>
+              </select>
+            </div>
+          )}
 
           <div style={filterItemStyle}>
             <label>搜索:</label>
@@ -250,13 +316,13 @@ export default function AdminPage() {
 
       {/* 结果信息 */}
       <div style={{ marginBottom: '10px' }}>
-        共 {schools.length} 所学校
+        共 {currentSchools.length} 所学校
       </div>
 
       {/* 学校列表 */}
       {loading ? (
         <div>加载中...</div>
-      ) : (
+      ) : activeTab === 'study1' ? (
         <table style={tableStyle}>
           <thead>
             <tr>
@@ -270,7 +336,7 @@ export default function AdminPage() {
             </tr>
           </thead>
           <tbody>
-            {schools.map((school) => (
+            {study1Schools.map((school) => (
               <tr key={school.id} style={trStyle}>
                 <td style={{ ...tdStyle, textAlign: 'center' }}>
                   {school.deviation || '-'}
@@ -291,7 +357,37 @@ export default function AdminPage() {
                 <td style={{ ...tdStyle, textAlign: 'center' }}>{school.sex_type}</td>
                 <td style={{ ...tdStyle, textAlign: 'center' }}>
                   <button
-                    onClick={() => fetchSchoolDetail(school.school_code)}
+                    onClick={() => fetchStudy1Detail(school.school_code)}
+                    style={buttonStyle}
+                  >
+                    详情
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <table style={tableStyle}>
+          <thead>
+            <tr>
+              <th style={thStyle}>偏差值</th>
+              <th style={thStyle}>学校名</th>
+              <th style={thStyle}>性别</th>
+              <th style={thStyle}>考试日期</th>
+              <th style={thStyle}>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {yotsuyaSchools.map((school) => (
+              <tr key={school.id} style={trStyle}>
+                <td style={{ ...tdStyle, textAlign: 'center' }}>{school.deviation}</td>
+                <td style={tdStyle}>{school.name}</td>
+                <td style={{ ...tdStyle, textAlign: 'center' }}>{school.sex}</td>
+                <td style={tdStyle}>{school.exam_dates || '-'}</td>
+                <td style={{ ...tdStyle, textAlign: 'center' }}>
+                  <button
+                    onClick={() => setSelectedYotsuyaSchool(school)}
                     style={buttonStyle}
                   >
                     详情
@@ -303,12 +399,12 @@ export default function AdminPage() {
         </table>
       )}
 
-      {/* 学校详情弹窗 */}
-      {selectedSchool && (
+      {/* study1 学校详情弹窗 */}
+      {selectedStudy1School && (
         <div style={modalOverlayStyle} onClick={closeDetail}>
           <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2>{selectedSchool.name}</h2>
+              <h2>{selectedStudy1School.name}</h2>
               <button onClick={closeDetail} style={closeButtonStyle}>✕</button>
             </div>
 
@@ -316,57 +412,53 @@ export default function AdminPage() {
               <div>加载中...</div>
             ) : (
               <>
-                {/* 基本信息 */}
                 <div style={sectionStyle}>
                   <h3>基本信息</h3>
                   <div style={infoGridStyle}>
-                    <div><strong>偏差值:</strong> {selectedSchool.deviation || '-'}</div>
-                    <div><strong>学校类型:</strong> {selectedSchool.category}</div>
-                    <div><strong>性别类型:</strong> {selectedSchool.sex_type}</div>
-                    <div><strong>区域:</strong> {selectedSchool.region}</div>
-                    <div><strong>所在地:</strong> {selectedSchool.prefecture}</div>
-                    <div><strong>学校代码:</strong> {selectedSchool.school_code}</div>
+                    <div><strong>偏差值:</strong> {selectedStudy1School.deviation || '-'}</div>
+                    <div><strong>学校类型:</strong> {selectedStudy1School.category}</div>
+                    <div><strong>性别类型:</strong> {selectedStudy1School.sex_type}</div>
+                    <div><strong>区域:</strong> {selectedStudy1School.region}</div>
+                    <div><strong>所在地:</strong> {selectedStudy1School.prefecture}</div>
+                    <div><strong>学校代码:</strong> {selectedStudy1School.school_code}</div>
                   </div>
                 </div>
 
-                {/* 学费信息 */}
-                {(selectedSchool.first_year_total || selectedSchool.annual_fee) && (
+                {(selectedStudy1School.first_year_total || selectedStudy1School.annual_fee) && (
                   <div style={sectionStyle}>
                     <h3>学费信息</h3>
                     <div style={infoGridStyle}>
-                      <div><strong>初年度纳入金:</strong> {selectedSchool.first_year_total || '-'}</div>
-                      <div><strong>年间学费:</strong> {selectedSchool.annual_fee || '-'}</div>
+                      <div><strong>初年度纳入金:</strong> {selectedStudy1School.first_year_total || '-'}</div>
+                      <div><strong>年间学费:</strong> {selectedStudy1School.annual_fee || '-'}</div>
                     </div>
                   </div>
                 )}
 
-                {/* 链接 */}
                 <div style={sectionStyle}>
                   <h3>链接</h3>
                   <div style={linkGridStyle}>
-                    {selectedSchool.website && (
+                    {selectedStudy1School.website && (
                       <div>
                         <strong>官网:</strong>{' '}
-                        <a href={selectedSchool.website} target="_blank" rel="noopener noreferrer" style={linkStyle}>
-                          {selectedSchool.website}
+                        <a href={selectedStudy1School.website} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                          {selectedStudy1School.website}
                         </a>
                       </div>
                     )}
-                    {selectedSchool.source_url && (
+                    {selectedStudy1School.source_url && (
                       <div>
                         <strong>Source:</strong>{' '}
-                        <a href={selectedSchool.source_url} target="_blank" rel="noopener noreferrer" style={linkStyle}>
-                          {selectedSchool.source_url}
+                        <a href={selectedStudy1School.source_url} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                          {selectedStudy1School.source_url}
                         </a>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* 考试信息 */}
-                {exams.length > 0 && (
+                {study1Exams.length > 0 && (
                   <div style={sectionStyle}>
-                    <h3>考试信息 ({exams.length})</h3>
+                    <h3>考试信息 ({study1Exams.length})</h3>
                     <table style={detailTableStyle}>
                       <thead>
                         <tr>
@@ -376,7 +468,7 @@ export default function AdminPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {exams.map((exam) => (
+                        {study1Exams.map((exam) => (
                           <tr key={exam.id} style={trStyle}>
                             <td style={tdStyle}>{exam.exam_name}</td>
                             <td style={tdStyle}>{exam.exam_date}</td>
@@ -392,11 +484,58 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* yotsuya 学校详情弹窗 */}
+      {selectedYotsuyaSchool && (
+        <div style={modalOverlayStyle} onClick={closeDetail}>
+          <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2>{selectedYotsuyaSchool.name}</h2>
+              <button onClick={closeDetail} style={closeButtonStyle}>✕</button>
+            </div>
+
+            <div style={sectionStyle}>
+              <h3>基本信息</h3>
+              <div style={infoGridStyle}>
+                <div><strong>偏差值:</strong> {selectedYotsuyaSchool.deviation}</div>
+                <div><strong>性别:</strong> {selectedYotsuyaSchool.sex}</div>
+                <div><strong>学校ID:</strong> {selectedYotsuyaSchool.school_id}</div>
+              </div>
+            </div>
+
+            <div style={sectionStyle}>
+              <h3>考试日期</h3>
+              <div>{selectedYotsuyaSchool.exam_dates || '无'}</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // 样式
+const tabContainerStyle: React.CSSProperties = {
+  display: 'flex',
+  gap: '10px',
+  marginBottom: '20px',
+};
+
+const tabStyle: React.CSSProperties = {
+  padding: '10px 20px',
+  background: '#f0f0f0',
+  border: 'none',
+  borderRadius: '4px 4px 0 0',
+  cursor: 'pointer',
+  fontSize: '14px',
+};
+
+const activeTabStyle: React.CSSProperties = {
+  ...tabStyle,
+  background: '#0066cc',
+  color: '#fff',
+};
+
 const cardStyle: React.CSSProperties = {
   background: '#f5f5f5',
   padding: '15px 25px',
