@@ -26,6 +26,7 @@ interface YotsuyaSchool {
   deviation: number;
   sex: string;
   exam_dates: string;
+  webURL: string | null;
 }
 
 interface Exam {
@@ -60,9 +61,16 @@ export default function AdminPage() {
   const [linkedSchools, setLinkedSchools] = useState<LinkedSchool[]>([]);
   const [linkedFilter, setLinkedFilter] = useState<'all' | 'exact' | 'fuzzy' | 'both' | 'study1_only' | 'yotsuya_only'>('all');
   const [regionFilter, setRegionFilter] = useState<'all' | '関東' | '関西'>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'deviation'>('name');
 
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(false);
+  const [fetchMessage, setFetchMessage] = useState('');
+  const [yotsuyaFetchLoading, setYotsuyaFetchLoading] = useState(false);
+  const [yotsuyaFetchMessage, setYotsuyaFetchMessage] = useState('');
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
 
   // 筛选条件
   const [filters, setFilters] = useState({
@@ -156,6 +164,122 @@ export default function AdminPage() {
     }
   }, []);
 
+  // 触发获取 study1 数据的脚本
+  const triggerStudy1Fetch = async (region: 'kanto' | 'kansai') => {
+    setFetchLoading(true);
+    setFetchMessage('开始获取数据...');
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/fetch-study1?region=${region}`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+      if (data.success) {
+        setFetchMessage(data.message || '获取成功!');
+        // 刷新数据
+        await fetchStudy1Schools();
+        await fetchStats();
+      } else {
+        setFetchMessage(`获取失败: ${data.error}`);
+      }
+    } catch (error) {
+      setFetchMessage(`获取失败: ${error}`);
+    } finally {
+      setFetchLoading(false);
+    }
+  };
+
+  // 触发获取 yotsuya 数据的脚本
+  const triggerYotsuyaFetch = async () => {
+    setYotsuyaFetchLoading(true);
+    setYotsuyaFetchMessage('开始获取数据...');
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/fetch-yotsuya`, {
+        method: 'POST',
+      });
+      const data = await response.json();
+      if (data.success) {
+        setYotsuyaFetchMessage(data.message || '获取成功!');
+        // 刷新数据
+        await fetchYotsuyaSchools();
+      } else {
+        setYotsuyaFetchMessage(`获取失败: ${data.error}`);
+      }
+    } catch (error) {
+      setYotsuyaFetchMessage(`获取失败: ${error}`);
+    } finally {
+      setYotsuyaFetchLoading(false);
+    }
+  };
+
+  // 同步偏差值：将 yotsuya 的偏差值更新到 study1
+  const syncDeviation = async () => {
+    if (!linkedSchools || linkedSchools.length === 0) {
+      setSyncMessage('没有可同步的数据');
+      return;
+    }
+
+    // 获取当前筛选后的学校（模糊匹配且有关东区域的）
+    const filteredSchools = linkedSchools.filter(s => {
+      // 匹配类型筛选
+      let matchTypeFiltered = true;
+      if (linkedFilter === 'fuzzy') matchTypeFiltered = s.matchedBy === 'fuzzy';
+
+      // 区域筛选 - 只从 study1 中获取区域信息
+      let regionFiltered = true;
+      if (regionFilter !== 'all' && s.study1) {
+        regionFiltered = s.study1.region === regionFilter;
+      }
+
+      // 必须同时有 study1 和 yotsuya 数据
+      const hasBoth = s.study1 && s.yotsuya;
+
+      return matchTypeFiltered && regionFiltered && hasBoth;
+    });
+
+    if (filteredSchools.length === 0) {
+      setSyncMessage('当前筛选条件下没有可同步的数据');
+      return;
+    }
+
+    setSyncLoading(true);
+    setSyncMessage(`开始同步 ${filteredSchools.length} 所学校的偏差值...`);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const school of filteredSchools) {
+      if (!school.study1 || !school.yotsuya) continue;
+
+      try {
+        const response = await fetch('/api/02-edu/002-zhongshou/update-study1-deviation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            school_code: school.study1.school_code,
+            deviation: school.yotsuya.deviation,
+          }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          successCount++;
+        } else {
+          failCount++;
+          console.error(`更新失败: ${school.study1.name}`, result.error);
+        }
+      } catch (error) {
+        failCount++;
+        console.error(`更新失败: ${school.study1.name}`, error);
+      }
+    }
+
+    setSyncLoading(false);
+    setSyncMessage(`同步完成: 成功 ${successCount} 所, 失败 ${failCount} 所`);
+
+    // 刷新数据
+    await fetchBothDatabases();
+  };
+
   // 监听 tab 切换和数据变化
   useEffect(() => {
     if (activeTab === 'study1') {
@@ -189,6 +313,24 @@ export default function AdminPage() {
       }
     }
     return normalized;
+  };
+
+  // 从 URL 中提取域名（去除 www. 和末尾斜杠）
+  const extractDomain = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    try {
+      // 如果没有协议，添加 https://
+      const urlStr = url.startsWith('http') ? url : `https://${url}`;
+      const urlObj = new URL(urlStr);
+      let domain = urlObj.hostname.toLowerCase();
+      // 去除 www. 前缀
+      if (domain.startsWith('www.')) {
+        domain = domain.slice(4);
+      }
+      return domain;
+    } catch {
+      return null;
+    }
   };
 
   // 获取两个数据库并关联（支持模糊匹配）
@@ -282,6 +424,66 @@ export default function AdminPage() {
 
       console.log(`\n=== After Fuzzy Match ===`);
       console.log(`  Fuzzy matches: ${fuzzyMatchCount}`);
+      console.log(`  Total matched study1: ${matchedStudy1.size}`);
+      console.log(`  Total matched yotsuya: ${matchedYotsuya.size}`);
+
+      // 处理 URL 域名匹配 - 对未匹配的学校进行 URL 域名匹配
+      const study1DomainMap = new Map<string, Study1School[]>();
+      study1List.forEach((s) => {
+        // 跳过已匹配的
+        if (matchedStudy1.has(s.name)) return;
+        const domain = extractDomain(s.website);
+        if (domain) {
+          if (!study1DomainMap.has(domain)) {
+            study1DomainMap.set(domain, []);
+          }
+          study1DomainMap.get(domain)!.push(s);
+        }
+      });
+
+      const yotsuyaDomainMap = new Map<string, YotsuyaSchool[]>();
+      yotsuyaList.forEach((s) => {
+        // 跳过已匹配的
+        if (matchedYotsuya.has(s.name)) return;
+        const domain = extractDomain(s.webURL);
+        if (domain) {
+          if (!yotsuyaDomainMap.has(domain)) {
+            yotsuyaDomainMap.set(domain, []);
+          }
+          yotsuyaDomainMap.get(domain)!.push(s);
+        }
+      });
+
+      // URL 域名匹配
+      let urlMatchCount = 0;
+      study1DomainMap.forEach((study1Schools, domain) => {
+        const yotsuyaSchools = yotsuyaDomainMap.get(domain);
+        if (!yotsuyaSchools || yotsuyaSchools.length === 0) return;
+
+        // 匹配所有未匹配的组合
+        study1Schools.forEach((study1) => {
+          // 如果已匹配，跳过
+          if (matchedStudy1.has(study1.name)) return;
+
+          // 找一个未匹配的 yotsuya 学校
+          const yotsuya = yotsuyaSchools.find(y => !matchedYotsuya.has(y.name));
+          if (!yotsuya) return;
+
+          // 进行 URL 匹配
+          linked.push({
+            name: `${study1.name} ↔ ${yotsuya.name}`,
+            study1,
+            yotsuya,
+            matchedBy: 'fuzzy', // 复用 fuzzy 类型
+          });
+          matchedStudy1.add(study1.name);
+          matchedYotsuya.add(yotsuya.name);
+          urlMatchCount++;
+        });
+      });
+
+      console.log(`\n=== After URL Match ===`);
+      console.log(`  URL matches: ${urlMatchCount}`);
       console.log(`  Total matched study1: ${matchedStudy1.size}`);
       console.log(`  Total matched yotsuya: ${matchedYotsuya.size}`);
 
@@ -395,28 +597,110 @@ export default function AdminPage() {
       </div>
 
       {/* 统计信息 */}
-      {activeTab === 'study1' && stats && (
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <div style={cardStyle}>
-            <div style={cardNumberStyle}>{stats.total}</div>
-            <div>学校总数</div>
+      {activeTab === 'study1' && (
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+          {stats && (
+            <>
+              <div style={cardStyle}>
+                <div style={cardNumberStyle}>{stats.total}</div>
+                <div>学校总数</div>
+              </div>
+              <div style={cardStyle}>
+                <div style={cardNumberStyle}>{stats.withDeviation}</div>
+                <div>有偏差值</div>
+              </div>
+              <div style={cardStyle}>
+                <div style={cardNumberStyle}>{stats.withoutDeviation}</div>
+                <div>无偏差值</div>
+              </div>
+              <div style={cardStyle}>
+                <div style={cardNumberStyle}>{stats.kanto}</div>
+                <div>関東</div>
+              </div>
+              <div style={cardStyle}>
+                <div style={cardNumberStyle}>{stats.kansai}</div>
+                <div>関西</div>
+              </div>
+            </>
+          )}
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => triggerStudy1Fetch('kanto')}
+              disabled={fetchLoading}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: fetchLoading ? '#ccc' : '#2196F3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: fetchLoading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {fetchLoading ? '获取中...' : '获取関東数据'}
+            </button>
+            <button
+              onClick={() => triggerStudy1Fetch('kansai')}
+              disabled={fetchLoading}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: fetchLoading ? '#ccc' : '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: fetchLoading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {fetchLoading ? '获取中...' : '获取関西数据'}
+            </button>
           </div>
-          <div style={cardStyle}>
-            <div style={cardNumberStyle}>{stats.withDeviation}</div>
-            <div>有偏差值</div>
+        </div>
+      )}
+
+      {/* 获取数据消息 */}
+      {fetchMessage && (
+        <div style={{
+          padding: '10px',
+          marginBottom: '20px',
+          backgroundColor: fetchMessage.includes('失败') ? '#ffebee' : '#e8f5e9',
+          borderRadius: '4px',
+          color: fetchMessage.includes('失败') ? '#c62828' : '#2e7d32',
+        }}>
+          {fetchMessage}
+        </div>
+      )}
+
+      {/* yotsuya 数据操作 */}
+      {activeTab === 'yotsuya' && (
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={triggerYotsuyaFetch}
+              disabled={yotsuyaFetchLoading}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: yotsuyaFetchLoading ? '#ccc' : '#FF9800',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: yotsuyaFetchLoading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {yotsuyaFetchLoading ? '获取中...' : '获取四谷大塚数据'}
+            </button>
           </div>
-          <div style={cardStyle}>
-            <div style={cardNumberStyle}>{stats.withoutDeviation}</div>
-            <div>无偏差值</div>
-          </div>
-          <div style={cardStyle}>
-            <div style={cardNumberStyle}>{stats.kanto}</div>
-            <div>関東</div>
-          </div>
-          <div style={cardStyle}>
-            <div style={cardNumberStyle}>{stats.kansai}</div>
-            <div>関西</div>
-          </div>
+        </div>
+      )}
+
+      {/* yotsuya 获取数据消息 */}
+      {yotsuyaFetchMessage && (
+        <div style={{
+          padding: '10px',
+          marginBottom: '20px',
+          backgroundColor: yotsuyaFetchMessage.includes('失败') ? '#ffebee' : '#e8f5e9',
+          borderRadius: '4px',
+          color: yotsuyaFetchMessage.includes('失败') ? '#c62828' : '#2e7d32',
+        }}>
+          {yotsuyaFetchMessage}
         </div>
       )}
 
@@ -608,15 +892,88 @@ export default function AdminPage() {
                 </select>
               </div>
 
-              <div style={{ marginLeft: '20px', color: '#666' }}>
-                共 {linkedSchools.length} 所学校
-                (精确匹配: {linkedSchools.filter(s => s.matchedBy === 'exact').length} |
-                模糊匹配: {linkedSchools.filter(s => s.matchedBy === 'fuzzy').length} |
-                仅 study1: {linkedSchools.filter(s => s.matchedBy === 'study1').length} |
-                仅 yotsuya: {linkedSchools.filter(s => s.matchedBy === 'yotsuya').length})
+              <div style={filterItemStyle}>
+                <label>排序:</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  style={selectStyle}
+                >
+                  <option value="name">按名称</option>
+                  <option value="deviation">按偏差值</option>
+                </select>
               </div>
+
+              {/* 同步偏差值按钮 - 仅在模糊匹配模式下显示 */}
+              {linkedFilter === 'fuzzy' && (
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <button
+                    onClick={syncDeviation}
+                    disabled={syncLoading}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: syncLoading ? '#ccc' : '#9C27B0',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: syncLoading ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {syncLoading ? '同步中...' : '同步偏差值到 study1'}
+                  </button>
+                </div>
+              )}
+
+              {/* 当前筛选结果的统计 */}
+              {(() => {
+                const filteredSchools = linkedSchools.filter(s => {
+                  // 匹配类型筛选
+                  let matchTypeFiltered = true;
+                  if (linkedFilter === 'exact') matchTypeFiltered = s.matchedBy === 'exact';
+                  else if (linkedFilter === 'fuzzy') matchTypeFiltered = s.matchedBy === 'fuzzy';
+                  else if (linkedFilter === 'both') matchTypeFiltered = s.study1 && s.yotsuya;
+                  else if (linkedFilter === 'study1_only') matchTypeFiltered = s.study1 && !s.yotsuya;
+                  else if (linkedFilter === 'yotsuya_only') matchTypeFiltered = !s.study1 && s.yotsuya;
+
+                  // 区域筛选
+                  let regionFiltered = true;
+                  if (regionFilter !== 'all' && s.study1) {
+                    regionFiltered = s.study1.region === regionFilter;
+                  }
+
+                  return matchTypeFiltered && regionFiltered;
+                });
+
+                const fuzzyCount = filteredSchools.filter(s => s.matchedBy === 'fuzzy').length;
+                const exactCount = filteredSchools.filter(s => s.matchedBy === 'exact').length;
+                const study1OnlyCount = filteredSchools.filter(s => s.matchedBy === 'study1').length;
+                const yotsuyaOnlyCount = filteredSchools.filter(s => s.matchedBy === 'yotsuya').length;
+
+                return (
+                  <div style={{ marginLeft: '20px', color: '#666' }}>
+                    当前筛选结果: <strong>{filteredSchools.length}</strong> 所学校
+                    (精确匹配: {exactCount} |
+                    模糊匹配: {fuzzyCount} |
+                    仅 study1: {study1OnlyCount} |
+                    仅 yotsuya: {yotsuyaOnlyCount})
+                  </div>
+                );
+              })()}
             </div>
           </div>
+
+          {/* 同步消息 */}
+          {syncMessage && (
+            <div style={{
+              padding: '10px',
+              marginBottom: '20px',
+              backgroundColor: syncMessage.includes('失败') || syncMessage.includes('没有') ? '#ffebee' : '#e8f5e9',
+              borderRadius: '4px',
+              color: syncMessage.includes('失败') || syncMessage.includes('没有') ? '#c62828' : '#2e7d32',
+            }}>
+              {syncMessage}
+            </div>
+          )}
 
           {/* 关联表格 */}
           {loading ? (
@@ -652,6 +1009,14 @@ export default function AdminPage() {
                     }
 
                     return matchTypeFiltered && regionFiltered;
+                  })
+                  .sort((a, b) => {
+                    if (sortBy === 'deviation') {
+                      const devA = a.study1?.deviation || a.yotsuya?.deviation || 0;
+                      const devB = b.study1?.deviation || b.yotsuya?.deviation || 0;
+                      return devB - devA; // 从大到小
+                    }
+                    return a.name.localeCompare(b.name, 'ja');
                   })
                   .map((school) => (
                     <tr key={`${school.study1?.school_code || ''}-${school.yotsuya?.school_id || ''}-${school.name}`} style={trStyle}>

@@ -101,6 +101,7 @@ export async function GET(request) {
         s.name,
         s.deviation,
         s.sex,
+        s.webURL,
         COALESCE(GROUP_CONCAT(e.exam_date, ' | '), '') as exam_dates
       FROM schools s
       LEFT JOIN exams e ON s.id = e.school_id
