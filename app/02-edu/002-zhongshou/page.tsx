@@ -56,6 +56,10 @@ export default function ZhongshouPage() {
   const [selectedSchool, setSelectedSchool] = useState<SchoolDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // 最新消息相关状态
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [schoolNews, setSchoolNews] = useState<{ title: string; url: string; content: string }[]>([]);
+
   // 筛选条件
   const [filters, setFilters] = useState({
     minDeviation: '',
@@ -201,6 +205,27 @@ export default function ZhongshouPage() {
   // 关闭详情弹窗
   const closeDetail = () => {
     setSelectedSchool(null);
+    setSchoolNews([]); // 清除新闻
+  };
+
+  // 获取学校最新消息
+  const fetchSchoolNews = async (schoolName: string) => {
+    setNewsLoading(true);
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/search-school-news?name=${encodeURIComponent(schoolName)}`);
+      const data = await response.json();
+      if (data.success) {
+        setSchoolNews(data.results || []);
+      } else {
+        console.error('获取新闻失败:', data.error);
+        setSchoolNews([]);
+      }
+    } catch (error) {
+      console.error('获取新闻失败:', error);
+      setSchoolNews([]);
+    } finally {
+      setNewsLoading(false);
+    }
   };
 
   return (
@@ -580,6 +605,43 @@ export default function ZhongshouPage() {
                         </div>
                       )}
                     </div>
+                  </div>
+
+                  {/* 最新消息 */}
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-gray-500 uppercase">最新消息</h4>
+                      <button
+                        onClick={() => fetchSchoolNews(selectedSchool.school.name)}
+                        disabled={newsLoading}
+                        className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white text-sm rounded disabled:opacity-50"
+                      >
+                        {newsLoading ? '搜索中...' : '获取最新消息'}
+                      </button>
+                    </div>
+                    {newsLoading ? (
+                      <div className="text-center py-4">
+                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-t-transparent"></div>
+                        <p className="mt-2 text-gray-500">搜索中...</p>
+                      </div>
+                    ) : schoolNews.length > 0 ? (
+                      <div className="space-y-3">
+                        {schoolNews.map((news, index) => (
+                          <div key={index} className="p-3 bg-purple-50 rounded-lg">
+                            <a href={news.url} target="_blank" rel="noopener noreferrer" className="font-bold text-purple-700 hover:underline block">
+                              {news.title}
+                            </a>
+                            {news.content && (
+                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{news.content}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-gray-500 bg-gray-50 rounded">
+                        点击"获取最新消息"按钮搜索学校相关新闻
+                      </div>
+                    )}
                   </div>
                 </>
               )}
