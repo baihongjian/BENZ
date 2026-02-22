@@ -15,11 +15,22 @@ interface NewsDate {
   items: NewsItem[];
 }
 
+interface ArticleContent {
+  title: string;
+  content: string;
+  textContent: string;
+}
+
 export default function ChugakuNewsPage() {
   const [news, setNews] = useState<NewsDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [dateInfo, setDateInfo] = useState('');
+
+  // 详情弹窗状态
+  const [selectedArticle, setSelectedArticle] = useState<NewsItem | null>(null);
+  const [articleContent, setArticleContent] = useState<ArticleContent | null>(null);
+  const [articleLoading, setArticleLoading] = useState(false);
 
   useEffect(() => {
     fetchNews();
@@ -62,6 +73,48 @@ export default function ChugakuNewsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 获取文章详细内容
+  const fetchArticleContent = async (item: NewsItem) => {
+    if (!item.url) return;
+
+    setSelectedArticle(item);
+    setArticleLoading(true);
+    setArticleContent(null);
+
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/fetch-url-content?url=${encodeURIComponent(item.url)}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setArticleContent({
+          title: data.title,
+          content: data.content,
+          textContent: data.textContent,
+        });
+      } else {
+        setArticleContent({
+          title: item.title,
+          content: `<p>获取内容失败: ${data.error}</p>`,
+          textContent: '',
+        });
+      }
+    } catch (err) {
+      setArticleContent({
+        title: item.title,
+        content: '<p>网络错误</p>',
+        textContent: '',
+      });
+    } finally {
+      setArticleLoading(false);
+    }
+  };
+
+  // 关闭详情弹窗
+  const closeDetail = () => {
+    setSelectedArticle(null);
+    setArticleContent(null);
   };
 
   return (
@@ -129,14 +182,12 @@ export default function ChugakuNewsPage() {
                         </a>
                       </div>
                       {item.title && (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-700 hover:text-blue-600 text-sm"
+                        <button
+                          onClick={() => fetchArticleContent(item)}
+                          className="text-left text-gray-700 hover:text-blue-600 text-sm cursor-pointer"
                         >
                           {item.title}
-                        </a>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -150,6 +201,73 @@ export default function ChugakuNewsPage() {
           </div>
         )}
       </div>
+
+      {/* 详情弹窗 */}
+      {selectedArticle && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={closeDetail}>
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            {/* 弹窗头部 */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+              <h3 className="text-lg font-bold truncate flex-1 mr-4">{selectedArticle.title}</h3>
+              <button
+                onClick={closeDetail}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 弹窗内容 */}
+            <div className="p-6">
+              {articleLoading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                  <p className="mt-2 text-gray-500">获取内容中...</p>
+                </div>
+              ) : articleContent ? (
+                <div>
+                  <h1 className="text-xl font-bold mb-4">{articleContent.title}</h1>
+                  <div
+                    className="prose max-w-none"
+                    dangerouslySetInnerHTML={{ __html: articleContent.content }}
+                  />
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <a
+                    href={selectedArticle.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    原文链接
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* 弹窗底部 */}
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-3 border-t flex justify-between items-center">
+              <a
+                href={selectedArticle.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                访问原文
+              </a>
+              <button
+                onClick={closeDetail}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-6 mt-8">
