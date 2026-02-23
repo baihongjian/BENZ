@@ -7,6 +7,8 @@ interface NewsItem {
   schoolUrl: string;
   url: string;
   title: string;
+  content?: string;
+  textContent?: string;
 }
 
 interface NewsDate {
@@ -36,6 +38,20 @@ export default function ChugakuNewsPage() {
     fetchNews();
   }, []);
 
+  // 获取单条新闻的详细内容
+  const fetchArticleContent = async (url: string): Promise<{ content: string; textContent: string }> => {
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/fetch-url-content?url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+      if (data.success) {
+        return { content: data.content || '', textContent: data.textContent || '' };
+      }
+    } catch (err) {
+      console.error('获取内容失败:', err);
+    }
+    return { content: '', textContent: '' };
+  };
+
   const fetchNews = async () => {
     setLoading(true);
     setError('');
@@ -47,24 +63,32 @@ export default function ChugakuNewsPage() {
       if (data.success && data.news && data.news.length > 0) {
         setDateInfo(data.date);
 
-        // 去重
+        // 去重并获取详细内容
         const seen = new Set();
         const uniqueItems: NewsItem[] = [];
+
+        // 显示加载状态
+        setLoading(true);
 
         for (const item of data.news[0].items) {
           const key = `${item.school}-${item.title}`;
           if (!seen.has(key)) {
             seen.add(key);
+
+            // 获取详细内容
+            const contentData = await fetchArticleContent(item.url);
             uniqueItems.push({
               school: item.school,
               schoolUrl: item.schoolUrl,
               url: item.url,
               title: item.title,
+              content: contentData.content,
+              textContent: contentData.textContent,
             });
           }
         }
 
-        // 2. 保存到数据库
+        // 2. 保存到数据库（包含详细内容）
         const saveResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -121,8 +145,8 @@ export default function ChugakuNewsPage() {
     }
   };
 
-  // 获取文章详细内容
-  const fetchArticleContent = async (item: NewsItem) => {
+  // 打开文章详情弹窗
+  const openArticleModal = async (item: NewsItem) => {
     if (!item.url) return;
 
     setSelectedArticle(item);
@@ -229,7 +253,7 @@ export default function ChugakuNewsPage() {
                       </div>
                       {item.title && (
                         <button
-                          onClick={() => fetchArticleContent(item)}
+                          onClick={() => openArticleModal(item)}
                           className="text-left text-gray-700 hover:text-blue-600 text-sm cursor-pointer"
                         >
                           {item.title}
