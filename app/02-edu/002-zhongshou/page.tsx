@@ -230,7 +230,9 @@ export default function ChugakuNewsPage() {
       return;
     }
 
+    console.log('加载的新闻数据:', loadResult.data.map(item => ({ id: item.id, title: item.title?.substring(0, 20), summary: item.summary })));
     const unanalyzedItems = loadResult.data.filter(item => !item.summary);
+    console.log('未分析的项目:', unanalyzedItems.map(item => ({ id: item.id, title: item.title?.substring(0, 20) })));
     if (unanalyzedItems.length === 0) {
       alert('所有新闻已分析完成');
       return;
@@ -257,6 +259,7 @@ export default function ChugakuNewsPage() {
         const data = await response.json();
 
         if (data.success) {
+          console.log('保存分析结果:', { id: item.id, summary: data.summary, importance: data.importance });
           // 保存分析结果到数据库
           await fetch('/api/02-edu/002-zhongshou/school-news-db/update-analysis', {
             method: 'POST',
