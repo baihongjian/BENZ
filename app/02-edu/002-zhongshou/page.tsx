@@ -9,6 +9,7 @@ interface NewsItem {
   title: string;
   content?: string;
   textContent?: string;
+  summary?: string;
 }
 
 interface NewsDate {
@@ -117,6 +118,9 @@ export default function ChugakuNewsPage() {
               schoolUrl: item.school_url,
               url: item.url,
               title: item.title,
+              content: item.content,
+              textContent: item.text_content,
+              summary: item.summary,
             });
           }
 
@@ -187,6 +191,98 @@ export default function ChugakuNewsPage() {
     setArticleContent(null);
   };
 
+  // 分析单条新闻
+  const analyzeNews = async (item: NewsItem) => {
+    if (!item.textContent) {
+      alert('没有内容可分析');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/02-edu/002-zhongshou/analyze-news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: item.title,
+          textContent: item.textContent,
+        }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`概要: ${data.summary}\n分类: ${data.category}\n重要性: ${data.importance}`);
+      } else {
+        alert(`分析失败: ${data.error}`);
+      }
+    } catch (err) {
+      alert('分析请求失败');
+    }
+  };
+
+  // 批量分析所有新闻
+  const analyzeAllNews = async () => {
+    // 从数据库加载未分析的记录
+    const loadResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db?limit=100');
+    const loadResult = await loadResponse.json();
+
+    if (!loadResult.success || !loadResult.data) {
+      alert('没有数据');
+      return;
+    }
+
+    const unanalyzedItems = loadResult.data.filter(item => !item.summary);
+    if (unanalyzedItems.length === 0) {
+      alert('所有新闻已分析完成');
+      return;
+    }
+
+    if (!confirm(`将分析 ${unanalyzedItems.length} 条新闻，是否继续？`)) {
+      return;
+    }
+
+    setLoading(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const item of unanalyzedItems) {
+      try {
+        const response = await fetch('/api/02-edu/002-zhongshou/analyze-news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: item.title,
+            textContent: item.text_content,
+          }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          // 保存分析结果到数据库
+          await fetch('/api/02-edu/002-zhongshou/school-news-db/update-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: item.id,
+              summary: data.summary,
+              importance: data.importance,
+            }),
+          });
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      } catch (err) {
+        errorCount++;
+      }
+    }
+
+    setLoading(false);
+    alert(`分析完成: 成功 ${successCount}, 失败 ${errorCount}`);
+
+    // 刷新数据
+    fetchNews();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -197,14 +293,21 @@ export default function ChugakuNewsPage() {
         </div>
       </header>
 
-      {/* 刷新按钮 */}
-      <div className="max-w-4xl mx-auto px-4 py-4">
+      {/* 刷新按钮和分析按钮 */}
+      <div className="max-w-4xl mx-auto px-4 py-4 flex gap-2">
         <button
           onClick={fetchNews}
           disabled={loading}
           className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-50"
         >
           {loading ? '更新中...' : '更新'}
+        </button>
+        <button
+          onClick={analyzeAllNews}
+          disabled={loading}
+          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded disabled:opacity-50"
+        >
+          {loading ? '分析中...' : 'AI分析'}
         </button>
       </div>
 
@@ -258,6 +361,9 @@ export default function ChugakuNewsPage() {
                         >
                           {item.title}
                         </button>
+                      )}
+                      {item.summary && (
+                        <p className="text-xs text-gray-500 mt-1">{item.summary}</p>
                       )}
                     </div>
                   </div>
