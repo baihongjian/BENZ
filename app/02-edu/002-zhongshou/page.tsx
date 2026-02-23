@@ -40,25 +40,71 @@ export default function ChugakuNewsPage() {
     setLoading(true);
     setError('');
     try {
+      // 1. 获取新闻数据
       const response = await fetch('/api/02-edu/002-zhongshou/chugaku-news');
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.news && data.news.length > 0) {
         setDateInfo(data.date);
 
-        if (data.news && data.news.length > 0) {
-          // 去重 - 根据学校名和标题
-          const seen = new Set();
-          const uniqueItems: NewsItem[] = [];
+        // 去重
+        const seen = new Set();
+        const uniqueItems: NewsItem[] = [];
 
-          for (const item of data.news[0].items) {
-            const key = `${item.school}-${item.title}`;
-            if (!seen.has(key)) {
-              seen.add(key);
-              uniqueItems.push(item);
+        for (const item of data.news[0].items) {
+          const key = `${item.school}-${item.title}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueItems.push({
+              school: item.school,
+              schoolUrl: item.schoolUrl,
+              url: item.url,
+              title: item.title,
+            });
+          }
+        }
+
+        // 2. 保存到数据库
+        const saveResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ news: uniqueItems, newsDate: data.news[0].date }),
+        });
+        const saveResult = await saveResponse.json();
+        console.log('保存结果:', saveResult);
+
+        // 3. 从数据库加载（获取已分析的数据）
+        const loadResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db?limit=100');
+        const loadResult = await loadResponse.json();
+
+        if (loadResult.success && loadResult.data) {
+          // 将数据库数据转换为页面需要的格式
+          const dbNews = loadResult.data;
+
+          // 按日期分组
+          const newsByDate: { [key: string]: NewsItem[] } = {};
+          for (const item of dbNews) {
+            const dateKey = item.news_date || data.date;
+            if (!newsByDate[dateKey]) {
+              newsByDate[dateKey] = [];
             }
+            newsByDate[dateKey].push({
+              school: item.school_name,
+              schoolUrl: item.school_url,
+              url: item.url,
+              title: item.title,
+            });
           }
 
+          // 转换为数组
+          const newsDates: NewsDate[] = Object.entries(newsByDate).map(([date, items]) => ({
+            date,
+            count: items.length,
+            items,
+          }));
+
+          setNews(newsDates);
+        } else {
           setNews([{ ...data.news[0], items: uniqueItems }]);
         }
 
