@@ -24,18 +24,18 @@ export async function POST(request) {
       return Response.json({ success: false, error: 'API Key 未配置' }, { status: 500 });
     }
 
-    const prompt = `请分析以下日本中学新闻，提取关键信息。
+    const prompt = `以下のチョコレ中学ニュースを分析して、重要な情報を抽出してください。
 
-新闻标题: ${title}
-新闻内容: ${textContent.substring(0, 2000)}
+ニュースタイトル: ${title}
+ニュース内容: ${textContent.substring(0, 2000)}
 
-请返回JSON格式的分析结果（只返回JSON，不要其他内容）：
+JSON形式の結果を返してください（JSONのみ返し、他の内容は返さないでください）：
 {
-  "summary": "50字以内的概要",
-  "importance": 重要性评分 1-5
+  "summary": "50文字以内の要約",
+  "importance": 重要度スコア 1-5
 }`;
 
-    console.log('[Analyze] 发送请求到 DeepSeek...');
+    console.log('[Analyze] DeepSeekにリクエスト送信中...');
 
     const response = await fetch(DEEPSEEK_API_URL, {
       method: 'POST',

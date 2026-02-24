@@ -57,90 +57,107 @@ export default function ChugakuNewsPage() {
     setLoading(true);
     setError('');
     try {
-      // 1. 获取新闻数据
-      const response = await fetch('/api/02-edu/002-zhongshou/chugaku-news');
+      // 1. 通过 AWS API 获取前一天的数据
+      const response = await fetch('https://kmacsxuphh.execute-api.ap-northeast-1.amazonaws.com/dev/updates?limit=50');
       const data = await response.json();
 
-      if (data.success && data.news && data.news.length > 0) {
-        setDateInfo(data.date);
+      console.log('AWS API 返回数据:', data);
 
-        // 去重并获取详细内容
-        const seen = new Set();
-        const uniqueItems: NewsItem[] = [];
+      // 获取前一天日期
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const targetDateStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
-        // 显示加载状态
-        setLoading(true);
+      console.log('目标日期:', targetDateStr);
 
-        for (const item of data.news[0].items) {
-          const key = `${item.school}-${item.title}`;
-          if (!seen.has(key)) {
-            seen.add(key);
+      // 筛选前一天的数据
+      const filteredItems = data.updates.filter((item: any) => {
+        return item.posted_date && item.posted_date.startsWith(targetDateStr);
+      });
 
-            // 获取详细内容
-            const contentData = await fetchArticleContent(item.url);
-            uniqueItems.push({
-              school: item.school,
-              schoolUrl: item.schoolUrl,
-              url: item.url,
-              title: item.title,
-              content: contentData.content,
-              textContent: contentData.textContent,
-            });
+      console.log('筛选后的数据:', filteredItems.length);
+
+      // 使用筛选后的数据
+      const items: NewsItem[] = filteredItems.map((item: any) => ({
+        school: item.school.name || '',
+        schoolUrl: item.school.website_url || '',
+        url: item.url || '',
+        title: item.title || '',
+      }));
+
+      console.log('提取到的新闻项:', items.length);
+
+      // 去重
+      const seen = new Set();
+      const uniqueItems: NewsItem[] = [];
+
+      setLoading(true);
+
+      for (const item of items) {
+        const key = `${item.school}-${item.title}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+
+          // 获取详细内容
+          const contentData = await fetchArticleContent(item.url);
+          uniqueItems.push({
+            school: item.school,
+            schoolUrl: item.schoolUrl,
+            url: item.url,
+            title: item.title,
+            content: contentData.content,
+            textContent: contentData.textContent,
+          });
+        }
+      }
+
+      // 3. 保存到数据库（包含详细内容）
+      const saveResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ news: uniqueItems, newsDate: targetDateStr }),
+      });
+      const saveResult = await saveResponse.json();
+      console.log('保存结果:', saveResult);
+
+      // 4. 从数据库加载（获取已分析的数据）
+      const loadResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db?limit=100');
+      const loadResult = await loadResponse.json();
+
+      if (loadResult.success && loadResult.data) {
+        // 将数据库数据转换为页面需要的格式
+        const dbNews = loadResult.data;
+
+        // 按日期分组
+        const newsByDate: { [key: string]: NewsItem[] } = {};
+        for (const item of dbNews) {
+          const dateKey = item.news_date || targetDateStr;
+          if (!newsByDate[dateKey]) {
+            newsByDate[dateKey] = [];
           }
+          newsByDate[dateKey].push({
+            school: item.school_name,
+            schoolUrl: item.school_url,
+            url: item.url,
+            title: item.title,
+            content: item.content,
+            textContent: item.text_content,
+            summary: item.summary,
+          });
         }
 
-        // 2. 保存到数据库（包含详细内容）
-        const saveResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ news: uniqueItems, newsDate: data.news[0].date }),
-        });
-        const saveResult = await saveResponse.json();
-        console.log('保存结果:', saveResult);
+        // 转换为数组
+        const newsDates: NewsDate[] = Object.entries(newsByDate).map(([date, items]) => ({
+          date,
+          count: items.length,
+          items,
+        }));
 
-        // 3. 从数据库加载（获取已分析的数据）
-        const loadResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db?limit=100');
-        const loadResult = await loadResponse.json();
-
-        if (loadResult.success && loadResult.data) {
-          // 将数据库数据转换为页面需要的格式
-          const dbNews = loadResult.data;
-
-          // 按日期分组
-          const newsByDate: { [key: string]: NewsItem[] } = {};
-          for (const item of dbNews) {
-            const dateKey = item.news_date || data.date;
-            if (!newsByDate[dateKey]) {
-              newsByDate[dateKey] = [];
-            }
-            newsByDate[dateKey].push({
-              school: item.school_name,
-              schoolUrl: item.school_url,
-              url: item.url,
-              title: item.title,
-              content: item.content,
-              textContent: item.text_content,
-              summary: item.summary,
-            });
-          }
-
-          // 转换为数组
-          const newsDates: NewsDate[] = Object.entries(newsByDate).map(([date, items]) => ({
-            date,
-            count: items.length,
-            items,
-          }));
-
-          setNews(newsDates);
-        } else {
-          setNews([{ ...data.news[0], items: uniqueItems }]);
-        }
-
-        if (!data.found && data.availableDates) {
-          setError(`未找到 ${data.date} 的数据，可用日期: ${data.availableDates.join(', ')}`);
-        }
+        setNews(newsDates);
       } else {
-        setError(data.error || '获取数据失败');
+        // 如果没有数据库数据，直接显示抓取的数据
+        setNews([{ date: targetDateStr, count: uniqueItems.length, items: uniqueItems }]);
       }
     } catch (err) {
       setError('网络错误');

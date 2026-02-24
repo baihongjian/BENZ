@@ -43,9 +43,17 @@ async function fetchContent(url) {
 
 function saveNews(db, news) {
   return new Promise((resolve, reject) => {
+    // 使用 UPSERT: 存在则更新，不存在则插入（保留原有id）
     const sql = `
-      INSERT OR REPLACE INTO news (school_name, school_url, title, url, news_date, content, text_content, source)
+      INSERT INTO news (school_name, school_url, title, url, news_date, content, text_content, source)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(url) DO UPDATE SET
+        school_name = excluded.school_name,
+        school_url = excluded.school_url,
+        title = excluded.title,
+        news_date = excluded.news_date,
+        content = excluded.content,
+        text_content = excluded.text_content
     `;
     db.run(sql, [
       news.school_name,
@@ -125,6 +133,8 @@ export async function GET(request) {
   const category = searchParams.get('category');
   const limit = parseInt(searchParams.get('limit') || '50');
 
+  console.log('[SchoolNewsDB] GET 请求, category:', category, 'limit:', limit);
+
   try {
     const db = await connectDb();
 
@@ -136,8 +146,10 @@ export async function GET(request) {
       params.push(category);
     }
 
-    sql += ' ORDER BY sort_order ASC, news_date DESC LIMIT ?';
+    sql += ' ORDER BY id DESC LIMIT ?';
     params.push(limit);
+
+    console.log('[SchoolNewsDB] SQL:', sql, params);
 
     const news = await new Promise((resolve, reject) => {
       db.all(sql, params, (err, rows) => {
@@ -145,6 +157,8 @@ export async function GET(request) {
         else resolve(rows);
       });
     });
+
+    console.log('[SchoolNewsDB] 返回数据条数:', news.length, 'IDs:', news.map(n => n.id));
 
     db.close();
 
