@@ -303,6 +303,95 @@ export default function ChugakuNewsPage() {
     fetchNews();
   };
 
+  // 分类汇总新闻
+  const categorizeNews = async () => {
+    // 从数据库加载记录
+    const loadResponse = await fetch('/api/02-edu/002-zhongshou/school-news-db?limit=100');
+    const loadResult = await loadResponse.json();
+
+    if (!loadResult.success || !loadResult.data || loadResult.data.length === 0) {
+      alert('没有数据可分类');
+      return;
+    }
+
+    // 获取昨天的日期
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+    // 筛选昨天的数据
+    const yesterdayNews = loadResult.data.filter((item: any) => {
+      return item.news_date && item.news_date.startsWith(yesterdayStr);
+    });
+
+    if (yesterdayNews.length === 0) {
+      alert(`没有找到 ${yesterdayStr} 的数据`);
+      return;
+    }
+
+    if (!confirm(`将对 ${yesterdayNews.length} 条新闻进行分类汇总，是否继续？`)) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // 构建新闻列表（包含id）
+      const newsList = yesterdayNews.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        school: item.school_name,
+      }));
+
+      const response = await fetch('/api/02-edu/002-zhongshou/categorize-news', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ news: newsList }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('分类结果:', data.categories);
+
+        // 更新数据库
+        let updateCount = 0;
+        for (const category of data.categories) {
+          // 计算分类的 sort_order
+          const categoryIndex = data.categories.indexOf(category);
+          const categorySortOrder = (categoryIndex + 1) * 1000;
+
+          for (const newsItem of category.news) {
+            if (newsItem.id) {
+              const sortOrder = categorySortOrder + (6 - newsItem.importance);
+
+              await fetch('/api/02-edu/002-zhongshou/school-news-db/update-category', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  id: newsItem.id,
+                  category: category.category,
+                  sort_order: sortOrder,
+                }),
+              });
+              updateCount++;
+            }
+          }
+        }
+
+        console.log('更新了', updateCount, '条记录');
+        alert(`分类完成！\n\n${data.categories.map((c: any) => `${c.category}: ${c.news.length}件`).join('\n')}`);
+      } else {
+        alert(`分类失败: ${data.error}`);
+      }
+    } catch (err) {
+      alert('分类请求失败');
+    }
+
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -328,6 +417,13 @@ export default function ChugakuNewsPage() {
           className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded disabled:opacity-50"
         >
           {loading ? '分析中...' : 'AI分析'}
+        </button>
+        <button
+          onClick={categorizeNews}
+          disabled={loading}
+          className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded disabled:opacity-50"
+        >
+          {loading ? '分类中...' : 'AI分类汇总'}
         </button>
       </div>
 
