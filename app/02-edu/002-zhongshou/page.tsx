@@ -129,9 +129,14 @@ export default function ChugakuNewsPage() {
         // 将数据库数据转换为页面需要的格式
         const dbNews = loadResult.data;
 
+        // 只显示昨天的新闻
+        const yesterdayNews = dbNews.filter((item: any) => {
+          return item.news_date && item.news_date.startsWith(targetDateStr);
+        });
+
         // 按日期分组
         const newsByDate: { [key: string]: NewsItem[] } = {};
-        for (const item of dbNews) {
+        for (const item of yesterdayNews) {
           const dateKey = item.news_date || targetDateStr;
           if (!newsByDate[dateKey]) {
             newsByDate[dateKey] = [];
