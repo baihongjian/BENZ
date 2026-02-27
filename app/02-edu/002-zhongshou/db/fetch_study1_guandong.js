@@ -572,8 +572,8 @@ async function main() {
           }
 
           if (examTable.length > 0) {
-            // 查找包含 rowspan 的 td (考试名称和日期)
-            const examNameTds = examTable.find("td.da3-td").toArray();
+            // 查找包含 rowspan 的 td (考试名称和日期)，取奇数位（第1、3、5个等）
+            const examNameTds = examTable.find("td.da3-td").filter((index) => index % 2 === 0);
 
             for (const nameTd of examNameTds) {
               const $nameTd = $exam(nameTd);
