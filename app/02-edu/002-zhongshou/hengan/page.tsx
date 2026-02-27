@@ -13,11 +13,16 @@ interface Exam {
   source_url: string;
 }
 
+interface DeviationGroup {
+  deviation: number;
+  schools: { name: string; exams: { exam_name: string; exam_date: string; start_time: string }[] }[];
+}
+
 export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [schoolCount, setSchoolCount] = useState(0);
-  const [schoolGroups, setSchoolGroups] = useState<{name: string; deviation: number; count: number; startIndex: number}[]>([]);
+  const [deviationGroups, setDeviationGroups] = useState<DeviationGroup[]>([]);
 
   useEffect(() => {
     fetchExams();
@@ -32,43 +37,45 @@ export default function ExamsPage() {
       if (result.success && result.data) {
         setExams(result.data);
 
-        // 按学校名称分组，计算rowspan
-        const groups: {name: string; deviation: number; count: number; startIndex: number}[] = [];
-        let currentSchool = '';
-        let currentDeviation = 0;
-        let count = 0;
-        let startIndex = 0;
+        // 按偏差值分组
+        const deviationMap = new Map<number, Map<string, { exam_name: string; exam_date: string; start_time: string }[]>>();
 
-        result.data.forEach((e: Exam, index: number) => {
-          if (e.school_name !== currentSchool) {
-            if (currentSchool !== '') {
-              groups.push({ name: currentSchool, deviation: currentDeviation, count, startIndex });
-            }
-            currentSchool = e.school_name;
-            currentDeviation = e.deviation || 0;
-            count = 1;
-            startIndex = index;
-          } else {
-            count++;
+        result.data.forEach((e: Exam) => {
+          const deviation = e.deviation || 0;
+          if (!deviationMap.has(deviation)) {
+            deviationMap.set(deviation, new Map());
           }
+          const schoolMap = deviationMap.get(deviation)!;
+          if (!schoolMap.has(e.school_name)) {
+            schoolMap.set(e.school_name, []);
+          }
+          schoolMap.get(e.school_name)!.push({
+            exam_name: e.exam_name,
+            exam_date: e.exam_date,
+            start_time: e.start_time
+          });
         });
-        // 最后一个学校
-        if (currentSchool !== '') {
-          groups.push({ name: currentSchool, deviation: currentDeviation, count, startIndex });
-        }
 
-        setSchoolGroups(groups);
-        setSchoolCount(groups.length);
+        // 转换为数组并按偏差值排序
+        const groups: DeviationGroup[] = [];
+        const sortedDeviations = Array.from(deviationMap.keys()).sort((a, b) => b - a);
+
+        sortedDeviations.forEach(deviation => {
+          const schoolMap = deviationMap.get(deviation)!;
+          const schools = Array.from(schoolMap.entries()).map(([name, exams]) => ({
+            name,
+            exams
+          }));
+          groups.push({ deviation, schools });
+        });
+
+        setDeviationGroups(groups);
+        setSchoolCount(result.data.length);
       }
     } catch (err) {
       console.error('获取数据失败:', err);
     }
     setLoading(false);
-  };
-
-  // 获取指定索引的学校行信息
-  const getSchoolGroup = (index: number) => {
-    return schoolGroups.find(g => g.startIndex === index);
   };
 
   // 获取偏差值的样式
@@ -94,7 +101,7 @@ export default function ExamsPage() {
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         {!loading && (
-          <p className="mb-4 text-lg font-semibold text-gray-700">学校数: {schoolCount} 校</p>
+          <p className="mb-4 text-lg font-semibold text-gray-700">偏差値グループ数: {deviationGroups.length} グループ</p>
         )}
         {loading ? (
           <div className="text-center py-12">
@@ -104,37 +111,39 @@ export default function ExamsPage() {
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
+              <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700 w-20">偏差値</th>
-                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">学校名</th>
-                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">試験名</th>
-                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">試験日</th>
-                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">時間</th>
+                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">学校名・試験日</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {exams.map((exam, index) => {
-                    const group = getSchoolGroup(index);
-                    return (
-                      <tr key={exam.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        {group ? (
-                          <td className="py-3 px-3 text-sm" rowSpan={group.count}>
-                            <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation)}`}>
-                              {group.deviation || '-'}
-                            </span>
-                          </td>
-                        ) : null}
-                        {group ? (
-                          <td className="py-3 px-3 text-sm text-gray-800 font-medium" rowSpan={group.count}>{group.name}</td>
-                        ) : null}
-                        <td className="py-3 px-3 text-sm text-gray-600">{exam.exam_name}</td>
-                        <td className="py-3 px-3 text-sm text-gray-600">{exam.exam_date}</td>
-                        <td className="py-3 px-3 text-sm text-gray-600">{exam.start_time}</td>
-                      </tr>
-                    );
-                  })}
+                  {deviationGroups.map((group, groupIndex) => (
+                    <tr key={groupIndex} className="border-b border-gray-100">
+                      <td className="py-3 px-3 text-sm align-top">
+                        <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation)}`}>
+                          {group.deviation || '-'}
+                        </span>
+                        <p className="text-xs text-gray-500 mt-1">{group.schools.length}校</p>
+                      </td>
+                      <td className="py-3 px-3">
+                        {group.schools.map((school, schoolIndex) => (
+                          <div key={schoolIndex} className="mb-2 pb-2 border-b border-gray-100 last:border-b-0">
+                            <div className="text-sm font-medium text-gray-800">{school.name}</div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              {school.exams.map((exam, examIndex) => (
+                                <span key={examIndex} className="mr-2">
+                                  {exam.exam_date} {exam.start_time}
+                                  {examIndex < school.exams.length - 1 ? '、' : ''}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
