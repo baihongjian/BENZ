@@ -16,6 +16,7 @@ export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [schoolCount, setSchoolCount] = useState(0);
+  const [schoolGroups, setSchoolGroups] = useState<{name: string; count: number; startIndex: number}[]>([]);
 
   useEffect(() => {
     fetchExams();
@@ -29,14 +30,42 @@ export default function ExamsPage() {
 
       if (result.success && result.data) {
         setExams(result.data);
-        // 统计学校数量
-        const uniqueSchools = new Set(result.data.map((e: Exam) => e.school_name));
-        setSchoolCount(uniqueSchools.size);
+
+        // 按学校名称分组，计算rowspan
+        const groups: {name: string; count: number; startIndex: number}[] = [];
+        let currentSchool = '';
+        let count = 0;
+        let startIndex = 0;
+
+        result.data.forEach((e: Exam, index: number) => {
+          if (e.school_name !== currentSchool) {
+            if (currentSchool !== '') {
+              groups.push({ name: currentSchool, count, startIndex });
+            }
+            currentSchool = e.school_name;
+            count = 1;
+            startIndex = index;
+          } else {
+            count++;
+          }
+        });
+        // 最后一个学校
+        if (currentSchool !== '') {
+          groups.push({ name: currentSchool, count, startIndex });
+        }
+
+        setSchoolGroups(groups);
+        setSchoolCount(groups.length);
       }
     } catch (err) {
       console.error('获取数据失败:', err);
     }
     setLoading(false);
+  };
+
+  // 获取指定索引的学校行信息
+  const getSchoolGroup = (index: number) => {
+    return schoolGroups.find(g => g.startIndex === index);
   };
 
   return (
@@ -72,14 +101,19 @@ export default function ExamsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {exams.map((exam, index) => (
-                    <tr key={exam.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-3 text-sm text-gray-800 font-medium">{exam.school_name}</td>
-                      <td className="py-3 px-3 text-sm text-gray-600">{exam.exam_name}</td>
-                      <td className="py-3 px-3 text-sm text-gray-600">{exam.exam_date}</td>
-                      <td className="py-3 px-3 text-sm text-gray-600">{exam.start_time}</td>
-                    </tr>
-                  ))}
+                  {exams.map((exam, index) => {
+                    const group = getSchoolGroup(index);
+                    return (
+                      <tr key={exam.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        {group ? (
+                          <td className="py-3 px-3 text-sm text-gray-800 font-medium" rowSpan={group.count}>{group.name}</td>
+                        ) : null}
+                        <td className="py-3 px-3 text-sm text-gray-600">{exam.exam_name}</td>
+                        <td className="py-3 px-3 text-sm text-gray-600">{exam.exam_date}</td>
+                        <td className="py-3 px-3 text-sm text-gray-600">{exam.start_time}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
