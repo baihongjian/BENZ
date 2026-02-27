@@ -25,6 +25,11 @@ const EXAM_COLUMNS = [
   { key: '2月4日以降', label: '２月４日以降' },
 ];
 
+// 隐藏学校名中的"中学校"或"中学部"
+function hideSchoolSuffix(name: string): string {
+  return name.replace(/中学校|中学部|中等部|中等|中等教育学校$/, '');
+}
+
 // 获取考试日期对应的列键
 function getExamColumnKey(examDate: string, startTime: string): string | null {
   if (!examDate) return null;
@@ -192,7 +197,7 @@ export default function ExamsPage() {
                           {schoolsInColumn.length > 0 ? (
                             <div className="text-xs">
                               {schoolsInColumn.map((school, idx) => (
-                                <div key={idx} className="text-gray-700">{school.name}</div>
+                                <div key={idx} className="text-gray-700">{hideSchoolSuffix(school.name)}</div>
                               ))}
                             </div>
                           ) : (
