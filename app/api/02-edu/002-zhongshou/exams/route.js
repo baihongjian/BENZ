@@ -19,9 +19,22 @@ function connectDb() {
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '10000');
+  const category = searchParams.get('category');
 
   try {
     const db = await connectDb();
+
+    let whereClause = '1=1';
+    const params = [limit];
+
+    if (category && category.trim() !== '') {
+      const categories = category.split(',');
+      if (categories.length > 0) {
+        const placeholders = categories.map(() => '?').join(',');
+        whereClause = `s.category IN (${placeholders})`;
+        params.unshift(...categories);
+      }
+    }
 
     const sql = `
       SELECT
@@ -32,15 +45,17 @@ export async function GET(request) {
         e.start_time,
         e.source_url,
         s.name as school_name,
-        s.deviation as deviation
+        s.deviation as deviation,
+        s.category as category
       FROM exams e
       LEFT JOIN schools s ON e.school_code = s.school_code
+      WHERE ${whereClause}
       ORDER BY s.deviation DESC, s.name, e.exam_date
       LIMIT ?
     `;
 
     const exams = await new Promise((resolve, reject) => {
-      db.all(sql, [limit], (err, rows) => {
+      db.all(sql, params, (err, rows) => {
         if (err) reject(err);
         else resolve(rows);
       });

@@ -72,15 +72,20 @@ export default function ExamsPage() {
   const [loading, setLoading] = useState(true);
   const [schoolCount, setSchoolCount] = useState(0);
   const [deviationGroups, setDeviationGroups] = useState<DeviationGroup[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchExams();
-  }, []);
+    fetchExams(selectedCategories);
+  }, [selectedCategories]);
 
-  const fetchExams = async () => {
+  const fetchExams = async (categories: string[] = []) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/02-edu/002-zhongshou/exams?limit=10000');
+      let categoryParam = '';
+      if (categories.length > 0) {
+        categoryParam = '&category=' + categories.join(',');
+      }
+      const response = await fetch(`/api/02-edu/002-zhongshou/exams?limit=10000${categoryParam}`);
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -164,9 +169,69 @@ export default function ExamsPage() {
 
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {!loading && (
-          <p className="mb-4 text-lg font-semibold text-gray-700">偏差値グループ数: {deviationGroups.length} グループ</p>
-        )}
+        <div>
+            {!loading && (
+            <span className="text-sm text-gray-600">偏差値グループ数: {deviationGroups.length} グループ</span>
+          )}
+          </div>
+        {/* 筛选条件 */}
+        <div className="mb-4 flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700">学校設置:</label>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes('私立')}
+                onChange={(e) => {
+                  let newCategories = selectedCategories.filter(c => c !== 'すべて');
+                  if (e.target.checked) {
+                    newCategories.push('私立');
+                  } else {
+                    newCategories = newCategories.filter(c => c !== '私立');
+                  }
+                  setSelectedCategories(newCategories);
+                }}
+                className="rounded"
+              />
+              私立
+            </label>
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes('国立')}
+                onChange={(e) => {
+                  let newCategories = selectedCategories.filter(c => c !== 'すべて');
+                  if (e.target.checked) {
+                    newCategories.push('国立');
+                  } else {
+                    newCategories = newCategories.filter(c => c !== '国立');
+                  }
+                  setSelectedCategories(newCategories);
+                }}
+                className="rounded"
+              />
+              国立
+            </label>
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes('公立中高一貫')}
+                onChange={(e) => {
+                  let newCategories = selectedCategories.filter(c => c !== 'すべて');
+                  if (e.target.checked) {
+                    newCategories.push('公立中高一貫');
+                  } else {
+                    newCategories = newCategories.filter(c => c !== '公立中高一貫');
+                  }
+                  setSelectedCategories(newCategories);
+                }}
+                className="rounded"
+              />
+              公立中高一貫
+            </label>
+          </div>
+          
+        </div>
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
