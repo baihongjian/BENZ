@@ -6,6 +6,7 @@ interface Exam {
   id: number;
   school_code: string;
   school_name: string;
+  deviation: number;
   exam_name: string;
   exam_date: string;
   start_time: string;
@@ -16,7 +17,7 @@ export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [schoolCount, setSchoolCount] = useState(0);
-  const [schoolGroups, setSchoolGroups] = useState<{name: string; count: number; startIndex: number}[]>([]);
+  const [schoolGroups, setSchoolGroups] = useState<{name: string; deviation: number; count: number; startIndex: number}[]>([]);
 
   useEffect(() => {
     fetchExams();
@@ -32,17 +33,19 @@ export default function ExamsPage() {
         setExams(result.data);
 
         // 按学校名称分组，计算rowspan
-        const groups: {name: string; count: number; startIndex: number}[] = [];
+        const groups: {name: string; deviation: number; count: number; startIndex: number}[] = [];
         let currentSchool = '';
+        let currentDeviation = 0;
         let count = 0;
         let startIndex = 0;
 
         result.data.forEach((e: Exam, index: number) => {
           if (e.school_name !== currentSchool) {
             if (currentSchool !== '') {
-              groups.push({ name: currentSchool, count, startIndex });
+              groups.push({ name: currentSchool, deviation: currentDeviation, count, startIndex });
             }
             currentSchool = e.school_name;
+            currentDeviation = e.deviation || 0;
             count = 1;
             startIndex = index;
           } else {
@@ -51,7 +54,7 @@ export default function ExamsPage() {
         });
         // 最后一个学校
         if (currentSchool !== '') {
-          groups.push({ name: currentSchool, count, startIndex });
+          groups.push({ name: currentSchool, deviation: currentDeviation, count, startIndex });
         }
 
         setSchoolGroups(groups);
@@ -66,6 +69,16 @@ export default function ExamsPage() {
   // 获取指定索引的学校行信息
   const getSchoolGroup = (index: number) => {
     return schoolGroups.find(g => g.startIndex === index);
+  };
+
+  // 获取偏差值的样式
+  const getDeviationClass = (deviation: number) => {
+    if (!deviation) return 'bg-gray-100 text-gray-700';
+    if (deviation >= 70) return 'bg-red-100 text-red-700';
+    if (deviation >= 65) return 'bg-orange-100 text-orange-700';
+    if (deviation >= 60) return 'bg-yellow-100 text-yellow-700';
+    if (deviation >= 55) return 'bg-green-100 text-green-700';
+    return 'bg-gray-100 text-gray-700';
   };
 
   return (
@@ -94,6 +107,7 @@ export default function ExamsPage() {
               <table className="w-full min-w-[600px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
+                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700 w-20">偏差値</th>
                     <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">学校名</th>
                     <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">試験名</th>
                     <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">試験日</th>
@@ -105,6 +119,13 @@ export default function ExamsPage() {
                     const group = getSchoolGroup(index);
                     return (
                       <tr key={exam.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        {group ? (
+                          <td className="py-3 px-3 text-sm" rowSpan={group.count}>
+                            <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation)}`}>
+                              {group.deviation || '-'}
+                            </span>
+                          </td>
+                        ) : null}
                         {group ? (
                           <td className="py-3 px-3 text-sm text-gray-800 font-medium" rowSpan={group.count}>{group.name}</td>
                         ) : null}

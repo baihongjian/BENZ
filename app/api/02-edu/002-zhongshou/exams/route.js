@@ -31,9 +31,11 @@ export async function GET(request) {
         e.exam_date,
         e.start_time,
         e.source_url,
-        s.name as school_name
+        s.name as school_name,
+        s.deviation as deviation
       FROM exams e
       LEFT JOIN schools s ON e.school_code = s.school_code
+      ORDER BY s.deviation DESC, s.name, e.exam_date
       LIMIT ?
     `;
 
