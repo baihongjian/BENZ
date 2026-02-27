@@ -13,9 +13,53 @@ interface Exam {
   source_url: string;
 }
 
+// 考试日期列定义
+const EXAM_COLUMNS = [
+  { key: '1月', label: '１月中' },
+  { key: '2月1日-午前', label: '２月１日午前' },
+  { key: '2月1日-午後', label: '２月１日午後' },
+  { key: '2月2日-午前', label: '２月２日午前' },
+  { key: '2月2日-午後', label: '２月２日午後' },
+  { key: '2月3日-午前', label: '２月３日午前' },
+  { key: '2月3日-午後', label: '２月３日午後' },
+  { key: '2月4日以降', label: '２月４日以降' },
+];
+
+// 获取考试日期对应的列键
+function getExamColumnKey(examDate: string, startTime: string): string | null {
+  if (!examDate) return null;
+
+  // 只匹配月/日格式（如 2026/2/3 中的 2/3）
+  const match = examDate.match(/\/(\d{1,2})\/(\d{1,2})/);
+  if (!match) return null;
+
+  const month = parseInt(match[1]);
+  const day = parseInt(match[2]);
+
+  if (month === 1) return '1月';
+  if (month === 2 && day === 1) {
+    return startTime?.includes('午後') ? '2月1日-午後' : '2月1日-午前';
+  }
+  if (month === 2 && day === 2) {
+    return startTime?.includes('午後') ? '2月2日-午後' : '2月2日-午前';
+  }
+  if (month === 2 && day === 3) {
+    return startTime?.includes('午後') ? '2月3日-午後' : '2月3日-午前';
+  }
+  if ((month === 2 && day >= 4) || month >= 3) {
+    return '2月4日以降';
+  }
+  return null;
+}
+
+interface SchoolExam {
+  name: string;
+  examDateKey: string;
+}
+
 interface DeviationGroup {
   deviation: number;
-  schools: { name: string; exams: { exam_name: string; exam_date: string; start_time: string }[] }[];
+  schools: SchoolExam[][];
 }
 
 export default function ExamsPage() {
@@ -37,23 +81,29 @@ export default function ExamsPage() {
       if (result.success && result.data) {
         setExams(result.data);
 
-        // 按偏差值分组
-        const deviationMap = new Map<number, Map<string, { exam_name: string; exam_date: string; start_time: string }[]>>();
+        // 调试：检查前几个数据的解析结果
+        console.log('前5条数据:');
+        result.data.slice(0, 5).forEach((e: Exam) => {
+          const key = getExamColumnKey(e.exam_date, e.start_time);
+          console.log(`  ${e.school_name}: ${e.exam_date} ${e.start_time} -> ${key}`);
+        });
+
+        // 按偏差值和考试日期分组
+        const deviationMap = new Map<number, Map<string, Set<string>>>();
 
         result.data.forEach((e: Exam) => {
           const deviation = e.deviation || 0;
+          const examDateKey = getExamColumnKey(e.exam_date, e.start_time);
+
           if (!deviationMap.has(deviation)) {
             deviationMap.set(deviation, new Map());
           }
-          const schoolMap = deviationMap.get(deviation)!;
-          if (!schoolMap.has(e.school_name)) {
-            schoolMap.set(e.school_name, []);
+          const dateMap = deviationMap.get(deviation)!;
+
+          if (!dateMap.has(examDateKey)) {
+            dateMap.set(examDateKey, new Set());
           }
-          schoolMap.get(e.school_name)!.push({
-            exam_name: e.exam_name,
-            exam_date: e.exam_date,
-            start_time: e.start_time
-          });
+          dateMap.get(examDateKey)!.add(e.school_name);
         });
 
         // 转换为数组并按偏差值排序
@@ -61,13 +111,22 @@ export default function ExamsPage() {
         const sortedDeviations = Array.from(deviationMap.keys()).sort((a, b) => b - a);
 
         sortedDeviations.forEach(deviation => {
-          const schoolMap = deviationMap.get(deviation)!;
-          const schools = Array.from(schoolMap.entries()).map(([name, exams]) => ({
-            name,
-            exams
-          }));
-          groups.push({ deviation, schools });
+          const dateMap = deviationMap.get(deviation)!;
+          const schoolsByDate: SchoolExam[][] = EXAM_COLUMNS.map(() => []);
+
+          dateMap.forEach((schoolSet, examDateKey) => {
+            const colIndex = EXAM_COLUMNS.findIndex(c => c.key === examDateKey);
+            if (colIndex >= 0) {
+              schoolSet.forEach(schoolName => {
+                schoolsByDate[colIndex].push({ name: schoolName, examDateKey });
+              });
+            }
+          });
+
+          groups.push({ deviation, schools: schoolsByDate });
         });
+
+        console.log('分组结果:', groups.slice(0, 3));
 
         setDeviationGroups(groups);
         setSchoolCount(result.data.length);
@@ -115,7 +174,9 @@ export default function ExamsPage() {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700 w-20">偏差値</th>
-                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700">学校名・試験日</th>
+                    {EXAM_COLUMNS.map(col => (
+                      <th key={col.key} className="text-left py-3 px-2 text-sm font-semibold text-gray-700">{col.label}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -125,23 +186,20 @@ export default function ExamsPage() {
                         <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation)}`}>
                           {group.deviation || '-'}
                         </span>
-                        <p className="text-xs text-gray-500 mt-1">{group.schools.length}校</p>
                       </td>
-                      <td className="py-3 px-3">
-                        {group.schools.map((school, schoolIndex) => (
-                          <div key={schoolIndex} className="mb-2 pb-2 border-b border-gray-100 last:border-b-0">
-                            <div className="text-sm font-medium text-gray-800">{school.name}</div>
-                            <div className="text-xs text-gray-600 mt-1">
-                              {school.exams.map((exam, examIndex) => (
-                                <span key={examIndex} className="mr-2">
-                                  {exam.exam_date} {exam.start_time}
-                                  {examIndex < school.exams.length - 1 ? '、' : ''}
-                                </span>
+                      {group.schools.map((schoolsInColumn, colIndex) => (
+                        <td key={colIndex} className="py-3 px-2 text-sm align-top">
+                          {schoolsInColumn.length > 0 ? (
+                            <div className="text-xs">
+                              {schoolsInColumn.map((school, idx) => (
+                                <div key={idx} className="text-gray-700">{school.name}</div>
                               ))}
                             </div>
-                          </div>
-                        ))}
-                      </td>
+                          ) : (
+                            <span className="text-gray-300">-</span>
+                          )}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
