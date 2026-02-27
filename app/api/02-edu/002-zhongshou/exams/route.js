@@ -20,21 +20,35 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '10000');
   const category = searchParams.get('category');
+  const sexType = searchParams.get('sexType');
 
   try {
     const db = await connectDb();
 
     let whereClause = '1=1';
-    const params = [limit];
+    const categoryParams = [];
+    const sexTypeParams = [];
 
     if (category && category.trim() !== '') {
       const categories = category.split(',');
       if (categories.length > 0) {
         const placeholders = categories.map(() => '?').join(',');
         whereClause = `s.category IN (${placeholders})`;
-        params.unshift(...categories);
+        categoryParams.push(...categories);
       }
     }
+
+    if (sexType && sexType.trim() !== '') {
+      const sexTypes = sexType.split(',');
+      if (sexTypes.length > 0) {
+        const placeholders = sexTypes.map(() => '?').join(',');
+        whereClause += ` AND s.sex_type IN (${placeholders})`;
+        sexTypeParams.push(...sexTypes);
+      }
+    }
+
+    // 正确的参数顺序: categoryParams, sexTypeParams, limit
+    const params = [...categoryParams, ...sexTypeParams, limit];
 
     const sql = `
       SELECT

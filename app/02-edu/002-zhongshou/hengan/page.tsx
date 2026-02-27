@@ -73,19 +73,24 @@ export default function ExamsPage() {
   const [schoolCount, setSchoolCount] = useState(0);
   const [deviationGroups, setDeviationGroups] = useState<DeviationGroup[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSexTypes, setSelectedSexTypes] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchExams(selectedCategories);
-  }, [selectedCategories]);
+    fetchExams(selectedCategories, selectedSexTypes);
+  }, [selectedCategories, selectedSexTypes]);
 
-  const fetchExams = async (categories: string[] = []) => {
+  const fetchExams = async (categories: string[] = [], sexTypes: string[] = []) => {
     setLoading(true);
     try {
       let categoryParam = '';
       if (categories.length > 0) {
         categoryParam = '&category=' + categories.join(',');
       }
-      const response = await fetch(`/api/02-edu/002-zhongshou/exams?limit=10000${categoryParam}`);
+      let sexTypeParam = '';
+      if (sexTypes.length > 0) {
+        sexTypeParam = '&sexType=' + sexTypes.join(',');
+      }
+      const response = await fetch(`/api/02-edu/002-zhongshou/exams?limit=10000${categoryParam}${sexTypeParam}`);
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -230,7 +235,64 @@ export default function ExamsPage() {
               公立中高一貫
             </label>
           </div>
-          
+        </div>
+
+        {/* 学校種別筛选条件 */}
+        <div className="mb-4 flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700">学校種別:</label>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedSexTypes.includes('男子')}
+                onChange={(e) => {
+                  let newSexTypes = selectedSexTypes;
+                  if (e.target.checked) {
+                    newSexTypes.push('男子');
+                  } else {
+                    newSexTypes = newSexTypes.filter(c => c !== '男子');
+                  }
+                  setSelectedSexTypes([...newSexTypes]);
+                }}
+                className="rounded"
+              />
+              男子校
+            </label>
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedSexTypes.includes('女子')}
+                onChange={(e) => {
+                  let newSexTypes = selectedSexTypes;
+                  if (e.target.checked) {
+                    newSexTypes.push('女子');
+                  } else {
+                    newSexTypes = newSexTypes.filter(c => c !== '女子');
+                  }
+                  setSelectedSexTypes([...newSexTypes]);
+                }}
+                className="rounded"
+              />
+              女子校
+            </label>
+            <label className="flex items-center gap-1 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedSexTypes.includes('共通')}
+                onChange={(e) => {
+                  let newSexTypes = selectedSexTypes;
+                  if (e.target.checked) {
+                    newSexTypes.push('共通');
+                  } else {
+                    newSexTypes = newSexTypes.filter(c => c !== '共通');
+                  }
+                  setSelectedSexTypes([...newSexTypes]);
+                }}
+                className="rounded"
+              />
+              共学
+            </label>
+          </div>
         </div>
         {loading ? (
           <div className="text-center py-12">
