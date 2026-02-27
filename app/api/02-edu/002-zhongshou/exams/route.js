@@ -18,7 +18,7 @@ function connectDb() {
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const limit = parseInt(searchParams.get('limit') || '500');
+  const limit = parseInt(searchParams.get('limit') || '10000');
 
   try {
     const db = await connectDb();

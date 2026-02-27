@@ -15,6 +15,7 @@ interface Exam {
 export default function ExamsPage() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
+  const [schoolCount, setSchoolCount] = useState(0);
 
   useEffect(() => {
     fetchExams();
@@ -23,11 +24,14 @@ export default function ExamsPage() {
   const fetchExams = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/02-edu/002-zhongshou/exams');
+      const response = await fetch('/api/02-edu/002-zhongshou/exams?limit=10000');
       const result = await response.json();
 
       if (result.success && result.data) {
         setExams(result.data);
+        // 统计学校数量
+        const uniqueSchools = new Set(result.data.map((e: Exam) => e.school_name));
+        setSchoolCount(uniqueSchools.size);
       }
     } catch (err) {
       console.error('获取数据失败:', err);
@@ -47,6 +51,9 @@ export default function ExamsPage() {
 
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
+        {!loading && (
+          <p className="mb-4 text-lg font-semibold text-gray-700">学校数: {schoolCount} 校</p>
+        )}
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
