@@ -458,7 +458,7 @@ export default function ExamsPage() {
                 <tbody>
                   {deviationGroups.map((group, groupIndex) => (
                     <tr key={groupIndex} className="border-b border-gray-200 hover:bg-blue-50">
-                      <td className="py-3 px-2 text-sm align-top border-r border-gray-300 bg-gray-50">
+                      <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300 bg-gray-50">
                         <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation)}`}>
                           {group.deviation || '-'}
                         </span>
@@ -468,7 +468,7 @@ export default function ExamsPage() {
                           {schoolsInColumn.length > 0 ? (
                             <div className="text-xs">
                               {schoolsInColumn.map((school, idx) => (
-                                <div key={idx} className="text-gray-700 truncate" title={hideSchoolSuffix(school.name)}>{hideSchoolSuffix(school.name)}</div>
+                                <div key={idx} className="text-gray-700 truncate" title={hideSchoolSuffix(school.name)}><span className="text-[8px] mr-1">●</span>{hideSchoolSuffix(school.name)}</div>
                               ))}
                             </div>
                           ) : (
