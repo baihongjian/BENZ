@@ -13,6 +13,32 @@ interface Exam {
   source_url: string;
 }
 
+interface SchoolDetail {
+  school_code: string;
+  name: string;
+  deviation: number;
+  prefecture: string;
+  category: string;
+  sex_type: string;
+  website: string;
+  first_year_total: number;
+  annual_fee: number;
+  university_todai_keidai: number;
+  university_ichihashi_tokyo_5: number;
+  university_national_public: number;
+  university_waseda_keio_socie: number;
+  university_gmarch: number;
+  university_medical: number;
+  source_url: string;
+}
+
+interface SchoolExamInfo {
+  exam_name: string;
+  exam_date: string;
+  start_time: string;
+  source_url: string;
+}
+
 // 考试日期列定义
 const EXAM_COLUMNS = [
   { key: '1月', label: '１月中' },
@@ -59,6 +85,7 @@ function getExamColumnKey(examDate: string, startTime: string): string | null {
 
 interface SchoolExam {
   name: string;
+  schoolCode: string;
   examDateKey: string;
 }
 
@@ -76,6 +103,12 @@ export default function ExamsPage() {
   const [selectedSexTypes, setSelectedSexTypes] = useState<string[]>([]);
   const [selectedPrefectures, setSelectedPrefectures] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
+
+  // 学校详情弹窗状态
+  const [selectedSchool, setSelectedSchool] = useState<SchoolExam | null>(null);
+  const [schoolDetail, setSchoolDetail] = useState<SchoolDetail | null>(null);
+  const [schoolExams, setSchoolExams] = useState<SchoolExamInfo[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     fetchExams(selectedCategories, selectedSexTypes, selectedPrefectures, searchKeyword);
@@ -114,7 +147,7 @@ export default function ExamsPage() {
         });
 
         // 按偏差值和考试日期分组
-        const deviationMap = new Map<number, Map<string, Set<string>>>();
+        const deviationMap = new Map<number, Map<string, { name: string; code: string }[]>>();
 
         result.data.forEach((e: Exam) => {
           const deviation = e.deviation || 0;
@@ -126,9 +159,13 @@ export default function ExamsPage() {
           const dateMap = deviationMap.get(deviation)!;
 
           if (!dateMap.has(examDateKey)) {
-            dateMap.set(examDateKey, new Set());
+            dateMap.set(examDateKey, []);
           }
-          dateMap.get(examDateKey)!.add(e.school_name);
+          // 避免重复添加
+          const existing = dateMap.get(examDateKey)!;
+          if (!existing.some(s => s.code === e.school_code)) {
+            existing.push({ name: e.school_name, code: e.school_code });
+          }
         });
 
         // 转换为数组并按偏差值排序
@@ -142,8 +179,8 @@ export default function ExamsPage() {
           dateMap.forEach((schoolSet, examDateKey) => {
             const colIndex = EXAM_COLUMNS.findIndex(c => c.key === examDateKey);
             if (colIndex >= 0) {
-              schoolSet.forEach(schoolName => {
-                schoolsByDate[colIndex].push({ name: schoolName, examDateKey });
+              schoolSet.forEach(({ name, code }) => {
+                schoolsByDate[colIndex].push({ name, schoolCode: code, examDateKey });
               });
             }
           });
@@ -162,6 +199,36 @@ export default function ExamsPage() {
       console.error('获取数据失败:', err);
     }
     setLoading(false);
+  };
+
+  // 获取学校详情
+  const fetchSchoolDetail = async (schoolCode: string) => {
+    setDetailLoading(true);
+    try {
+      const response = await fetch(`/api/02-edu/002-zhongshou/school-detail?school_code=${schoolCode}`);
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setSchoolDetail(result.data.school);
+        setSchoolExams(result.data.exams || []);
+      }
+    } catch (err) {
+      console.error('获取学校详情失败:', err);
+    }
+    setDetailLoading(false);
+  };
+
+  // 点击学校名
+  const handleSchoolClick = async (school: SchoolExam) => {
+    setSelectedSchool(school);
+    await fetchSchoolDetail(school.schoolCode);
+  };
+
+  // 关闭详情弹窗
+  const closeDetail = () => {
+    setSelectedSchool(null);
+    setSchoolDetail(null);
+    setSchoolExams([]);
   };
 
   // 获取偏差值的样式
@@ -493,7 +560,15 @@ export default function ExamsPage() {
                           {schoolsInColumn.length > 0 ? (
                             <div className="text-xs">
                               {schoolsInColumn.map((school, idx) => (
-                                <div key={idx} className="text-gray-700 truncate" title={hideSchoolSuffix(school.name)}><span className="text-[8px] mr-1">●</span>{hideSchoolSuffix(school.name)}</div>
+                                <div key={idx}>
+                                  <button
+                                    onClick={() => handleSchoolClick(school)}
+                                    className="text-gray-700 truncate text-left hover:text-blue-600 hover:underline"
+                                    title={hideSchoolSuffix(school.name)}
+                                  >
+                                    <span className="text-[8px] mr-1">●</span>{hideSchoolSuffix(school.name)}
+                                  </button>
+                                </div>
                               ))}
                             </div>
                           ) : (
@@ -511,6 +586,101 @@ export default function ExamsPage() {
 
         <p className="mt-4 text-sm text-gray-500">合計: {schoolCount} 校</p>
       </div>
+
+      {/* 学校详情弹窗 */}
+      {selectedSchool && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={closeDetail}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            {/* 弹窗头部 */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+              <h3 className="text-lg font-bold truncate flex-1 mr-4">{hideSchoolSuffix(selectedSchool.name)}</h3>
+              <button onClick={closeDetail} className="text-white hover:text-gray-200">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 弹窗内容 */}
+            <div className="p-6">
+              {detailLoading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                  <p className="mt-2 text-gray-500">読み込み中...</p>
+                </div>
+              ) : schoolDetail ? (
+                <div className="space-y-4">
+                  {/* 基本信息 */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-bold text-gray-800 mb-2">基本情報</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div><span className="text-gray-600">偏差値:</span> <span className="font-bold">{schoolDetail.deviation || '-'}</span></div>
+                      <div><span className="text-gray-600">設置:</span> {schoolDetail.category || '-'}</div>
+                      <div><span className="text-gray-600">種別:</span> {schoolDetail.sex_type || '-'}</div>
+                      <div><span className="text-gray-600">所在地:</span> {schoolDetail.prefecture || '-'}</div>
+                    </div>
+                  </div>
+
+                  {/* 学费信息 */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-bold text-gray-800 mb-2">入学金・学費</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div><span className="text-gray-600">初年度合計:</span> {schoolDetail.first_year_total ? `${schoolDetail.first_year_total.toLocaleString()}円` : '-'}</div>
+                      <div><span className="text-gray-600">年間学金:</span> {schoolDetail.annual_fee ? `${schoolDetail.annual_fee.toLocaleString()}円` : '-'}</div>
+                    </div>
+                  </div>
+
+                  {/* 升学情况 */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-bold text-gray-800 mb-2">進学実績</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div><span className="text-gray-600">東大一慶応:</span> {schoolDetail.university_todai_keidai || 0}人</div>
+                      <div><span className="text-gray-600">一橋・東京5:</span> {schoolDetail.university_ichihashi_tokyo_5 || 0}人</div>
+                      <div><span className="text-gray-600">国立公立:</span> {schoolDetail.university_national_public || 0}人</div>
+                      <div><span className="text-gray-600">早慶上智:</span> {schoolDetail.university_waseda_keio_socie || 0}人</div>
+                      <div><span className="text-gray-600">GMARCH:</span> {schoolDetail.university_gmarch || 0}人</div>
+                      <div><span className="text-gray-600">医歯薬:</span> {schoolDetail.university_medical || 0}人</div>
+                    </div>
+                  </div>
+
+                  {/* 考试信息 */}
+                  {schoolExams.length > 0 && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-bold text-gray-800 mb-2">試験日程</h4>
+                      <div className="space-y-2 text-sm">
+                        {schoolExams.map((exam, idx) => (
+                          <div key={idx} className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-0">
+                            <div>
+                              <div className="font-medium">{exam.exam_name}</div>
+                              <div className="text-gray-500 text-xs">{exam.exam_date} {exam.start_time}</div>
+                            </div>
+                            {exam.source_url && (
+                              <a href={exam.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
+                                詳細
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 官网链接 */}
+                  {schoolDetail.website && (
+                    <div className="text-center">
+                      <a href={schoolDetail.website} target="_blank" rel="noopener noreferrer" className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded">
+                        公式サイト
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">データがありません</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
