@@ -563,7 +563,7 @@ export default function ExamsPage() {
                                 <div key={idx}>
                                   <button
                                     onClick={() => handleSchoolClick(school)}
-                                    className="text-gray-700 truncate text-left hover:text-blue-600 hover:underline"
+                                    className="text-gray-700 truncate text-left hover:text-blue-600 hover:underline hover:text-base hover:font-medium"
                                     title={hideSchoolSuffix(school.name)}
                                   >
                                     <span className="text-[8px] mr-1">●</span>{hideSchoolSuffix(school.name)}
