@@ -75,12 +75,13 @@ export default function ExamsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSexTypes, setSelectedSexTypes] = useState<string[]>([]);
   const [selectedPrefectures, setSelectedPrefectures] = useState<string[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   useEffect(() => {
-    fetchExams(selectedCategories, selectedSexTypes, selectedPrefectures);
-  }, [selectedCategories, selectedSexTypes, selectedPrefectures]);
+    fetchExams(selectedCategories, selectedSexTypes, selectedPrefectures, searchKeyword);
+  }, [selectedCategories, selectedSexTypes, selectedPrefectures, searchKeyword]);
 
-  const fetchExams = async (categories: string[] = [], sexTypes: string[] = [], prefectures: string[] = []) => {
+  const fetchExams = async (categories: string[] = [], sexTypes: string[] = [], prefectures: string[] = [], keyword: string = '') => {
     setLoading(true);
     try {
       let categoryParam = '';
@@ -95,7 +96,11 @@ export default function ExamsPage() {
       if (prefectures.length > 0) {
         prefectureParam = '&prefecture=' + prefectures.join(',');
       }
-      const response = await fetch(`/api/02-edu/002-zhongshou/exams?limit=10000${categoryParam}${sexTypeParam}${prefectureParam}`);
+      let keywordParam = '';
+      if (keyword.trim()) {
+        keywordParam = '&keyword=' + encodeURIComponent(keyword.trim());
+      }
+      const response = await fetch(`/api/02-edu/002-zhongshou/exams?limit=10000${categoryParam}${sexTypeParam}${prefectureParam}${keywordParam}`);
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -180,6 +185,26 @@ export default function ExamsPage() {
 
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* 关键字搜索 */}
+        <div className="mb-4 flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">学校名で探す:</label>
+          <input
+            type="text"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            placeholder="学校名を入力"
+            className="px-3 py-1.5 border border-gray-300 rounded text-sm w-48 focus:outline-none focus:border-blue-500"
+          />
+          {searchKeyword && (
+            <button
+              onClick={() => setSearchKeyword('')}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              クリア
+            </button>
+          )}
+        </div>
+
         {/* 筛选条件 */}
         <div className="mb-4 flex items-center gap-4">
           <label className="text-sm font-medium text-gray-700">学校設置:</label>

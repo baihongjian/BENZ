@@ -22,6 +22,7 @@ export async function GET(request) {
   const category = searchParams.get('category');
   const sexType = searchParams.get('sexType');
   const prefecture = searchParams.get('prefecture');
+  const keyword = searchParams.get('keyword');
 
   try {
     const db = await connectDb();
@@ -58,8 +59,14 @@ export async function GET(request) {
       }
     }
 
+    let keywordParams = [];
+    if (keyword && keyword.trim() !== '') {
+      whereClause += ` AND s.name LIKE ?`;
+      keywordParams.push(`%${keyword.trim()}%`);
+    }
+
     // 正确的参数顺序
-    const params = [...categoryParams, ...sexTypeParams, ...prefectureParams, limit];
+    const params = [...categoryParams, ...sexTypeParams, ...prefectureParams, ...keywordParams, limit];
 
     const sql = `
       SELECT
