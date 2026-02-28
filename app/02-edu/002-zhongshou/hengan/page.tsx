@@ -149,7 +149,9 @@ export default function ExamsPage() {
         console.log('分组结果:', groups.slice(0, 3));
 
         setDeviationGroups(groups);
-        setSchoolCount(result.data.length);
+        // 计算去重后的学校数量
+        const uniqueSchools = new Set(result.data.map((e: Exam) => e.school_name));
+        setSchoolCount(uniqueSchools.size);
       }
     } catch (err) {
       console.error('获取数据失败:', err);
@@ -488,7 +490,7 @@ export default function ExamsPage() {
           </div>
         )}
 
-        <p className="mt-4 text-sm text-gray-500">合計: {exams.length} 件</p>
+        <p className="mt-4 text-sm text-gray-500">合計: {schoolCount} 校</p>
       </div>
     </div>
   );
