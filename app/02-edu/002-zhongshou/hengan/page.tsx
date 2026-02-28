@@ -103,6 +103,8 @@ export default function ExamsPage() {
   const [selectedSexTypes, setSelectedSexTypes] = useState<string[]>([]);
   const [selectedPrefectures, setSelectedPrefectures] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [sortOption, setSortOption] = useState<'fee-asc' | 'university-desc'>('fee-asc');
+  const [schoolDetailsMap, setSchoolDetailsMap] = useState<Map<string, SchoolDetail>>(new Map());
 
   // 学校详情弹窗状态
   const [selectedSchool, setSelectedSchool] = useState<SchoolExam | null>(null);
@@ -113,6 +115,81 @@ export default function ExamsPage() {
   useEffect(() => {
     fetchExams(selectedCategories, selectedSexTypes, selectedPrefectures, searchKeyword);
   }, [selectedCategories, selectedSexTypes, selectedPrefectures, searchKeyword]);
+
+  // 当排序选项改变或数据加载时，获取学校详情并排序
+  useEffect(() => {
+    const applySorting = async () => {
+      // 收集所有学校代码
+      const allSchoolCodes = new Set<string>();
+      deviationGroups.forEach(group => {
+        group.schools.forEach(col => {
+          col.forEach(school => {
+            if (school.schoolCode) {
+              allSchoolCodes.add(school.schoolCode);
+            }
+          });
+        });
+      });
+
+      if (allSchoolCodes.size === 0) return;
+
+      try {
+        const response = await fetch(`/api/02-edu/002-zhongshou/schools-batch?school_codes=${Array.from(allSchoolCodes).join(',')}`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          // 构建学校详情映射
+          const detailsMap = new Map<string, SchoolDetail>();
+          result.data.forEach((school: SchoolDetail) => {
+            detailsMap.set(school.school_code, school);
+          });
+          setSchoolDetailsMap(detailsMap);
+
+          // 计算大学进学总数
+          const calcUniversityTotal = (school: SchoolDetail) => {
+            return (school.university_todai_keidai || 0) +
+                   (school.university_ichihashi_tokyo_5 || 0) +
+                   (school.university_national_public || 0) +
+                   (school.university_waseda_keio_socie || 0) +
+                   (school.university_gmarch || 0) +
+                   (school.university_medical || 0);
+          };
+
+          // 排序
+          setDeviationGroups(prevGroups => {
+            return prevGroups.map(group => ({
+              ...group,
+              schools: group.schools.map(col => {
+                return [...col].sort((a, b) => {
+                  const detailA = detailsMap.get(a.schoolCode);
+                  const detailB = detailsMap.get(b.schoolCode);
+
+                  if (!detailA || !detailB) return 0;
+
+                  if (sortOption === 'fee-asc') {
+                    // 学费从低到高
+                    const feeA = detailA.first_year_total || 0;
+                    const feeB = detailB.first_year_total || 0;
+                    return feeA - feeB;
+                  } else if (sortOption === 'university-desc') {
+                    // 进学人数从高到低
+                    const uniA = calcUniversityTotal(detailA);
+                    const uniB = calcUniversityTotal(detailB);
+                    return uniB - uniA;
+                  }
+                  return 0;
+                });
+              })
+            }));
+          });
+        }
+      } catch (err) {
+        console.error('获取学校详情失败:', err);
+      }
+    };
+
+    applySorting();
+  }, [sortOption, deviationGroups.length]);
 
   const fetchExams = async (categories: string[] = [], sexTypes: string[] = [], prefectures: string[] = [], keyword: string = '') => {
     setLoading(true);
@@ -270,6 +347,15 @@ export default function ExamsPage() {
               クリア
             </button>
           )}
+          <span className="ml-4 text-sm font-medium text-gray-700">学校並び替え:</span>
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value as 'fee-asc' | 'university-desc')}
+            className="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-blue-500"
+          >
+            <option value="fee-asc">学費安い順</option>
+            <option value="university-desc">進学数が多い順</option>
+          </select>
         </div>
 
         {/* 筛选条件 */}
