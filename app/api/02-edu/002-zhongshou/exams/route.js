@@ -21,6 +21,7 @@ export async function GET(request) {
   const limit = parseInt(searchParams.get('limit') || '10000');
   const category = searchParams.get('category');
   const sexType = searchParams.get('sexType');
+  const prefecture = searchParams.get('prefecture');
 
   try {
     const db = await connectDb();
@@ -28,6 +29,7 @@ export async function GET(request) {
     let whereClause = '1=1';
     const categoryParams = [];
     const sexTypeParams = [];
+    const prefectureParams = [];
 
     if (category && category.trim() !== '') {
       const categories = category.split(',');
@@ -47,8 +49,17 @@ export async function GET(request) {
       }
     }
 
-    // 正确的参数顺序: categoryParams, sexTypeParams, limit
-    const params = [...categoryParams, ...sexTypeParams, limit];
+    if (prefecture && prefecture.trim() !== '') {
+      const prefectures = prefecture.split(',');
+      if (prefectures.length > 0) {
+        const placeholders = prefectures.map(() => '?').join(',');
+        whereClause += ` AND s.prefecture IN (${placeholders})`;
+        prefectureParams.push(...prefectures);
+      }
+    }
+
+    // 正确的参数顺序
+    const params = [...categoryParams, ...sexTypeParams, ...prefectureParams, limit];
 
     const sql = `
       SELECT
