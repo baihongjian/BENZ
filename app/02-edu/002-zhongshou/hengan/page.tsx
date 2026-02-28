@@ -175,17 +175,11 @@ export default function ExamsPage() {
       <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-6">
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-2xl font-bold">中学受验--併願</h1>
-          <p className="mt-1 opacity-90">の試験日程を表示</p>
         </div>
       </header>
 
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div>
-            {!loading && (
-            <span className="text-sm text-gray-600">偏差値グループ数: {deviationGroups.length} グループ</span>
-          )}
-          </div>
         {/* 筛选条件 */}
         <div className="mb-4 flex items-center gap-4">
           <label className="text-sm font-medium text-gray-700">学校設置:</label>
@@ -450,31 +444,31 @@ export default function ExamsPage() {
             <p className="mt-2 text-gray-500">加载中...</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
-                <thead className="bg-gray-50 border-b border-gray-200">
+              <table className="w-full min-w-[1000px] border-collapse table-fixed">
+                <thead className="bg-gray-100 border-b-2 border-gray-400">
                   <tr>
-                    <th className="text-left py-3 px-3 text-sm font-semibold text-gray-700 w-20">偏差値</th>
+                    <th className="text-left py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
                     {EXAM_COLUMNS.map(col => (
-                      <th key={col.key} className="text-left py-3 px-2 text-sm font-semibold text-gray-700">{col.label}</th>
+                      <th key={col.key} className="text-left py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-[110px]">{col.label}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {deviationGroups.map((group, groupIndex) => (
-                    <tr key={groupIndex} className="border-b border-gray-100">
-                      <td className="py-3 px-3 text-sm align-top">
+                    <tr key={groupIndex} className="border-b border-gray-200 hover:bg-blue-50">
+                      <td className="py-3 px-2 text-sm align-top border-r border-gray-300 bg-gray-50">
                         <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation)}`}>
                           {group.deviation || '-'}
                         </span>
                       </td>
                       {group.schools.map((schoolsInColumn, colIndex) => (
-                        <td key={colIndex} className="py-3 px-2 text-sm align-top">
+                        <td key={colIndex} className="py-3 px-2 text-sm align-top border-r border-gray-200 align-top">
                           {schoolsInColumn.length > 0 ? (
                             <div className="text-xs">
                               {schoolsInColumn.map((school, idx) => (
-                                <div key={idx} className="text-gray-700">{hideSchoolSuffix(school.name)}</div>
+                                <div key={idx} className="text-gray-700 truncate" title={hideSchoolSuffix(school.name)}>{hideSchoolSuffix(school.name)}</div>
                               ))}
                             </div>
                           ) : (
