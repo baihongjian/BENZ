@@ -16,13 +16,13 @@ interface Exam {
 // 考试日期列定义
 const EXAM_COLUMNS = [
   { key: '1月', label: '１月中' },
-  { key: '2月1日-午前', label: '２月１日午前' },
-  { key: '2月1日-午後', label: '２月１日午後' },
-  { key: '2月2日-午前', label: '２月２日午前' },
-  { key: '2月2日-午後', label: '２月２日午後' },
-  { key: '2月3日-午前', label: '２月３日午前' },
-  { key: '2月3日-午後', label: '２月３日午後' },
-  { key: '2月4日以降', label: '２月４日以降' },
+  { key: '2月1日-午前', label: '２月１日<br/>午前' },
+  { key: '2月1日-午後', label: '２月１日<br/>午後' },
+  { key: '2月2日-午前', label: '２月２日<br/>午前' },
+  { key: '2月2日-午後', label: '２月２日<br/>午後' },
+  { key: '2月3日-午前', label: '２月３日<br/>午前' },
+  { key: '2月3日-午後', label: '２月３日<br/>午後' },
+  { key: '2月4日以降', label: '２月４日<br/>以降' },
 ];
 
 // 隐藏学校名中的"中学校"或"中学部"
@@ -449,9 +449,9 @@ export default function ExamsPage() {
               <table className="w-full min-w-[1000px] border-collapse table-fixed">
                 <thead className="bg-gray-100 border-b-2 border-gray-400">
                   <tr>
-                    <th className="text-left py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
+                    <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
                     {EXAM_COLUMNS.map(col => (
-                      <th key={col.key} className="text-left py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-[110px]">{col.label}</th>
+                      <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-[110px]" dangerouslySetInnerHTML={{ __html: col.label }}></th>
                     ))}
                   </tr>
                 </thead>
