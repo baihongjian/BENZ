@@ -558,12 +558,12 @@ export default function ExamsPage() {
                       {group.schools.map((schoolsInColumn, colIndex) => (
                         <td key={colIndex} className="py-3 px-2 text-sm align-top border-r border-gray-200 align-top">
                           {schoolsInColumn.length > 0 ? (
-                            <div className="text-xs">
+                            <div className="text-xs space-y-1">
                               {schoolsInColumn.map((school, idx) => (
-                                <div key={idx}>
+                                <div key={idx} className="overflow-hidden">
                                   <button
                                     onClick={() => handleSchoolClick(school)}
-                                    className="text-gray-700 truncate text-left hover:text-blue-600 hover:underline hover:text-base hover:font-medium"
+                                    className="text-gray-700 block w-full truncate text-left hover:text-blue-600 hover:underline hover:text-base hover:font-medium"
                                     title={hideSchoolSuffix(school.name)}
                                   >
                                     <span className="text-[8px] mr-1">●</span>{hideSchoolSuffix(school.name)}
