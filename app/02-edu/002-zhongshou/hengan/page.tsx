@@ -701,7 +701,9 @@ export default function ExamsPage() {
                 <thead className="bg-gray-100 border-b-2 border-gray-400">
                   <tr>
                     <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
-                    <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-24 border-r border-gray-300">区分</th>
+                    {userDeviation && (
+                      <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-28 border-r border-gray-300">区分</th>
+                    )}
                     {EXAM_COLUMNS.map(col => (
                       <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-[110px]" dangerouslySetInnerHTML={{ __html: col.label }}></th>
                     ))}
@@ -715,13 +717,15 @@ export default function ExamsPage() {
                           {group.deviation || '-'}
                         </span>
                       </td>
-                      <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300">
-                        {getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) && (
-                          <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
-                            {getSchoolTypeLabel(group.deviation, parseInt(userDeviation))}
-                          </span>
-                        )}
-                      </td>
+                      {userDeviation && (
+                        <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300">
+                          {getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) && (
+                            <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
+                              {getSchoolTypeLabel(group.deviation, parseInt(userDeviation))}
+                            </span>
+                          )}
+                        </td>
+                      )}
                       {group.schools.map((schoolsInColumn, colIndex) => (
                         <td key={colIndex} className="py-3 px-2 text-sm align-top border-r border-gray-200 align-top">
                           {schoolsInColumn.length > 0 ? (
