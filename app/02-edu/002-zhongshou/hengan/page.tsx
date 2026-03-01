@@ -318,13 +318,8 @@ export default function ExamsPage() {
   // 获取偏差值的样式（基于用户选择的偏差值）
   const getDeviationClass = (deviation: number, userDev: number) => {
     if (!userDev) {
-      // 无用户偏差值时使用默认颜色
-      if (!deviation) return 'bg-gray-100 text-gray-700';
-      if (deviation >= 70) return 'bg-red-100 text-red-700';
-      if (deviation >= 65) return 'bg-orange-100 text-orange-700';
-      if (deviation >= 60) return 'bg-yellow-100 text-yellow-700';
-      if (deviation >= 55) return 'bg-green-100 text-green-700';
-      return 'bg-gray-100 text-gray-700';
+      // 无用户偏差值时使用黑色
+      return 'bg-white text-black';
     }
 
     // 有用户偏差值时
