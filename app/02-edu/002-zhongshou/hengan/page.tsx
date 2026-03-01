@@ -108,6 +108,7 @@ export default function ExamsPage() {
   const [userDeviation, setUserDeviation] = useState('');
   const [availableDeviations, setAvailableDeviations] = useState<number[]>([]);
   const [displayMode, setDisplayMode] = useState<'normal' | 'hengan'>('normal');
+  const [henganType, setHenganType] = useState<'basic' | 'safety' | 'challenge'>('basic');
   const [sortOption, setSortOption] = useState<'fee-asc' | 'university-desc'>('fee-asc');
   const [schoolDetailsMap, setSchoolDetailsMap] = useState<Map<string, SchoolDetail>>(new Map());
 
@@ -435,27 +436,66 @@ export default function ExamsPage() {
 
         {/* 自身の偏差値 - 併願模式下显示 */}
         {displayMode === 'hengan' && (
-        <div className="mb-4 flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">自身の偏差値:</label>
-          <select
-            value={userDeviation}
-            onChange={(e) => setUserDeviation(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded text-sm w-40 focus:outline-none focus:border-blue-500"
-          >
-            <option value="">選択してください</option>
-            {availableDeviations.map(dev => (
-              <option key={dev} value={dev}>{dev}</option>
-            ))}
-          </select>
-          {userDeviation && (
-            <button
-              onClick={() => setUserDeviation('')}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              クリア
-            </button>
-          )}
-        </div>
+          <>
+           {/* 併願型选择 */}
+           <div className="mb-4 flex items-center gap-4">
+              <span className="text-sm font-medium text-gray-700">併願型:</span>
+              <button
+                onClick={() => setHenganType('basic')}
+                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                  henganType === 'basic'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                基本型
+              </button>
+              <button
+                onClick={() => setHenganType('safety')}
+                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                  henganType === 'safety'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                安全型
+              </button>
+              <button
+                onClick={() => setHenganType('challenge')}
+                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                  henganType === 'challenge'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                チャレンジ型
+              </button>
+            </div>
+            
+            <div className="mb-4 flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">自身の偏差値:</label>
+              <select
+                value={userDeviation}
+                onChange={(e) => setUserDeviation(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 rounded text-sm w-40 focus:outline-none focus:border-blue-500"
+              >
+                <option value="">選択してください</option>
+                {availableDeviations.map(dev => (
+                  <option key={dev} value={dev}>{dev}</option>
+                ))}
+              </select>
+              {userDeviation && (
+                <button
+                  onClick={() => setUserDeviation('')}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  クリア
+                </button>
+              )}
+            </div>
+
+           
+          </>
         )}
 
         {/* 关键字搜索 */}
@@ -769,7 +809,14 @@ export default function ExamsPage() {
                 </thead>
                 <tbody>
                   {deviationGroups
-                    .filter(group => displayMode !== 'hengan' || !userDeviation || getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) !== '')
+                    .filter(group => {
+                      // 普通模式显示所有
+                      if (displayMode !== 'hengan') return true;
+                      // 併願模式但没有选择偏差值显示所有
+                      if (!userDeviation) return true;
+                      // 有偏差值时只显示有区分的行
+                      return getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) !== '';
+                    })
                     .map((group, groupIndex) => (
                     <tr key={groupIndex} className={`border-b border-gray-200 hover:bg-blue-50 ${displayMode === 'hengan' ? getRowClass(group.deviation, parseInt(userDeviation)) : ''}`}>
                       <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300 bg-gray-50">
