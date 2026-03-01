@@ -103,6 +103,8 @@ export default function ExamsPage() {
   const [selectedSexTypes, setSelectedSexTypes] = useState<string[]>([]);
   const [selectedPrefectures, setSelectedPrefectures] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [userDeviation, setUserDeviation] = useState('');
+  const [availableDeviations, setAvailableDeviations] = useState<number[]>([]);
   const [sortOption, setSortOption] = useState<'fee-asc' | 'university-desc'>('fee-asc');
   const [schoolDetailsMap, setSchoolDetailsMap] = useState<Map<string, SchoolDetail>>(new Map());
 
@@ -268,6 +270,7 @@ export default function ExamsPage() {
         console.log('分组结果:', groups.slice(0, 3));
 
         setDeviationGroups(groups);
+        setAvailableDeviations(sortedDeviations);
         // 计算去重后的学校数量
         const uniqueSchools = new Set(result.data.map((e: Exam) => e.school_name));
         setSchoolCount(uniqueSchools.size);
@@ -356,6 +359,29 @@ export default function ExamsPage() {
             <option value="fee-asc">学費安い順</option>
             <option value="university-desc">進学数が多い順</option>
           </select>
+        </div>
+
+        {/* 自身の偏差値 */}
+        <div className="mb-4 flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">自身の偏差値:</label>
+          <select
+            value={userDeviation}
+            onChange={(e) => setUserDeviation(e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded text-sm w-40 focus:outline-none focus:border-blue-500"
+          >
+            <option value="">選択してください</option>
+            {availableDeviations.map(dev => (
+              <option key={dev} value={dev}>{dev}</option>
+            ))}
+          </select>
+          {userDeviation && (
+            <button
+              onClick={() => setUserDeviation('')}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              クリア
+            </button>
+          )}
         </div>
 
         {/* 筛选条件 */}
