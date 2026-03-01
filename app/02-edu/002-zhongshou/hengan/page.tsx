@@ -354,6 +354,20 @@ export default function ExamsPage() {
     return '';
   };
 
+  // 获取学校类型标签
+  const getSchoolTypeLabel = (deviation: number, userDev: number): string => {
+    if (!userDev) return '';
+
+    if (deviation === userDev) {
+      return '実力相応校';
+    } else if (deviation > userDev && deviation <= userDev + 5) {
+      return 'チャレンジ校';
+    } else if (deviation < userDev && deviation >= userDev - 5) {
+      return '安全校';
+    }
+    return '';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -687,6 +701,7 @@ export default function ExamsPage() {
                 <thead className="bg-gray-100 border-b-2 border-gray-400">
                   <tr>
                     <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
+                    <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-24 border-r border-gray-300">区分</th>
                     {EXAM_COLUMNS.map(col => (
                       <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-[110px]" dangerouslySetInnerHTML={{ __html: col.label }}></th>
                     ))}
@@ -699,6 +714,13 @@ export default function ExamsPage() {
                         <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
                           {group.deviation || '-'}
                         </span>
+                      </td>
+                      <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300">
+                        {getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) && (
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
+                            {getSchoolTypeLabel(group.deviation, parseInt(userDeviation))}
+                          </span>
+                        )}
                       </td>
                       {group.schools.map((schoolsInColumn, colIndex) => (
                         <td key={colIndex} className="py-3 px-2 text-sm align-top border-r border-gray-200 align-top">
