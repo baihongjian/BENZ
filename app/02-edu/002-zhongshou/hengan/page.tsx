@@ -311,14 +311,47 @@ export default function ExamsPage() {
     setSchoolExams([]);
   };
 
-  // 获取偏差值的样式
-  const getDeviationClass = (deviation: number) => {
-    if (!deviation) return 'bg-gray-100 text-gray-700';
-    if (deviation >= 70) return 'bg-red-100 text-red-700';
-    if (deviation >= 65) return 'bg-orange-100 text-orange-700';
-    if (deviation >= 60) return 'bg-yellow-100 text-yellow-700';
-    if (deviation >= 55) return 'bg-green-100 text-green-700';
-    return 'bg-gray-100 text-gray-700';
+  // 获取偏差值的样式（基于用户选择的偏差值）
+  const getDeviationClass = (deviation: number, userDev: number) => {
+    if (!userDev) {
+      // 无用户偏差值时使用默认颜色
+      if (!deviation) return 'bg-gray-100 text-gray-700';
+      if (deviation >= 70) return 'bg-red-100 text-red-700';
+      if (deviation >= 65) return 'bg-orange-100 text-orange-700';
+      if (deviation >= 60) return 'bg-yellow-100 text-yellow-700';
+      if (deviation >= 55) return 'bg-green-100 text-green-700';
+      return 'bg-gray-100 text-gray-700';
+    }
+
+    // 有用户偏差值时
+    if (deviation === userDev) {
+      // 実力相応校 - 橙黄色（更饱和）
+      return 'bg-orange-400 text-white';
+    } else if (deviation > userDev && deviation <= userDev + 5) {
+      // チャレンジ校 - 深红色（更饱和）
+      return 'bg-red-600 text-white';
+    } else if (deviation < userDev && deviation >= userDev - 5) {
+      // 安全校 - 浅绿色（更饱和）
+      return 'bg-green-500 text-white';
+    }
+    return 'bg-gray-100 text-gray-600';
+  };
+
+  // 获取行的背景色
+  const getRowClass = (deviation: number, userDev: number) => {
+    if (!userDev) return '';
+
+    if (deviation === userDev) {
+      // 的实力相当校 - 橙黄色（更饱和）
+      return 'bg-orange-100';
+    } else if (deviation > userDev && deviation <= userDev + 5) {
+      // 挑战校 - 深红色（更饱和）
+      return 'bg-red-100';
+    } else if (deviation < userDev && deviation >= userDev - 5) {
+      // 安全校 - 浅绿色（更饱和）
+      return 'bg-green-100';
+    }
+    return '';
   };
 
   return (
@@ -661,9 +694,9 @@ export default function ExamsPage() {
                 </thead>
                 <tbody>
                   {deviationGroups.map((group, groupIndex) => (
-                    <tr key={groupIndex} className="border-b border-gray-200 hover:bg-blue-50">
+                    <tr key={groupIndex} className={`border-b border-gray-200 hover:bg-blue-50 ${getRowClass(group.deviation, parseInt(userDeviation))}`}>
                       <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300 bg-gray-50">
-                        <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation)}`}>
+                        <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
                           {group.deviation || '-'}
                         </span>
                       </td>
