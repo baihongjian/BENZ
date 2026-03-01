@@ -406,7 +406,7 @@ export default function ExamsPage() {
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* 模式选择 */}
         <div className="mb-4 flex items-center gap-4">
-          <span className="text-sm font-medium text-gray-700">モード:</span>
+          <span className="text-sm font-medium text-gray-700 w-20 text-right">モード:</span>
           <button
             onClick={() => {
               setDisplayMode('normal');
@@ -439,7 +439,7 @@ export default function ExamsPage() {
           <>
            {/* 併願型选择 */}
            <div className="mb-4 flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-700">併願型:</span>
+              <span className="text-sm font-medium text-gray-700 w-20 text-right">併願型:</span>
               <button
                 onClick={() => setHenganType('basic')}
                 className={`px-4 py-1.5 rounded text-sm font-medium ${
@@ -473,7 +473,7 @@ export default function ExamsPage() {
             </div>
             
             <div className="mb-4 flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">自身の偏差値:</label>
+              <label className="text-sm font-medium text-gray-700 w-20 text-right">自身偏差値:</label>
               <select
                 value={userDeviation}
                 onChange={(e) => setUserDeviation(e.target.value)}
@@ -500,7 +500,7 @@ export default function ExamsPage() {
 
         {/* 关键字搜索 */}
         <div className="mb-4 flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">学校名で探す:</label>
+          <label className="text-sm font-medium text-gray-700 w-20 text-right">学校名:</label>
           <input
             type="text"
             value={searchKeyword}
@@ -516,7 +516,7 @@ export default function ExamsPage() {
               クリア
             </button>
           )}
-          <span className="ml-4 text-sm font-medium text-gray-700">学校並び替え:</span>
+          <span className="ml-4 text-sm font-medium text-gray-700 w-20 text-right">並び替え:</span>
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as 'fee-asc' | 'university-desc')}
@@ -531,7 +531,7 @@ export default function ExamsPage() {
 
         {/* 筛选条件 */}
         <div className="mb-4 flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">学校設置:</label>
+          <label className="text-sm font-medium text-gray-700 w-20 text-right">学校設置:</label>
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-1 text-sm">
               <input
@@ -589,7 +589,7 @@ export default function ExamsPage() {
 
         {/* 学校種別筛选条件 */}
         <div className="mb-4 flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">学校種別:</label>
+          <label className="text-sm font-medium text-gray-700 w-20 text-right">学校種別:</label>
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-1 text-sm">
               <input
@@ -647,7 +647,7 @@ export default function ExamsPage() {
 
         {/* 都道府県筛选条件 */}
         <div className="mb-4 flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">都道府県:</label>
+          <label className="text-sm font-medium text-gray-700 w-20 text-right">都道府県:</label>
           <div className="flex flex-wrap items-center gap-4">
             <label className="flex items-center gap-1 text-sm">
               <input
