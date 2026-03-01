@@ -107,6 +107,7 @@ export default function ExamsPage() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [userDeviation, setUserDeviation] = useState('');
   const [availableDeviations, setAvailableDeviations] = useState<number[]>([]);
+  const [displayMode, setDisplayMode] = useState<'normal' | 'hengan'>('normal');
   const [sortOption, setSortOption] = useState<'fee-asc' | 'university-desc'>('fee-asc');
   const [schoolDetailsMap, setSchoolDetailsMap] = useState<Map<string, SchoolDetail>>(new Map());
 
@@ -402,7 +403,38 @@ export default function ExamsPage() {
 
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* 自身の偏差値 */}
+        {/* 模式选择 */}
+        <div className="mb-4 flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700">モード:</span>
+          <button
+            onClick={() => {
+              setDisplayMode('normal');
+              setUserDeviation('');
+            }}
+            className={`px-4 py-1.5 rounded text-sm font-medium ${
+              displayMode === 'normal'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            普通
+          </button>
+          <button
+            onClick={() => {
+              setDisplayMode('hengan');
+            }}
+            className={`px-4 py-1.5 rounded text-sm font-medium ${
+              displayMode === 'hengan'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            併願
+          </button>
+        </div>
+
+        {/* 自身の偏差値 - 併願模式下显示 */}
+        {displayMode === 'hengan' && (
         <div className="mb-4 flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700">自身の偏差値:</label>
           <select
@@ -424,7 +456,8 @@ export default function ExamsPage() {
             </button>
           )}
         </div>
-        
+        )}
+
         {/* 关键字搜索 */}
         <div className="mb-4 flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700">学校名で探す:</label>
@@ -726,7 +759,7 @@ export default function ExamsPage() {
                 <thead className="bg-gray-100 border-b-2 border-gray-400">
                   <tr>
                     <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
-                    {userDeviation && (
+                    {displayMode === 'hengan' && userDeviation && (
                       <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-28 border-r border-gray-300">区分</th>
                     )}
                     {EXAM_COLUMNS.map(col => (
@@ -736,15 +769,15 @@ export default function ExamsPage() {
                 </thead>
                 <tbody>
                   {deviationGroups
-                    .filter(group => !userDeviation || getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) !== '')
+                    .filter(group => displayMode !== 'hengan' || !userDeviation || getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) !== '')
                     .map((group, groupIndex) => (
-                    <tr key={groupIndex} className={`border-b border-gray-200 hover:bg-blue-50 ${getRowClass(group.deviation, parseInt(userDeviation))}`}>
+                    <tr key={groupIndex} className={`border-b border-gray-200 hover:bg-blue-50 ${displayMode === 'hengan' ? getRowClass(group.deviation, parseInt(userDeviation)) : ''}`}>
                       <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300 bg-gray-50">
                         <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
                           {group.deviation || '-'}
                         </span>
                       </td>
-                      {userDeviation && (
+                      {displayMode === 'hengan' && userDeviation && (
                         <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300">
                           {getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) && (
                             <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
