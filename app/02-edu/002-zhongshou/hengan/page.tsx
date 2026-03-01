@@ -11,6 +11,7 @@ interface Exam {
   exam_date: string;
   start_time: string;
   source_url: string;
+  sex_type?: string;
 }
 
 interface SchoolDetail {
@@ -87,6 +88,7 @@ interface SchoolExam {
   name: string;
   schoolCode: string;
   examDateKey: string;
+  sexType?: string;
 }
 
 interface DeviationGroup {
@@ -226,7 +228,7 @@ export default function ExamsPage() {
         });
 
         // 按偏差值和考试日期分组
-        const deviationMap = new Map<number, Map<string, { name: string; code: string }[]>>();
+        const deviationMap = new Map<number, Map<string, { name: string; code: string; sexType: string }[]>>();
 
         result.data.forEach((e: Exam) => {
           const deviation = e.deviation || 0;
@@ -243,7 +245,7 @@ export default function ExamsPage() {
           // 避免重复添加
           const existing = dateMap.get(examDateKey)!;
           if (!existing.some(s => s.code === e.school_code)) {
-            existing.push({ name: e.school_name, code: e.school_code });
+            existing.push({ name: e.school_name, code: e.school_code, sexType: e.sex_type || '' });
           }
         });
 
@@ -258,8 +260,8 @@ export default function ExamsPage() {
           dateMap.forEach((schoolSet, examDateKey) => {
             const colIndex = EXAM_COLUMNS.findIndex(c => c.key === examDateKey);
             if (colIndex >= 0) {
-              schoolSet.forEach(({ name, code }) => {
-                schoolsByDate[colIndex].push({ name, schoolCode: code, examDateKey });
+              schoolSet.forEach(({ name, code, sexType }) => {
+                schoolsByDate[colIndex].push({ name, schoolCode: code, examDateKey, sexType });
               });
             }
           });
@@ -366,6 +368,26 @@ export default function ExamsPage() {
       return '安全校';
     }
     return '';
+  };
+
+  // 获取学校类型对应的点颜色
+  const getSexTypeBullet = (sexType?: string) => {
+    if (sexType === '男子') {
+      // 男子校 - 蓝色
+      return <span className="text-[8px] mr-1 text-blue-500">●</span>;
+    } else if (sexType === '女子') {
+      // 女子校 - 红色
+      return <span className="text-[8px] mr-1 text-red-500">●</span>;
+    } else if (sexType === '共通') {
+      // 共学校 - 蓝左红右渐变
+      return (
+        <span className="text-[8px] mr-1 inline-flex">
+          <span className="text-blue-500">●</span><span className="text-red-500 -ml-[5px]">●</span>
+        </span>
+      );
+    }
+    // 默认
+    return <span className="text-[8px] mr-1">●</span>;
   };
 
   return (
@@ -742,7 +764,7 @@ export default function ExamsPage() {
                                     className="text-gray-700 block w-full truncate text-left hover:text-blue-600 hover:underline hover:text-base hover:font-medium"
                                     title={hideSchoolSuffix(school.name)}
                                   >
-                                    <span className="text-[8px] mr-1">●</span>{hideSchoolSuffix(school.name)}
+                                    {getSexTypeBullet(school.sexType)}{hideSchoolSuffix(school.name)}
                                   </button>
                                 </div>
                               ))}

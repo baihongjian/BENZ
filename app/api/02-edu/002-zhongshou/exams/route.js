@@ -78,7 +78,8 @@ export async function GET(request) {
         e.source_url,
         s.name as school_name,
         s.deviation as deviation,
-        s.category as category
+        s.category as category,
+        s.sex_type as sex_type
       FROM exams e
       LEFT JOIN schools s ON e.school_code = s.school_code
       WHERE ${whereClause}
