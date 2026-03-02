@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 // 德语基础句子数据
@@ -110,6 +110,17 @@ export default function SelectQuestionPage() {
   const [wrongBook, setWrongBook] = useState<Sentence[]>([]);
   const [showWrongBook, setShowWrongBook] = useState(false);
   const [quizType, setQuizType] = useState<"german" | "chinese">("german");
+
+  // 监听键盘事件 - 按回车键下一题
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && quizResult !== null && currentQuiz) {
+        generateQuiz();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [quizResult, currentQuiz]);
 
   const filteredSentences = category === "all"
     ? sentences
