@@ -466,7 +466,26 @@ export default function ExamsPage() {
                 チャレンジ型
               </button>
             </div>
-            
+
+            {/* 併願型说明文字 */}
+            <div className="mb-4 pl-24">
+              {henganType === 'basic' && (
+                <p className="text-sm text-red-600 font-bold">
+                  ※ 2月1日に第一志望校に挑戦し、2日または3日までに安全校の合格を確保することが重要である。
+                </p>
+              )}
+              {henganType === 'safety' && (
+                <p className="text-sm text-red-600 font-bold">
+                  ※ 前半で安全校の合格を確保し、そのうえで2日以降に志望度の高い学校へ挑戦することが重要である。
+                </p>
+              )}
+              {henganType === 'challenge' && (
+                <p className="text-sm text-red-600 font-bold">
+                  ※ 前半は挑戦校と安全校を組み合わせ、結果次第で調整し、4日以降は安全校で合格を確保することが重要である。
+                </p>
+              )}
+            </div>
+
             <div className="mb-4 flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700 w-20 text-right">自身偏差値:</label>
               <select
