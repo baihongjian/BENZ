@@ -59,6 +59,102 @@ const categories = [
   { id: "question", name: "疑问" },
 ];
 
+// 对话选择题数据：题干是A的问题，选项是B的回答
+interface DialogQuiz {
+  id: number;
+  question: string;      // A 说的话（德语）
+  questionZh: string;    // A 说的话的中文翻译
+  correctAnswer: string; // B 的正确回答（德语）
+  options: string[];     // 选项（B 的回答，德语）
+}
+
+const dialogQuizzes: DialogQuiz[] = [
+  {
+    id: 1,
+    question: "Wie heißen Sie?",
+    questionZh: "您叫什么名字？",
+    correctAnswer: "Ich heiße Olga Minakova.",
+    options: [
+      "Ich heiße Olga Minakova.",
+      "Ich komme aus Russland, aus Moskau.",
+      "Ich wohne in Moskau.",
+      "Guten Tag!",
+    ],
+  },
+  {
+    id: 2,
+    question: "Woher kommen Sie?",
+    questionZh: "您来自哪里？",
+    correctAnswer: "Ich komme aus Russland, aus Moskau.",
+    options: [
+      "Ich komme aus Russland, aus Moskau.",
+      "Ich heiße Olga Minakova.",
+      "Ich wohne in Deutschland.",
+      "Bis morgen!",
+    ],
+  },
+  {
+    id: 3,
+    question: "Wie heißen Sie?",
+    questionZh: "您叫什么名字？",
+    correctAnswer: "Ich heiße Li Wei.",
+    options: [
+      "Ich heiße Li Wei.",
+      "Ich komme aus China, aus Beijing.",
+      "Ich wohne in China.",
+      "Guten Morgen!",
+    ],
+  },
+  {
+    id: 4,
+    question: "Woher kommen Sie, Herr Li?",
+    questionZh: "李先生，您来自哪里？",
+    correctAnswer: "Ich komme aus China, aus Beijing.",
+    options: [
+      "Ich komme aus China, aus Beijing.",
+      "Ich heiße Li Wei.",
+      "Ich wohne in Wien.",
+      "Auf Wiedersehen!",
+    ],
+  },
+  {
+    id: 5,
+    question: "Wie heißt du?",
+    questionZh: "你叫什么名字？",
+    correctAnswer: "Ich bin Hans.",
+    options: [
+      "Ich bin Hans.",
+      "Ich wohne in Wien.",
+      "Ich komme aus Österreich.",
+      "Guten Abend!",
+    ],
+  },
+  {
+    id: 6,
+    question: "Wo wohnst du?",
+    questionZh: "你住在哪里？",
+    correctAnswer: "Ich wohne in Wien.",
+    options: [
+      "Ich wohne in Wien.",
+      "Ich bin Hans.",
+      "Ich komme aus Deutschland.",
+      "Tschüss!",
+    ],
+  },
+  {
+    id: 7,
+    question: "Guten Tag!",
+    questionZh: "您好！",
+    correctAnswer: "Guten Tag! Bitte sehr.",
+    options: [
+      "Guten Tag! Bitte sehr.",
+      "Guten Morgen!",
+      "Auf Wiedersehen!",
+      "Danke schön!",
+    ],
+  },
+];
+
 // 发音函数
 const speak = async (text: string) => {
   if (typeof window === "undefined") return;
@@ -123,6 +219,11 @@ export default function SelectQuestionPage() {
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([]);
 
+  // 对话模式相关状态
+  const [quizMode, setQuizMode] = useState<"sentence" | "dialog">("sentence");
+  const [currentDialogQuiz, setCurrentDialogQuiz] = useState<DialogQuiz | null>(null);
+  const [dialogWrongBook, setDialogWrongBook] = useState<DialogQuiz[]>([]);
+
   // 从 localStorage 加载错题本
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -153,6 +254,39 @@ export default function SelectQuestionPage() {
     if (confirm("确定要清空错题本吗？")) {
       setWrongBook([]);
       localStorage.removeItem("wrongBook");
+    }
+  };
+
+  // 从 localStorage 加载对话错题本
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("dialogWrongBook");
+      if (saved) {
+        try {
+          setDialogWrongBook(JSON.parse(saved));
+        } catch (e) {
+          console.error("加载对话错题本失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存对话错题本到 localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (dialogWrongBook.length > 0) {
+        localStorage.setItem("dialogWrongBook", JSON.stringify(dialogWrongBook));
+      } else {
+        localStorage.removeItem("dialogWrongBook");
+      }
+    }
+  }, [dialogWrongBook]);
+
+  // 清空对话错题本
+  const clearDialogWrongBook = () => {
+    if (confirm("确定要清空对话错题本吗？")) {
+      setDialogWrongBook([]);
+      localStorage.removeItem("dialogWrongBook");
     }
   };
 
@@ -205,13 +339,57 @@ export default function SelectQuestionPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成对话题目
+  const generateDialogQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+    const idx = Math.floor(Math.random() * dialogQuizzes.length);
+    const quiz = dialogQuizzes[idx];
+    // 打乱选项
+    const shuffledOptions = [...quiz.options].sort(() => Math.random() - 0.5);
+    setCurrentDialogQuiz({ ...quiz, options: shuffledOptions });
+    setSelectedIndex(null);
+    setQuizResult(null);
+    setQuizStarted(true);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 开始新答题
   const startQuiz = () => {
     setCurrentQuestionCount(0);
     setCorrectCount(0);
     setQuizFinished(false);
     setQuizHistory([]);
-    generateQuiz();
+    if (quizMode === "dialog") {
+      generateDialogQuiz();
+    } else {
+      generateQuiz();
+    }
+  };
+
+  // 对话模式 - 选择答案
+  const handleDialogSelect = (index: number) => {
+    if (quizResult !== null || !currentDialogQuiz) return;
+    setSelectedIndex(index);
+    const selectedOption = currentDialogQuiz.options[index];
+    const isCorrect = selectedOption === currentDialogQuiz.correctAnswer;
+    setQuizResult(isCorrect ? "correct" : "wrong");
+    playSound(isCorrect ? "correct" : "wrong");
+
+    if (!isCorrect) {
+      setDialogWrongBook(prev => {
+        if (prev.some(d => d.id === currentDialogQuiz.id)) return prev;
+        return [...prev, currentDialogQuiz];
+      });
+    } else {
+      setCorrectCount(prev => prev + 1);
+    }
+
+    if (currentQuestionCount >= quizCount) {
+      setTimeout(() => setQuizFinished(true), 500);
+    }
   };
 
   // 选择答案
@@ -260,34 +438,54 @@ export default function SelectQuestionPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
-        {/* 题型选择 */}
+        {/* 模式选择：基础句子 vs 对话练习 */}
         <div className="flex justify-center gap-2 mb-4">
           <button
-            onClick={() => { setQuizType("german"); setQuizStarted(false); }}
-            className={`px-4 py-2 rounded-full text-sm ${quizType === "german" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+            onClick={() => { setQuizMode("sentence"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${quizMode === "sentence" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
           >
-            看中文选德语
+            基础句子
           </button>
           <button
-            onClick={() => { setQuizType("chinese"); setQuizStarted(false); }}
-            className={`px-4 py-2 rounded-full text-sm ${quizType === "chinese" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+            onClick={() => { setQuizMode("dialog"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${quizMode === "dialog" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
           >
-            看德语选中文
+            对话练习
           </button>
         </div>
 
-        {/* 分类筛选 */}
-        <div className="flex flex-wrap justify-center gap-2 mb-4">
-          {categories.map(cat => (
+        {/* 句子模式：题型选择 */}
+        {quizMode === "sentence" && (
+          <div className="flex justify-center gap-2 mb-4">
             <button
-              key={cat.id}
-              onClick={() => { setCategory(cat.id); setQuizStarted(false); }}
-              className={`px-3 py-1 rounded-full text-xs ${category === cat.id ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+              onClick={() => { setQuizType("german"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${quizType === "german" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
             >
-              {cat.name}
+              看中文选德语
             </button>
-          ))}
-        </div>
+            <button
+              onClick={() => { setQuizType("chinese"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${quizType === "chinese" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              看德语选中文
+            </button>
+          </div>
+        )}
+
+        {/* 句子模式：分类筛选 */}
+        {quizMode === "sentence" && (
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => { setCategory(cat.id); setQuizStarted(false); }}
+                className={`px-3 py-1 rounded-full text-xs ${category === cat.id ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* 答题数量选择 */}
         {!quizStarted && !quizFinished && (
@@ -326,7 +524,7 @@ export default function SelectQuestionPage() {
             onClick={() => setShowWrongBook(true)}
             className={`px-6 py-2 rounded-full ${showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border"}`}
           >
-            📚 错题本 ({wrongBook.length})
+            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -334,17 +532,32 @@ export default function SelectQuestionPage() {
         {showWrongBook ? (
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">错题本</h2>
-              {wrongBook.length > 0 && (
-                <button
-                  onClick={clearWrongBook}
-                  className="text-sm text-red-500 hover:text-red-700"
-                >
-                  清空
-                </button>
+              <h2 className="text-xl font-bold">{quizMode === "dialog" ? "对话错题本" : "错题本"}</h2>
+              {quizMode === "dialog" ? (
+                dialogWrongBook.length > 0 && (
+                  <button onClick={clearDialogWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
+                )
+              ) : (
+                wrongBook.length > 0 && (
+                  <button onClick={clearWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
+                )
               )}
             </div>
-            {wrongBook.length === 0 ? (
+            {quizMode === "dialog" ? (
+              dialogWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题</p>
+              ) : (
+                <div className="space-y-3">
+                  {dialogWrongBook.map(d => (
+                    <div key={d.id} className="bg-red-50 p-4 rounded-xl">
+                      <p className="text-sm text-gray-500">A: {d.question}</p>
+                      <p className="text-xs text-gray-400 mb-1">{d.questionZh}</p>
+                      <p className="font-bold text-gray-800">正确回答: {d.correctAnswer}</p>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : wrongBook.length === 0 ? (
               <p className="text-gray-500 text-center py-8">暂无错题</p>
             ) : (
               <div className="space-y-3">
@@ -362,23 +575,40 @@ export default function SelectQuestionPage() {
           </div>
         ) : !quizStarted ? (
           /* 开始页面 */
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="text-6xl mb-4">❓</div>
-            <h2 className="text-xl font-bold mb-4">德语基础句子选择题</h2>
-            <p className="text-gray-600 mb-6">
-              {quizType === "german" ? "看中文，选择正确的德语翻译" : "看德语，选择正确的中文翻译"}
-            </p>
-            <button
-              onClick={startQuiz}
-              disabled={filteredSentences.length < 4}
-              className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600 disabled:bg-gray-300"
-            >
-              开始答题 ({quizCount}题)
-            </button>
-            {filteredSentences.length < 4 && (
-              <p className="text-red-500 text-sm mt-2">该分类至少需要4个句子</p>
-            )}
-          </div>
+          quizMode === "dialog" ? (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <div className="text-6xl mb-4">💬</div>
+              <h2 className="text-xl font-bold mb-4">德语对话选择题</h2>
+              <p className="text-gray-600 mb-6">
+                A 会说一句话，你需要选择 B 正确的回答
+              </p>
+              <button
+                onClick={startQuiz}
+                className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600"
+              >
+                开始答题 ({quizCount}题)
+              </button>
+              <p className="text-gray-400 text-sm mt-4">共 {dialogQuizzes.length} 道题</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <div className="text-6xl mb-4">❓</div>
+              <h2 className="text-xl font-bold mb-4">德语基础句子选择题</h2>
+              <p className="text-gray-600 mb-6">
+                {quizType === "german" ? "看中文，选择正确的德语翻译" : "看德语，选择正确的中文翻译"}
+              </p>
+              <button
+                onClick={startQuiz}
+                disabled={filteredSentences.length < 4}
+                className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600 disabled:bg-gray-300"
+              >
+                开始答题 ({quizCount}题)
+              </button>
+              {filteredSentences.length < 4 && (
+                <p className="text-red-500 text-sm mt-2">该分类至少需要4个句子</p>
+              )}
+            </div>
+          )
         ) : quizFinished ? (
           /* 答题完成显示结果 */
           <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -460,6 +690,75 @@ export default function SelectQuestionPage() {
               </div>
             </div>
           </div>
+        ) : quizMode === "dialog" && currentDialogQuiz ? (
+          /* 对话答题界面 */
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            {/* A 说的话（题干） */}
+            <div className="bg-blue-50 rounded-xl p-4 mb-6 text-center">
+              <p className="text-xs text-blue-600 font-bold mb-1">A 说：</p>
+              <p className="text-xl font-bold text-gray-800">{currentDialogQuiz.question}</p>
+              <p className="text-sm text-gray-500">{currentDialogQuiz.questionZh}</p>
+              <button onClick={() => speak(currentDialogQuiz.question)} className="mt-2 px-4 py-2 bg-amber-100 rounded-full">
+                🔊 播放
+              </button>
+            </div>
+
+            {/* 问题提示 */}
+            <p className="text-center text-gray-500 mb-4">B 应该怎么回答？</p>
+
+            {/* 选项 */}
+            <div className="space-y-3">
+              {currentDialogQuiz.options.map((option, idx) => {
+                const isSelected = selectedIndex === idx;
+                const showResult = quizResult !== null;
+                const isCorrect = option === currentDialogQuiz.correctAnswer;
+
+                let btnClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                if (showResult) {
+                  if (isCorrect) btnClass += "bg-green-500 text-white";
+                  else if (isSelected) btnClass += "bg-red-500 text-white";
+                  else btnClass += "bg-gray-100 text-gray-400";
+                } else {
+                  btnClass += isSelected ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-700 border-2 border-pink-200 hover:bg-pink-100";
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleDialogSelect(idx)}
+                    disabled={showResult}
+                    className={btnClass}
+                  >
+                    <div className="flex justify-between px-4">
+                      <span>{option}</span>
+                      {showResult && isCorrect && <span>✓</span>}
+                      {showResult && isSelected && !isCorrect && <span>✗</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {quizResult && (
+              <div className="mt-6 text-center">
+                <p className={`text-xl font-bold ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
+                  {quizResult === "correct" ? "🎉 正确!" : "❌ 错误"}
+                </p>
+                <button
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      generateDialogQuiz();
+                    }
+                  }}
+                  className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
+                >
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
+                </button>
+              </div>
+            )}
+          </div>
         ) : currentQuiz && (
           /* 答题界面 */
           <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -531,7 +830,9 @@ export default function SelectQuestionPage() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm">
-        共 {sentences.length} 个基础句子
+        {quizMode === "dialog"
+          ? `共 ${dialogQuizzes.length} 道对话题`
+          : `共 ${sentences.length} 个基础句子`}
       </footer>
     </div>
   );
