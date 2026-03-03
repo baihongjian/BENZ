@@ -153,6 +153,76 @@ const dialogQuizzes: DialogQuiz[] = [
       "Danke schön!",
     ],
   },
+  // 疑问词练习
+  {
+    id: 8,
+    question: "Wer ist das?",
+    questionZh: "这个人是谁？",
+    correctAnswer: "Das ist Herr Li.",
+    options: [
+      "Das ist Herr Li.",
+      "Er kommt aus China.",
+      "Er wohnt in Beijing.",
+      "Guten Tag!",
+    ],
+  },
+  {
+    id: 9,
+    question: "Wie geht es Ihnen?",
+    questionZh: "您好吗？",
+    correctAnswer: "Danke, mir geht es gut.",
+    options: [
+      "Danke, mir geht es gut.",
+      "Ich heiße Li Wei.",
+      "Ich komme aus China.",
+      "Auf Wiedersehen!",
+    ],
+  },
+  {
+    id: 10,
+    question: "Woher kommst du?",
+    questionZh: "你来自哪里？",
+    correctAnswer: "Ich komme aus Deutschland.",
+    options: [
+      "Ich komme aus Deutschland.",
+      "Ich heiße Hans.",
+      "Ich wohne in Wien.",
+      "Ja, ich bin Student.",
+    ],
+  },
+  {
+    id: 11,
+    question: "Was ist das?",
+    questionZh: "这是什么？",
+    correctAnswer: "Das ist ein Buch.",
+    options: [
+      "Das ist ein Buch.",
+      "Er heißt Peter.",
+      "Ich komme aus Berlin.",
+      "Guten Morgen!",
+    ],
+  },
+  {
+    id: 12,
+    question: "Wo wohnst du?",
+    questionZh: "你住在哪里？",
+    correctAnswer: "Ich wohne in München.",
+    options: [
+      "Ich wohne in München.",
+      "Ich heiße Maria.",
+      "Ich komme aus Österreich.",
+      "Danke schön!",
+    ],
+  },
+];
+
+// 疑问词数据
+const questionWords: Sentence[] = [
+  { id: 1, german: "Wer?", chinese: "谁？", category: "question" },
+  { id: 2, german: "Wie?", chinese: "怎样？/如何？", category: "question" },
+  { id: 3, german: "Woher?", chinese: "从哪里？", category: "question" },
+  { id: 4, german: "Was?", chinese: "什么？", category: "question" },
+  { id: 5, german: "Wo?", chinese: "在哪里？", category: "question" },
 ];
 
 // 发音函数
@@ -213,6 +283,7 @@ export default function SelectQuestionPage() {
   const [wrongBook, setWrongBook] = useState<Sentence[]>([]);
   const [showWrongBook, setShowWrongBook] = useState(false);
   const [quizType, setQuizType] = useState<"german" | "chinese">("german");
+  const [vocabQuizType, setVocabQuizType] = useState<"german" | "chinese">("german");
   const [quizCount, setQuizCount] = useState<5 | 10 | 15 | 20>(10);
   const [currentQuestionCount, setCurrentQuestionCount] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
@@ -220,9 +291,11 @@ export default function SelectQuestionPage() {
   const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([]);
 
   // 对话模式相关状态
-  const [quizMode, setQuizMode] = useState<"sentence" | "dialog">("sentence");
+  const [quizMode, setQuizMode] = useState<"sentence" | "dialog" | "vocab">("sentence");
   const [currentDialogQuiz, setCurrentDialogQuiz] = useState<DialogQuiz | null>(null);
   const [dialogWrongBook, setDialogWrongBook] = useState<DialogQuiz[]>([]);
+  const [vocabWrongBook, setVocabWrongBook] = useState<Sentence[]>([]);
+  const [currentVocabQuiz, setCurrentVocabQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
 
   // 从 localStorage 加载错题本
   useEffect(() => {
@@ -287,6 +360,39 @@ export default function SelectQuestionPage() {
     if (confirm("确定要清空对话错题本吗？")) {
       setDialogWrongBook([]);
       localStorage.removeItem("dialogWrongBook");
+    }
+  };
+
+  // 从 localStorage 加载疑问词错题本
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("vocabWrongBook");
+      if (saved) {
+        try {
+          setVocabWrongBook(JSON.parse(saved));
+        } catch (e) {
+          console.error("加载疑问词错题本失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存疑问词错题本到 localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (vocabWrongBook.length > 0) {
+        localStorage.setItem("vocabWrongBook", JSON.stringify(vocabWrongBook));
+      } else {
+        localStorage.removeItem("vocabWrongBook");
+      }
+    }
+  }, [vocabWrongBook]);
+
+  // 清空疑问词错题本
+  const clearVocabWrongBook = () => {
+    if (confirm("确定要清空疑问词错题本吗？")) {
+      setVocabWrongBook([]);
+      localStorage.removeItem("vocabWrongBook");
     }
   };
 
@@ -356,6 +462,33 @@ export default function SelectQuestionPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成疑问词题目
+  const generateVocabQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+    const available = questionWords;
+    const idx = Math.floor(Math.random() * available.length);
+    const question = available[idx];
+
+    // 生成错误选项（从其他疑问词中选择）
+    const wrong: Sentence[] = [];
+    const others = available.filter(s => s.id !== question.id);
+    while (wrong.length < 3 && others.length > 0) {
+      const r = Math.floor(Math.random() * others.length);
+      wrong.push(others[r]);
+      others.splice(r, 1);
+    }
+
+    const options = [question, ...wrong].sort(() => Math.random() - 0.5);
+    setCurrentVocabQuiz({ question, options });
+    setSelectedIndex(null);
+    setQuizResult(null);
+    setQuizStarted(true);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 开始新答题
   const startQuiz = () => {
     setCurrentQuestionCount(0);
@@ -364,6 +497,8 @@ export default function SelectQuestionPage() {
     setQuizHistory([]);
     if (quizMode === "dialog") {
       generateDialogQuiz();
+    } else if (quizMode === "vocab") {
+      generateVocabQuiz();
     } else {
       generateQuiz();
     }
@@ -382,6 +517,29 @@ export default function SelectQuestionPage() {
       setDialogWrongBook(prev => {
         if (prev.some(d => d.id === currentDialogQuiz.id)) return prev;
         return [...prev, currentDialogQuiz];
+      });
+    } else {
+      setCorrectCount(prev => prev + 1);
+    }
+
+    if (currentQuestionCount >= quizCount) {
+      setTimeout(() => setQuizFinished(true), 500);
+    }
+  };
+
+  // 疑问词模式 - 选择答案
+  const handleVocabSelect = (index: number) => {
+    if (quizResult !== null || !currentVocabQuiz) return;
+    setSelectedIndex(index);
+    const selectedOption = currentVocabQuiz.options[index];
+    const isCorrect = selectedOption.id === currentVocabQuiz.question.id;
+    setQuizResult(isCorrect ? "correct" : "wrong");
+    playSound(isCorrect ? "correct" : "wrong");
+
+    if (!isCorrect) {
+      setVocabWrongBook(prev => {
+        if (prev.some(s => s.id === currentVocabQuiz.question.id)) return prev;
+        return [...prev, currentVocabQuiz.question];
       });
     } else {
       setCorrectCount(prev => prev + 1);
@@ -438,13 +596,19 @@ export default function SelectQuestionPage() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6">
-        {/* 模式选择：基础句子 vs 对话练习 */}
+        {/* 模式选择：基础句子 vs 对话练习 vs 疑问词 */}
         <div className="flex justify-center gap-2 mb-4">
           <button
             onClick={() => { setQuizMode("sentence"); setQuizStarted(false); setShowWrongBook(false); }}
             className={`px-4 py-2 rounded-full text-sm ${quizMode === "sentence" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
           >
             基础句子
+          </button>
+          <button
+            onClick={() => { setQuizMode("vocab"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${quizMode === "vocab" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+          >
+            疑问词
           </button>
           <button
             onClick={() => { setQuizMode("dialog"); setQuizStarted(false); setShowWrongBook(false); }}
@@ -466,6 +630,24 @@ export default function SelectQuestionPage() {
             <button
               onClick={() => { setQuizType("chinese"); setQuizStarted(false); }}
               className={`px-4 py-2 rounded-full text-sm ${quizType === "chinese" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              看德语选中文
+            </button>
+          </div>
+        )}
+
+        {/* 疑问词模式：题型选择 */}
+        {quizMode === "vocab" && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => { setVocabQuizType("german"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${vocabQuizType === "german" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              看中文选德语
+            </button>
+            <button
+              onClick={() => { setVocabQuizType("chinese"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${vocabQuizType === "chinese" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
             >
               看德语选中文
             </button>
@@ -524,7 +706,7 @@ export default function SelectQuestionPage() {
             onClick={() => setShowWrongBook(true)}
             className={`px-6 py-2 rounded-full ${showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border"}`}
           >
-            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : wrongBook.length})
+            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -532,10 +714,16 @@ export default function SelectQuestionPage() {
         {showWrongBook ? (
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">{quizMode === "dialog" ? "对话错题本" : "错题本"}</h2>
+              <h2 className="text-xl font-bold">
+                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : "错题本"}
+              </h2>
               {quizMode === "dialog" ? (
                 dialogWrongBook.length > 0 && (
                   <button onClick={clearDialogWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
+                )
+              ) : quizMode === "vocab" ? (
+                vocabWrongBook.length > 0 && (
+                  <button onClick={clearVocabWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
                 )
               ) : (
                 wrongBook.length > 0 && (
@@ -553,6 +741,22 @@ export default function SelectQuestionPage() {
                       <p className="text-sm text-gray-500">A: {d.question}</p>
                       <p className="text-xs text-gray-400 mb-1">{d.questionZh}</p>
                       <p className="font-bold text-gray-800">正确回答: {d.correctAnswer}</p>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : quizMode === "vocab" ? (
+              vocabWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题</p>
+              ) : (
+                <div className="space-y-3">
+                  {vocabWrongBook.map(s => (
+                    <div key={s.id} className="bg-red-50 p-4 rounded-xl flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-gray-800">{s.german}</p>
+                        <p className="text-gray-600">{s.chinese}</p>
+                      </div>
+                      <button onClick={() => speak(s.german)} className="p-2 bg-amber-100 rounded-full">🔊</button>
                     </div>
                   ))}
                 </div>
@@ -575,7 +779,22 @@ export default function SelectQuestionPage() {
           </div>
         ) : !quizStarted ? (
           /* 开始页面 */
-          quizMode === "dialog" ? (
+          quizMode === "vocab" ? (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <div className="text-6xl mb-4">❓</div>
+              <h2 className="text-xl font-bold mb-4">德语疑问词练习</h2>
+              <p className="text-gray-600 mb-6">
+                {vocabQuizType === "german" ? "看中文，选择正确的德语疑问词" : "看德语，选择正确的中文翻译"}
+              </p>
+              <button
+                onClick={startQuiz}
+                className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600"
+              >
+                开始答题 ({quizCount}题)
+              </button>
+              <p className="text-gray-400 text-sm mt-4">共 {questionWords.length} 个疑问词</p>
+            </div>
+          ) : quizMode === "dialog" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
               <div className="text-6xl mb-4">💬</div>
               <h2 className="text-xl font-bold mb-4">德语对话选择题</h2>
@@ -689,6 +908,75 @@ export default function SelectQuestionPage() {
                 ))}
               </div>
             </div>
+          </div>
+        ) : quizMode === "vocab" && currentVocabQuiz ? (
+          /* 疑问词答题界面 */
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="text-center mb-6">
+              <p className="text-sm text-gray-500 mb-2">
+                {vocabQuizType === "german" ? "请选择正确的德语疑问词" : "请选择正确的中文翻译"}
+              </p>
+              <p className="text-2xl font-bold text-gray-800">
+                {vocabQuizType === "german" ? currentVocabQuiz.question.chinese : currentVocabQuiz.question.german}
+              </p>
+              {vocabQuizType === "german" && (
+                <button onClick={() => speak(currentVocabQuiz.question.german)} className="mt-2 px-4 py-2 bg-amber-100 rounded-full">
+                  🔊 播放发音
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {currentVocabQuiz.options.map((option, idx) => {
+                const isSelected = selectedIndex === idx;
+                const showResult = quizResult !== null;
+                const isCorrect = option.id === currentVocabQuiz.question.id;
+
+                let btnClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                if (showResult) {
+                  if (isCorrect) btnClass += "bg-green-500 text-white";
+                  else if (isSelected) btnClass += "bg-red-500 text-white";
+                  else btnClass += "bg-gray-100 text-gray-400";
+                } else {
+                  btnClass += isSelected ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-700 border-2 border-pink-200 hover:bg-pink-100";
+                }
+
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleVocabSelect(idx)}
+                    disabled={showResult}
+                    className={btnClass}
+                  >
+                    <div className="flex justify-between px-4">
+                      <span>{vocabQuizType === "german" ? option.german : option.chinese}</span>
+                      {showResult && isCorrect && <span>✓</span>}
+                      {showResult && isSelected && !isCorrect && <span>✗</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {quizResult && (
+              <div className="mt-6 text-center">
+                <p className={`text-xl font-bold ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
+                  {quizResult === "correct" ? "🎉 正确!" : "❌ 错误"}
+                </p>
+                <button
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      generateVocabQuiz();
+                    }
+                  }}
+                  className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
+                >
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
+                </button>
+              </div>
+            )}
           </div>
         ) : quizMode === "dialog" && currentDialogQuiz ? (
           /* 对话答题界面 */
@@ -830,9 +1118,11 @@ export default function SelectQuestionPage() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm">
-        {quizMode === "dialog"
-          ? `共 ${dialogQuizzes.length} 道对话题`
-          : `共 ${sentences.length} 个基础句子`}
+        {quizMode === "vocab"
+          ? `共 ${questionWords.length} 个疑问词`
+          : quizMode === "dialog"
+            ? `共 ${dialogQuizzes.length} 道对话题`
+            : `共 ${sentences.length} 个基础句子`}
       </footer>
     </div>
   );
