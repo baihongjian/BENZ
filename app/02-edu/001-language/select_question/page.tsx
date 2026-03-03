@@ -123,6 +123,39 @@ export default function SelectQuestionPage() {
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([]);
 
+  // 从 localStorage 加载错题本
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("wrongBook");
+      if (saved) {
+        try {
+          setWrongBook(JSON.parse(saved));
+        } catch (e) {
+          console.error("加载错题本失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存错题本到 localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (wrongBook.length > 0) {
+        localStorage.setItem("wrongBook", JSON.stringify(wrongBook));
+      } else {
+        localStorage.removeItem("wrongBook");
+      }
+    }
+  }, [wrongBook]);
+
+  // 清空错题本
+  const clearWrongBook = () => {
+    if (confirm("确定要清空错题本吗？")) {
+      setWrongBook([]);
+      localStorage.removeItem("wrongBook");
+    }
+  };
+
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -300,7 +333,17 @@ export default function SelectQuestionPage() {
         {/* 错题本 */}
         {showWrongBook ? (
           <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold mb-4">错题本</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">错题本</h2>
+              {wrongBook.length > 0 && (
+                <button
+                  onClick={clearWrongBook}
+                  className="text-sm text-red-500 hover:text-red-700"
+                >
+                  清空
+                </button>
+              )}
+            </div>
             {wrongBook.length === 0 ? (
               <p className="text-gray-500 text-center py-8">暂无错题</p>
             ) : (
