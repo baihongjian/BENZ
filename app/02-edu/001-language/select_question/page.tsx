@@ -11,6 +11,13 @@ interface Sentence {
   category: string;
 }
 
+// 答题记录
+interface QuizRecord {
+  question: Sentence;
+  userAnswer: Sentence;
+  isCorrect: boolean;
+}
+
 const sentences: Sentence[] = [
   // 问候
   { id: 1, german: "Hallo!", chinese: "你好!(非正式)", category: "greeting" },
@@ -114,6 +121,7 @@ export default function SelectQuestionPage() {
   const [currentQuestionCount, setCurrentQuestionCount] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
+  const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([]);
 
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
@@ -169,6 +177,7 @@ export default function SelectQuestionPage() {
     setCurrentQuestionCount(0);
     setCorrectCount(0);
     setQuizFinished(false);
+    setQuizHistory([]);
     generateQuiz();
   };
 
@@ -176,9 +185,17 @@ export default function SelectQuestionPage() {
   const handleSelect = (index: number) => {
     if (quizResult !== null || !currentQuiz) return;
     setSelectedIndex(index);
-    const isCorrect = currentQuiz.options[index].id === currentQuiz.question.id;
+    const selectedOption = currentQuiz.options[index];
+    const isCorrect = selectedOption.id === currentQuiz.question.id;
     setQuizResult(isCorrect ? "correct" : "wrong");
     playSound(isCorrect ? "correct" : "wrong");
+
+    // 记录答题历史
+    setQuizHistory(prev => [...prev, {
+      question: currentQuiz.question,
+      userAnswer: selectedOption,
+      isCorrect
+    }]);
 
     if (isCorrect) {
       setCorrectCount(prev => prev + 1);
@@ -321,28 +338,83 @@ export default function SelectQuestionPage() {
           </div>
         ) : quizFinished ? (
           /* 答题完成显示结果 */
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-xl font-bold mb-4">答题完成!</h2>
-            <div className="text-4xl font-bold text-pink-500 mb-2">
-              {correctCount} / {quizCount}
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-xl font-bold mb-4">答题完成!</h2>
+              <div className="text-4xl font-bold text-pink-500 mb-2">
+                {correctCount} / {quizCount}
+              </div>
+              <p className="text-gray-600 mb-6">
+                正确率: {Math.round((correctCount / quizCount) * 100)}%
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={startQuiz}
+                  className="px-6 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600"
+                >
+                  再答{quizCount}题
+                </button>
+                <button
+                  onClick={() => { setQuizStarted(false); setQuizFinished(false); }}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300"
+                >
+                  重新设置
+                </button>
+              </div>
             </div>
-            <p className="text-gray-600 mb-6">
-              正确率: {Math.round((correctCount / quizCount) * 100)}%
-            </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={startQuiz}
-                className="px-6 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600"
-              >
-                再答{quizCount}题
-              </button>
-              <button
-                onClick={() => { setQuizStarted(false); setQuizFinished(false); }}
-                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300"
-              >
-                重新设置
-              </button>
+
+            {/* 所有题目列表 */}
+            <div className="mt-8">
+              <h3 className="text-lg font-bold mb-4 text-gray-800">答题详情</h3>
+              <div className="space-y-3">
+                {quizHistory.map((record, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-xl border-2 ${
+                      record.isCorrect
+                        ? "bg-green-50 border-green-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className={`text-lg font-bold ${
+                        record.isCorrect ? "text-green-600" : "text-red-600"
+                      }`}>
+                        {record.isCorrect ? "✓" : "✗"}
+                      </span>
+                      <div className="flex-1">
+                        <div className="text-sm text-gray-500 mb-1">
+                          {quizType === "german" ? "题目：" : "题目："}
+                          <span className="text-gray-800">
+                            {quizType === "german" ? record.question.chinese : record.question.german}
+                          </span>
+                        </div>
+                        <div className="text-sm">
+                          <span className="text-gray-500">你的答案：</span>
+                          <span className={record.isCorrect ? "text-green-600" : "text-red-600"}>
+                            {quizType === "german" ? record.userAnswer.german : record.userAnswer.chinese}
+                          </span>
+                        </div>
+                        {!record.isCorrect && (
+                          <div className="text-sm">
+                            <span className="text-gray-500">正确答案：</span>
+                            <span className="text-green-600">
+                              {quizType === "german" ? record.question.german : record.question.chinese}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => speak(record.question.german)}
+                        className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         ) : currentQuiz && (
