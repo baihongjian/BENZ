@@ -118,9 +118,33 @@ export default function ExamsPage() {
   const [schoolExams, setSchoolExams] = useState<SchoolExamInfo[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // 选中的学校（用于併願规划）
+  const [selectedSchools, setSelectedSchools] = useState<Set<string>>(new Set());
+
+  // 处理 checkbox 点击（使用 schoolCode + examDateKey 作为唯一标识）
+  const handleSchoolCheck = (schoolCode: string, examDateKey: string) => {
+    const uniqueKey = `${schoolCode}_${examDateKey}`;
+    setSelectedSchools(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(uniqueKey)) {
+        newSet.delete(uniqueKey);
+      } else {
+        newSet.add(uniqueKey);
+      }
+      return newSet;
+    });
+  };
+
   useEffect(() => {
     fetchExams(selectedCategories, selectedSexTypes, selectedPrefectures, searchKeyword);
   }, [selectedCategories, selectedSexTypes, selectedPrefectures, searchKeyword]);
+
+  // 当用户偏差值改变时，清空已选择的学校
+  useEffect(() => {
+    if (!userDeviation) {
+      setSelectedSchools(new Set());
+    }
+  }, [userDeviation]);
 
   // 当排序选项改变或数据加载时，获取学校详情并排序
   useEffect(() => {
@@ -847,12 +871,44 @@ export default function ExamsPage() {
                           )}
                         </td>
                       )}
-                      {group.schools.map((schoolsInColumn, colIndex) => (
-                        <td key={colIndex} className="py-3 px-2 text-sm align-top border-r border-gray-200 align-top">
-                          {schoolsInColumn.length > 0 ? (
+                      {group.schools.map((schoolsInColumn, colIndex) => {
+                        const userDevNum = userDeviation ? parseInt(userDeviation) : 0;
+
+                        const filteredSchools = schoolsInColumn.filter(school => {
+                          // 基本型模式下，偏差值>=自身偏差值 且为1月的不显示
+                          if (henganType === 'basic'
+                            && userDeviation
+                            && group.deviation > userDevNum
+                            && school.examDateKey === '1月') {
+                            return false;
+                          }
+                          return true;
+                        });
+
+                        // 判断是否为挑战校（偏差值 > 自身偏差值）
+                        const isChallengeGroup = userDeviation && group.deviation > userDevNum;
+
+                        // 判断是否为1月列（基本型模式下且是挑战校）
+                        const isChallengeJanCell = henganType === 'basic'
+                          && userDeviation
+                          && isChallengeGroup
+                          && colIndex === 0;
+
+                        return (
+                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell ? 'bg-gray-200' : ''}`}>
+                          {filteredSchools.length > 0 ? (
                             <div className="text-xs space-y-1">
-                              {schoolsInColumn.map((school, idx) => (
-                                <div key={idx} className="overflow-hidden">
+                              {filteredSchools
+                                .map((school, idx) => (
+                                <div key={idx} className="overflow-hidden flex items-center gap-1">
+                                  {userDeviation && (
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedSchools.has(`${school.schoolCode}_${school.examDateKey}`)}
+                                      onChange={() => handleSchoolCheck(school.schoolCode, school.examDateKey)}
+                                      className="flex-shrink-0 w-3 h-3"
+                                    />
+                                  )}
                                   <button
                                     onClick={() => handleSchoolClick(school)}
                                     className="text-gray-700 block w-full truncate text-left hover:text-blue-600 hover:underline hover:text-base hover:font-medium"
@@ -867,7 +923,8 @@ export default function ExamsPage() {
                             <span className="text-gray-300">-</span>
                           )}
                         </td>
-                      ))}
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
