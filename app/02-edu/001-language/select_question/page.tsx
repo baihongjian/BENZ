@@ -110,6 +110,10 @@ export default function SelectQuestionPage() {
   const [wrongBook, setWrongBook] = useState<Sentence[]>([]);
   const [showWrongBook, setShowWrongBook] = useState(false);
   const [quizType, setQuizType] = useState<"german" | "chinese">("german");
+  const [quizCount, setQuizCount] = useState<5 | 10 | 15 | 20>(10);
+  const [currentQuestionCount, setCurrentQuestionCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
 
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
@@ -134,6 +138,12 @@ export default function SelectQuestionPage() {
       return;
     }
 
+    // 检查是否已完成答题数量
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
     const questionIndex = Math.floor(Math.random() * available.length);
     const question = available[questionIndex];
 
@@ -151,6 +161,15 @@ export default function SelectQuestionPage() {
     setSelectedIndex(null);
     setQuizResult(null);
     setQuizStarted(true);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
+  // 开始新答题
+  const startQuiz = () => {
+    setCurrentQuestionCount(0);
+    setCorrectCount(0);
+    setQuizFinished(false);
+    generateQuiz();
   };
 
   // 选择答案
@@ -161,11 +180,18 @@ export default function SelectQuestionPage() {
     setQuizResult(isCorrect ? "correct" : "wrong");
     playSound(isCorrect ? "correct" : "wrong");
 
-    if (!isCorrect) {
+    if (isCorrect) {
+      setCorrectCount(prev => prev + 1);
+    } else {
       setWrongBook(prev => {
         if (prev.some(s => s.id === currentQuiz.question.id)) return prev;
         return [...prev, currentQuiz.question];
       });
+    }
+
+    // 检查是否是最后一题
+    if (currentQuestionCount >= quizCount) {
+      setTimeout(() => setQuizFinished(true), 500);
     }
   };
 
@@ -201,7 +227,7 @@ export default function SelectQuestionPage() {
         </div>
 
         {/* 分类筛选 */}
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
+        <div className="flex flex-wrap justify-center gap-2 mb-4">
           {categories.map(cat => (
             <button
               key={cat.id}
@@ -212,6 +238,31 @@ export default function SelectQuestionPage() {
             </button>
           ))}
         </div>
+
+        {/* 答题数量选择 */}
+        {!quizStarted && !quizFinished && (
+          <div className="flex justify-center gap-2 mb-4">
+            <span className="text-sm text-gray-600 self-center">答题数量:</span>
+            {[5, 10, 15, 20].map(count => (
+              <button
+                key={count}
+                onClick={() => { setQuizCount(count as 5|10|15|20); setQuizStarted(false); }}
+                className={`px-3 py-1 rounded-full text-sm ${quizCount === count ? "bg-pink-500 text-white" : "bg-white text-gray-600 border"}`}
+              >
+                {count}题
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 进度显示 */}
+        {quizStarted && !quizFinished && (
+          <div className="text-center mb-4">
+            <span className="text-sm text-gray-600">
+              进度: {currentQuestionCount} / {quizCount} 题 | 正确: {correctCount} 题
+            </span>
+          </div>
+        )}
 
         {/* 模式切换 */}
         <div className="flex justify-center gap-4 mb-6">
@@ -258,15 +309,41 @@ export default function SelectQuestionPage() {
               {quizType === "german" ? "看中文，选择正确的德语翻译" : "看德语，选择正确的中文翻译"}
             </p>
             <button
-              onClick={generateQuiz}
+              onClick={startQuiz}
               disabled={filteredSentences.length < 4}
               className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600 disabled:bg-gray-300"
             >
-              开始答题
+              开始答题 ({quizCount}题)
             </button>
             {filteredSentences.length < 4 && (
               <p className="text-red-500 text-sm mt-2">该分类至少需要4个句子</p>
             )}
+          </div>
+        ) : quizFinished ? (
+          /* 答题完成显示结果 */
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-xl font-bold mb-4">答题完成!</h2>
+            <div className="text-4xl font-bold text-pink-500 mb-2">
+              {correctCount} / {quizCount}
+            </div>
+            <p className="text-gray-600 mb-6">
+              正确率: {Math.round((correctCount / quizCount) * 100)}%
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={startQuiz}
+                className="px-6 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600"
+              >
+                再答{quizCount}题
+              </button>
+              <button
+                onClick={() => { setQuizStarted(false); setQuizFinished(false); }}
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-full font-medium hover:bg-gray-300"
+              >
+                重新设置
+              </button>
+            </div>
           </div>
         ) : currentQuiz && (
           /* 答题界面 */
@@ -320,8 +397,17 @@ export default function SelectQuestionPage() {
                 <p className={`text-xl font-bold ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
                   {quizResult === "correct" ? "🎉 正确!" : "❌ 错误"}
                 </p>
-                <button onClick={generateQuiz} className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full">
-                  下一题 →
+                <button
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      generateQuiz();
+                    }
+                  }}
+                  className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
+                >
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
                 </button>
               </div>
             )}
