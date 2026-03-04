@@ -889,6 +889,13 @@ export default function ExamsPage() {
                             && school.examDateKey === '2月1日-午前') {
                             return false;
                           }
+                          // 基本型模式下，実例相応校或チャレンジ校（偏差值>=自身偏差值）且为2月1日午後の不显示
+                          if (henganType === 'basic'
+                            && userDeviation
+                            && group.deviation >= userDevNum
+                            && school.examDateKey === '2月1日-午後') {
+                            return false;
+                          }
                           return true;
                         });
 
@@ -907,8 +914,14 @@ export default function ExamsPage() {
                           && group.deviation <= userDevNum
                           && colIndex === 1;
 
+                        // 判断是否为2月1日午後列（基本型模式下且是実例相応校或チャレンジ校）
+                        const isNormalFeb1AfternoonCell = henganType === 'basic'
+                          && userDeviation
+                          && group.deviation >= userDevNum
+                          && colIndex === 2;
+
                         return (
-                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell || isNormalFeb1MorningCell ? 'bg-gray-200' : ''}`}>
+                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell || isNormalFeb1MorningCell || isNormalFeb1AfternoonCell ? 'bg-gray-200' : ''}`}>
                           {filteredSchools.length > 0 ? (
                             <div className="text-xs space-y-1">
                               {filteredSchools
