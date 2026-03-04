@@ -875,11 +875,18 @@ export default function ExamsPage() {
                         const userDevNum = userDeviation ? parseInt(userDeviation) : 0;
 
                         const filteredSchools = schoolsInColumn.filter(school => {
-                          // 基本型模式下，偏差值>=自身偏差值 且为1月的不显示
+                          // 基本型模式下，挑战校（偏差值>自身偏差值）且为1月的不显示
                           if (henganType === 'basic'
                             && userDeviation
                             && group.deviation > userDevNum
                             && school.examDateKey === '1月') {
+                            return false;
+                          }
+                          // 基本型模式下，実例相応校或安全校（偏差值<=自身偏差值）且为2月1日午前的不显示
+                          if (henganType === 'basic'
+                            && userDeviation
+                            && group.deviation <= userDevNum
+                            && school.examDateKey === '2月1日-午前') {
                             return false;
                           }
                           return true;
@@ -894,8 +901,14 @@ export default function ExamsPage() {
                           && isChallengeGroup
                           && colIndex === 0;
 
+                        // 判断是否为2月1日午前列（基本型模式下且是実例相応校或安全校）
+                        const isNormalFeb1MorningCell = henganType === 'basic'
+                          && userDeviation
+                          && group.deviation <= userDevNum
+                          && colIndex === 1;
+
                         return (
-                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell ? 'bg-gray-200' : ''}`}>
+                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell || isNormalFeb1MorningCell ? 'bg-gray-200' : ''}`}>
                           {filteredSchools.length > 0 ? (
                             <div className="text-xs space-y-1">
                               {filteredSchools
