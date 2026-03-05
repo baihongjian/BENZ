@@ -399,13 +399,27 @@ export default function SelectQuestionPage() {
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && quizResult !== null && currentQuiz) {
-        generateQuiz();
+      if (e.key === "Enter" && quizResult !== null) {
+        if (quizMode === "vocab" && currentVocabQuiz) {
+          if (currentQuestionCount >= quizCount) {
+            setQuizFinished(true);
+          } else {
+            generateVocabQuiz();
+          }
+        } else if (quizMode === "dialog" && currentDialogQuiz) {
+          if (currentQuestionCount >= quizCount) {
+            setQuizFinished(true);
+          } else {
+            generateDialogQuiz();
+          }
+        } else if (quizMode === "sentence" && currentQuiz) {
+          generateQuiz();
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [quizResult, currentQuiz]);
+  }, [quizResult, currentQuiz, currentVocabQuiz, currentDialogQuiz, quizMode, currentQuestionCount, quizCount]);
 
   const filteredSentences = category === "all"
     ? sentences
