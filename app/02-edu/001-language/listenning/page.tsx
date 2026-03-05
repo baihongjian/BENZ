@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 // 发音函数 - 使用 Edge TTS
@@ -78,7 +78,7 @@ const playSound = (type: "correct" | "wrong") => {
   }
 };
 
-type QuizType = "phoneNumber" | "weekday" | "month";
+type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord";
 
 export default function ListenningPage() {
   const [quizType, setQuizType] = useState<QuizType>("phoneNumber");
@@ -88,6 +88,17 @@ export default function ListenningPage() {
   const [showText, setShowText] = useState(false);
   const [wrongBook, setWrongBook] = useState<string[]>([]);
   const [showWrongBook, setShowWrongBook] = useState(false);
+
+  // 监听键盘事件 - 按回车键下一题
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook) {
+        startQuiz();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [quizResult, quizStarted, showWrongBook]);
 
   // 电话号码数据
   const [phoneNumberData, setPhoneNumberData] = useState<{
@@ -106,6 +117,25 @@ export default function ListenningPage() {
 
   // 月份逻辑数据
   const [monthData, setMonthData] = useState<{
+    question: string;
+    questionChinese: string;
+    answer: string;
+    answerChinese: string;
+  } | null>(null);
+
+  // 疑问词听力数据
+  const questionWords = [
+    { german: "Wer?", chinese: "谁？" },
+    { german: "Wie?", chinese: "怎样？/如何？" },
+    { german: "Woher?", chinese: "从哪里？" },
+    { german: "Was?", chinese: "什么？" },
+    { german: "Wo?", chinese: "在哪里？" },
+    { german: "Wann?", chinese: "什么时候？" },
+    { german: "Warum?", chinese: "为什么？" },
+    { german: "Welcher?", chinese: "哪个？" },
+  ];
+
+  const [questionWordData, setQuestionWordData] = useState<{
     question: string;
     questionChinese: string;
     answer: string;
@@ -231,11 +261,28 @@ export default function ListenningPage() {
     setShowText(false);
   };
 
+  // 生成疑问词听力题目
+  const generateQuestionWordQuiz = () => {
+    const shuffled = [...questionWords].sort(() => Math.random() - 0.5);
+    const selected = shuffled[0];
+
+    setQuestionWordData({
+      question: selected.german,
+      questionChinese: selected.chinese,
+      answer: selected.german,
+      answerChinese: selected.chinese
+    });
+    setQuizResult(null);
+    setQuizStarted(true);
+    setShowText(false);
+  };
+
   // 开始练习
   const startQuiz = () => {
     if (quizType === "phoneNumber") generatePhoneQuiz();
     else if (quizType === "weekday") generateWeekdayQuiz();
     else if (quizType === "month") generateMonthQuiz();
+    else if (quizType === "questionWord") generateQuestionWordQuiz();
   };
 
   // 播放当前题目
@@ -247,6 +294,8 @@ export default function ListenningPage() {
       text = weekdayData.question;
     } else if (quizType === "month" && monthData) {
       text = monthData.question;
+    } else if (quizType === "questionWord" && questionWordData) {
+      text = questionWordData.question;
     }
 
     if (text) {
@@ -329,6 +378,20 @@ export default function ListenningPage() {
     }
   };
 
+  // 选择疑问词答案
+  const selectQuestionWordAnswer = (selected: string) => {
+    if (quizResult !== null || !questionWordData) return;
+    const isCorrect = selected === questionWordData.answer;
+    if (isCorrect) {
+      setQuizResult("correct");
+      playSound("correct");
+    } else {
+      setQuizResult("wrong");
+      playSound("wrong");
+      setWrongBook(prev => prev.includes(questionWordData.question) ? prev : [...prev, questionWordData.question]);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 to-blue-50">
       {/* Header */}
@@ -374,6 +437,14 @@ export default function ListenningPage() {
           >
             🗓️ 月份推理
           </button>
+          <button
+            onClick={() => { setQuizType("questionWord"); setQuizStarted(false); }}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              quizType === "questionWord" ? "bg-pink-500 text-white" : "bg-white text-gray-600"
+            }`}
+          >
+            ❓ 疑问词
+          </button>
         </div>
 
         {/* 模式切换 */}
@@ -416,15 +487,16 @@ export default function ListenningPage() {
           /* 开始答题 */
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="text-6xl mb-6">
-              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : "🗓️"}
+              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : "❓"}
             </div>
             <h2 className="text-xl font-bold text-gray-800 mb-4">
-              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : "月份逻辑推理"}
+              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : "疑问词听力"}
             </h2>
             <p className="text-gray-600 mb-6">
               {quizType === "phoneNumber" ? "听德语读出的电话号码，输入正确的数字" :
                quizType === "weekday" ? "听问题，推理今天是星期几" :
-               "听问题，推理是几月"}
+               quizType === "month" ? "听问题，推理是几月" :
+               "听德语疑问词，选择正确的中文含义"}
             </p>
             <button
               onClick={startQuiz}
@@ -605,6 +677,60 @@ export default function ListenningPage() {
               </>
             )}
 
+            {/* 疑问词题型 */}
+            {quizType === "questionWord" && questionWordData && (
+              <>
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400">听疑问词，选择正确的中文含义</span>
+                </div>
+
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowText(!showText)}
+                    className={`px-3 py-1 rounded-full text-sm ${showText ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {showText ? "🙈 隐藏" : "👁️ 显示"}
+                  </button>
+                </div>
+
+                {showText && (
+                  <div className="bg-pink-50 rounded-xl p-6 mb-6 text-center">
+                    <p className="text-xl font-medium">{questionWordData.question}</p>
+                    <p className="text-lg text-gray-500 mt-2">{questionWordData.questionChinese}</p>
+                  </div>
+                )}
+
+                <div className="text-center mb-6">
+                  <button
+                    onClick={playCurrentQuestion}
+                    disabled={isPlayingAudio}
+                    className={`px-8 py-4 rounded-full ${isPlayingAudio ? "bg-green-100 text-green-600" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🎧 播放疑问词"}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {questionWords.map((word) => {
+                    const isSelected = quizResult !== null;
+                    const isCorrect = word.german === questionWordData.answer;
+                    let btnClass = "py-4 rounded-xl text-lg font-medium transition ";
+                    if (isSelected) {
+                      if (isCorrect) btnClass += "bg-green-500 text-white";
+                      else btnClass += "bg-gray-100 text-gray-400";
+                    } else {
+                      btnClass += "bg-pink-50 text-pink-700 border-2 border-pink-200 hover:bg-pink-100";
+                    }
+                    return (
+                      <button key={word.german} onClick={() => selectQuestionWordAnswer(word.german)} disabled={quizResult !== null} className={btnClass}>
+                        {word.chinese}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
             {/* 显示结果 */}
             {quizResult !== null && (
               <div className="mt-6 bg-blue-50 rounded-xl p-4 text-center">
@@ -619,6 +745,9 @@ export default function ListenningPage() {
                 )}
                 {quizType === "month" && monthData && (
                   <p className="text-gray-600">正确答案：{monthData.answer} ({monthData.answerChinese})</p>
+                )}
+                {quizType === "questionWord" && questionWordData && (
+                  <p className="text-gray-600">正确答案：{questionWordData.answer} ({questionWordData.answerChinese})</p>
                 )}
                 <button
                   onClick={startQuiz}
