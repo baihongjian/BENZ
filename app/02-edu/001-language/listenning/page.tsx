@@ -88,17 +88,25 @@ export default function ListenningPage() {
   const [showText, setShowText] = useState(false);
   const [wrongBook, setWrongBook] = useState<string[]>([]);
   const [showWrongBook, setShowWrongBook] = useState(false);
+  const [quizCount, setQuizCount] = useState<5 | 10 | 15 | 20>(5);
+  const [currentQuestionCount, setCurrentQuestionCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
 
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook) {
-        startQuiz();
+      if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook && !quizFinished) {
+        if (currentQuestionCount >= quizCount) {
+          setQuizFinished(true);
+        } else {
+          startQuiz();
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [quizResult, quizStarted, showWrongBook]);
+  }, [quizResult, quizStarted, showWrongBook, quizFinished, currentQuestionCount, quizCount]);
 
   // 电话号码数据
   const [phoneNumberData, setPhoneNumberData] = useState<{
@@ -144,6 +152,12 @@ export default function ListenningPage() {
 
   // 生成电话号码题目
   const generatePhoneQuiz = () => {
+    // 检查是否已完成答题数量
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
     const digitToGerman: Record<string, string> = {
       '0': 'null', '1': 'eins', '2': 'zwei', '3': 'drei', '4': 'vier',
       '5': 'fünf', '6': 'sechs', '7': 'sieben', '8': 'acht', '9': 'neun',
@@ -168,10 +182,15 @@ export default function ListenningPage() {
     setQuizResult(null);
     setQuizStarted(true);
     setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
   };
 
   // 生成星期逻辑题目
   const generateWeekdayQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
     const weekdays = [
       { german: "Montag", chinese: "星期一", index: 0 },
       { german: "Dienstag", chinese: "星期二", index: 1 },
@@ -211,10 +230,15 @@ export default function ListenningPage() {
     setQuizResult(null);
     setQuizStarted(true);
     setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
   };
 
   // 生成月份逻辑题目
   const generateMonthQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
     const months = [
       { german: "Januar", chinese: "一月", index: 0 },
       { german: "Februar", chinese: "二月", index: 1 },
@@ -259,10 +283,16 @@ export default function ListenningPage() {
     setQuizResult(null);
     setQuizStarted(true);
     setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
   };
 
   // 生成疑问词听力题目
   const generateQuestionWordQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
     const shuffled = [...questionWords].sort(() => Math.random() - 0.5);
     const selected = shuffled[0];
 
@@ -275,10 +305,17 @@ export default function ListenningPage() {
     setQuizResult(null);
     setQuizStarted(true);
     setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
   };
 
   // 开始练习
   const startQuiz = () => {
+    if (!quizStarted) {
+      // 第一次开始，重置计数
+      setCurrentQuestionCount(0);
+      setCorrectCount(0);
+      setQuizFinished(false);
+    }
     if (quizType === "phoneNumber") generatePhoneQuiz();
     else if (quizType === "weekday") generateWeekdayQuiz();
     else if (quizType === "month") generateMonthQuiz();
@@ -313,6 +350,7 @@ export default function ListenningPage() {
 
     if (isCorrect) {
       setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
       playSound("correct");
     } else {
       setQuizResult("wrong");
@@ -356,6 +394,7 @@ export default function ListenningPage() {
     const isCorrect = selected === weekdayData.answer;
     if (isCorrect) {
       setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
       playSound("correct");
     } else {
       setQuizResult("wrong");
@@ -370,6 +409,7 @@ export default function ListenningPage() {
     const isCorrect = selected === monthData.answer;
     if (isCorrect) {
       setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
       playSound("correct");
     } else {
       setQuizResult("wrong");
@@ -384,6 +424,7 @@ export default function ListenningPage() {
     const isCorrect = selected === questionWordData.answer;
     if (isCorrect) {
       setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
       playSound("correct");
     } else {
       setQuizResult("wrong");
@@ -447,6 +488,24 @@ export default function ListenningPage() {
           </button>
         </div>
 
+        {/* 答题数量选择 */}
+        {!quizStarted && !showWrongBook && (
+          <div className="flex justify-center gap-2 mb-6">
+            <span className="text-sm text-gray-600 self-center">答题数量:</span>
+            {[5, 10, 15, 20].map(count => (
+              <button
+                key={count}
+                onClick={() => { setQuizCount(count as 5|10|15|20); setQuizStarted(false); }}
+                className={`px-4 py-2 rounded-full text-sm ${
+                  quizCount === count ? "bg-teal-500 text-white" : "bg-white text-gray-600 border"
+                }`}
+              >
+                {count}题
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* 模式切换 */}
         <div className="flex justify-center gap-4 mb-6">
           <button
@@ -505,9 +564,42 @@ export default function ListenningPage() {
               开始练习
             </button>
           </div>
+        ) : quizFinished ? (
+          /* 答题完成 */
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-xl font-bold mb-4">练习完成!</h2>
+            <div className="text-4xl font-bold text-teal-500 mb-2">
+              {correctCount} / {quizCount}
+            </div>
+            <p className="text-gray-600 mb-6">
+              正确率: {Math.round((correctCount / quizCount) * 100)}%
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => { setQuizStarted(false); setQuizFinished(false); setCurrentQuestionCount(0); setCorrectCount(0); }}
+                className="px-6 py-3 bg-teal-500 text-white rounded-full font-medium hover:bg-teal-600"
+              >
+                重新开始
+              </button>
+              <button
+                onClick={() => { setShowWrongBook(true); }}
+                className="px-6 py-3 bg-red-500 text-white rounded-full font-medium hover:bg-red-600"
+              >
+                查看错题
+              </button>
+            </div>
+          </div>
         ) : (
           /* 答题界面 */
           <div className="bg-white rounded-2xl shadow-lg p-6">
+            {/* 进度显示 */}
+            <div className="text-center mb-4">
+              <span className="text-sm text-gray-500">
+                进度: {currentQuestionCount} / {quizCount} 题 | 正确: {correctCount} 题
+              </span>
+            </div>
+
             {/* 电话号码题型 */}
             {quizType === "phoneNumber" && phoneNumberData && (
               <>
@@ -750,10 +842,16 @@ export default function ListenningPage() {
                   <p className="text-gray-600">正确答案：{questionWordData.answer} ({questionWordData.answerChinese})</p>
                 )}
                 <button
-                  onClick={startQuiz}
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      startQuiz();
+                    }
+                  }}
                   className="mt-4 px-8 py-3 bg-teal-500 text-white rounded-full font-medium hover:bg-teal-600"
                 >
-                  下一题 →
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
                 </button>
               </div>
             )}

@@ -1,44 +1,34 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import Link from "next/link";
 
-// 发音函数 - 使用 Edge TTS 服务器
+// 发音函数 - 使用浏览器语音 API
 const speak = async (text: string) => {
   if (typeof window === "undefined") return;
 
-  try {
-    // 直接调用本地 Edge TTS 服务器
-    const response = await fetch('http://localhost:8000/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, lang: 'de' })
-    });
+  // 延迟一下，确保语音已加载
+  await new Promise(resolve => setTimeout(resolve, 100));
 
-    const data = await response.json();
-
-    if (data.audio) {
-      const audio = new Audio(data.audio);
-      await audio.play();
-    } else {
-      fallbackSpeak(text);
-    }
-  } catch {
-    // 如果出错，回退到浏览器语音
-    fallbackSpeak(text);
-  }
-};
-
-// 浏览器语音回退
-const fallbackSpeak = (text: string) => {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "de-DE";
-  utterance.rate = 0.8;
+  utterance.rate = 0.85;
   utterance.pitch = 1;
 
-  const voices = speechSynthesis.getVoices();
-  const germanVoice = voices.find(v => v.lang.includes("de"));
-  if (germanVoice) {
-    utterance.voice = germanVoice;
+  // 等待语音加载
+  const loadVoices = () => {
+    const voices = speechSynthesis.getVoices();
+    const germanVoice = voices.find(v => v.lang.includes("de"));
+    if (germanVoice) {
+      utterance.voice = germanVoice;
+    }
+  };
+
+  loadVoices();
+
+  // 某些浏览器需要事件监听
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
   }
 
   speechSynthesis.speak(utterance);
@@ -1025,12 +1015,145 @@ const dialogs: Dialog[] = [
       { speaker: "B", german: "Einverstanden! Bis später!", chinese: "一言为定！待会儿见！", pronunciation: "艾因菲尔施坦登! 比斯 施派特" },
     ]
   },
+  // 11. 初次见面打招呼
+  {
+    id: "meeting-greeting",
+    title: "打招呼",
+    titleChinese: "挨拶",
+    scenario: "Sich begrüßen",
+    scenarioChinese: "初次见面打招呼",
+    lines: [
+      { speaker: "A", german: "Hallo, schön dich kennenzulernen.", chinese: "嗨，很高兴见到你。", pronunciation: "哈洛, 舍恩 迪希 肯嫩茨柳尔嫩" },
+      { speaker: "B", german: "Schön dich auch kennenzulernen.", chinese: "我也很高兴见到你。", pronunciation: "舍恩 迪希 奥希 肯嫩茨柳尔嫩" },
+      { speaker: "A", german: "Hallo! Willkommen in unserem Büro.", chinese: "你好！欢迎来到我们办公室。", pronunciation: "哈洛! 维尔kommen 因 昂泽雷姆 布吕罗" },
+      { speaker: "B", german: "Danke, dass ich kommen durfte.", chinese: "谢谢你邀请我来。", pronunciation: "丹克, 达斯 伊希 科门 杜夫特" },
+    ]
+  },
+  // 12. 自我介绍
+  {
+    id: "meeting-introduce",
+    title: "自我介绍",
+    titleChinese: "自己紹介",
+    scenario: "Sich vorstellen",
+    scenarioChinese: "介绍自己的名字",
+    lines: [
+      { speaker: "A", german: "Hallo, ich bin John.", chinese: "嗨，我是约翰。", pronunciation: "哈洛, 伊希 宾 约翰" },
+      { speaker: "B", german: "Hallo John, ich bin Mike.", chinese: "嗨约翰，我是迈克。", pronunciation: "哈洛 约翰, 伊希 宾 迈克" },
+      { speaker: "A", german: "Schön dich kennenzulernen, Mike.", chinese: "很高兴见到你，迈克。", pronunciation: "舍恩 迪希 肯嫩茨柳尔嫩, 迈克" },
+      { speaker: "B", german: "Gleichfalls, schön dich kennenzulernen.", chinese: "我也很高兴见到你。", pronunciation: "格莱希falls, 舍恩 迪希 肯嫩茨柳尔嫩" },
+    ]
+  },
+  // 13. 询问对方名字
+  {
+    id: "meeting-askname",
+    title: "询问名字",
+    titleChinese: "名前を尋ねる",
+    scenario: "Nach dem Namen fragen",
+    scenarioChinese: "询问对方名字",
+    lines: [
+      { speaker: "A", german: "Wie heißt du?", chinese: "你叫什么名字？", pronunciation: "维 哈伊斯特 杜" },
+      { speaker: "B", german: "Ich heiße Lisa. Und du?", chinese: "我叫丽莎。你呢？", pronunciation: "伊希 哈伊塞 丽莎. 翁特 杜" },
+      { speaker: "A", german: "Ich bin Sarah. Schön dich kennenzulernen!", chinese: "我叫萨拉。很高兴见到你！", pronunciation: "伊希 宾 萨拉. 舍恩 迪希 肯嫩茨柳尔嫩" },
+      { speaker: "B", german: "Schön dich auch kennenzulernen, Sarah.", chinese: "我也很高兴见到你，萨拉。", pronunciation: "舍恩 迪希 奥希 肯嫩茨柳尔嫩, 萨拉" },
+    ]
+  },
+  // 14. 来自哪里
+  {
+    id: "meeting-origin",
+    title: "来自哪里",
+    titleChinese: "出身地を尋ねる",
+    scenario: "Nach der Herkunft fragen",
+    scenarioChinese: "询问对方来自哪里",
+    lines: [
+      { speaker: "A", german: "Woher kommst du?", chinese: "你来自哪里？", pronunciation: "沃黑尔 科姆斯特 杜" },
+      { speaker: "B", german: "Ich komme aus Japan. Und du?", chinese: "我来自日本。你呢？", pronunciation: "伊希 科么 奥斯 日本. 翁特 杜" },
+      { speaker: "A", german: "Ich komme aus den USA.", chinese: "我来自美国。", pronunciation: "伊希 科么 奥斯 登 乌萨" },
+      { speaker: "B", german: "Schön! Das ist ein wunderschönes Land.", chinese: "真好！那个国家很美。", pronunciation: "舍恩! 达斯 伊斯特 艾因 翁德舍内斯 兰特" },
+    ]
+  },
+  // 15. 工作/学习情况
+  {
+    id: "meeting-work",
+    title: "工作学习",
+    titleChinese: "仕事・学び",
+    scenario: "Über Arbeit und Studium sprechen",
+    scenarioChinese: "询问工作和学习情况",
+    lines: [
+      { speaker: "A", german: "Was machst du?", chinese: "你是做什么工作的？", pronunciation: "瓦斯 马希斯特 杜" },
+      { speaker: "B", german: "Ich bin IT-Ingenieur. Und du?", chinese: "我是IT工程师。你呢？", pronunciation: "伊希 宾 IT-因格尼奥尔. 翁特 杜" },
+      { speaker: "A", german: "Ich bin Studentin.", chinese: "我是大学生。", pronunciation: "伊希 宾 施图丁亭" },
+      { speaker: "B", german: "Was studierst du?", chinese: "你学什么专业？", pronunciation: "瓦斯 施图迪希特 杜" },
+      { speaker: "A", german: "Ich studiere BWL.", chinese: "我在学工商管理。", pronunciation: "伊希 施图迪雷 贝韦埃尔" },
+    ]
+  },
+  // 16. 为什么来这里
+  {
+    id: "meeting-whyhere",
+    title: "为什么来",
+    titleChinese: "なぜ来たのか",
+    scenario: "Nach dem Grund fragen",
+    scenarioChinese: "询问对方为什么来这里",
+    lines: [
+      { speaker: "A", german: "Was bringt dich hierher?", chinese: "你为什么来这里？", pronunciation: "瓦斯 布林特 迪希 黑尔黑尔" },
+      { speaker: "B", german: "Ich bin hier wegen der Arbeit. Und du?", chinese: "我来这里工作。你呢？", pronunciation: "伊希 宾 黑尔 韦根 德尔 阿尔拜特. 翁特 杜" },
+      { speaker: "A", german: "Ich bin hier für eine Konferenz.", chinese: "我来参加一个会议。", pronunciation: "伊希 宾 黑尔 菲尔 艾内 孔费伦茨" },
+      { speaker: "B", german: "Schön! Was für eine Konferenz?", chinese: "真好！什么类型的会议？", pronunciation: "舍恩! 瓦斯 菲尔 艾内 孔费伦茨" },
+      { speaker: "A", german: "Es geht um künstliche Intelligenz.", chinese: "是关于人工智能的会议。", pronunciation: "埃斯 格特 翁 克ünst利希 因特利根茨" },
+    ]
+  },
+  // 17. 兴趣爱好
+  {
+    id: "meeting-hobby",
+    title: "兴趣爱好",
+    titleChinese: "趣味・関心事",
+    scenario: "Über Hobbys sprechen",
+    scenarioChinese: "谈论兴趣爱好",
+    lines: [
+      { speaker: "A", german: "Was machst du gern in deiner Freizeit?", chinese: "你空闲时间喜欢做什么？", pronunciation: "瓦斯 马希斯特 杜 格兰 因 戴纳 弗赖察伊特" },
+      { speaker: "B", german: "Ich schaue gern Filme und reise gern.", chinese: "我喜欢看电影和旅行。", pronunciation: "伊希 绍伊 格兰 菲尔姆 翁特 莱泽 格兰" },
+      { speaker: "A", german: "Das klingt toll! Wo bist du schon gereist?", chinese: "听起来很棒！你去过哪里旅行？", pronunciation: "达斯 克林特 托尔! 沃 比斯特 杜 雄 格尔莱斯特" },
+      { speaker: "B", german: "Ich war schon in vielen Ländern Europas.", chinese: "我去过欧洲很多国家。", pronunciation: "伊希 瓦尔 雄 因 菲伦 伦德恩 奥伊罗帕斯" },
+      { speaker: "A", german: "Das ist toll! Ich reise auch gern.", chinese: "太棒了！我也喜欢旅行。", pronunciation: "达斯 伊斯特 托尔! 伊希 莱泽 奥希 格兰" },
+    ]
+  },
+  // 18. 寒暄评价
+  {
+    id: "meeting-smalltalk",
+    title: "寒暄评价",
+    titleChinese: "世間話・評価",
+    scenario: "Small Talk machen",
+    scenarioChinese: "寒暄和评价",
+    lines: [
+      { speaker: "A", german: "Wie gefällt dir Japan?", chinese: "你觉得日本怎么样？", pronunciation: "维 格弗尔特 迪尔 日本" },
+      { speaker: "B", german: "Ich liebe es hier. Das Essen ist fantastisch.", chinese: "我很喜欢这里。食物太棒了。", pronunciation: "伊希 利贝 埃斯 黑尔. 达斯 埃森 伊斯特 范塔斯蒂希" },
+      { speaker: "A", german: "Ja, japanisches Essen ist wirklich lecker.", chinese: "是的，日本料理很好吃。", pronunciation: "呀, 日本尼谢斯 埃森 伊斯特 维尔利希 莱克" },
+      { speaker: "B", german: "Die Menschen hier sind auch sehr freundlich.", chinese: "这里的人也非常友好。", pronunciation: "迪 门辛 黑尔 辛特 奥希 贼尔 弗罗伊特利希" },
+      { speaker: "A", german: "Willkommen in Japan! Ich hoffe, dir gefällt es hier.", chinese: "欢迎来到日本！希望你喜欢在这里的时光。", pronunciation: "维尔kommen 因 日本! 伊希 霍费, 迪尔 格弗尔特 埃斯 黑尔" },
+    ]
+  },
+  // 19. 结束对话
+  {
+    id: "meeting-closing",
+    title: "结束对话",
+    titleChinese: "会話の終了",
+    scenario: "Gespräch beenden",
+    scenarioChinese: "礼貌结束对话",
+    lines: [
+      { speaker: "A", german: "Es war schön, mit dir zu sprechen.", chinese: "很高兴和你聊天。", pronunciation: "埃斯 瓦尔 舍恩, 米特 迪尔 茨u 施普雷亨" },
+      { speaker: "B", german: "Gleichfalls, schön mit dir zu sprechen.", chinese: "我也很高兴和你聊天。", pronunciation: "格莱希falls, 舍恩 米特 迪尔 茨u 施普雷亨" },
+      { speaker: "A", german: "Lass uns in Kontakt bleiben.", chinese: "保持联系。", pronunciation: "拉斯 翁斯 因 孔塔kt 布莱本" },
+      { speaker: "B", german: "Gerne! Hier ist meine Visitenkarte.", chinese: "好的！这是我的名片。", pronunciation: "格埃尔内! 黑尔 伊斯特 迈纳 维齐腾卡尔特" },
+      { speaker: "A", german: "Danke. Ich melde mich bald bei dir.", chinese: "谢谢。我会尽快联系你的。", pronunciation: "丹克. 伊希 梅尔de 米希 巴尔特 贝 迪尔" },
+      { speaker: "B", german: "Ich freue mich darauf. Hab einen schönen Tag!", chinese: "期待你的联系！祝你今天愉快！", pronunciation: "伊希 弗罗伊 米希 达劳弗. 哈普 艾嫩 舍嫩 塔克" },
+    ]
+  },
 ];
 
 // 对话分类
 const dialogCategories = [
   { id: "all", name: "全部对话" },
   { id: "daily", name: "日常社交" },
+  { id: "meeting", name: "初次见面" },
   { id: "travel", name: "旅行交通" },
   { id: "dining", name: "餐饮" },
   { id: "shopping", name: "购物" },
@@ -1235,7 +1358,7 @@ export default function GermanLearning() {
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [quizDifficulty, setQuizDifficulty] = useState<2 | 3 | 4>(2);
   const [quizCount, setQuizCount] = useState(5); // 答题数量
-  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic" | "phoneNumber" | "dialogListen" | "dialogKeyword" | "selfIntro">("chinese"); // 题目类型
+  const [quizType, setQuizType] = useState<"chinese" | "german" | "gender" | "spelling" | "input" | "verb" | "sentence" | "listening" | "listeningArticle" | "weekdayLogic" | "monthLogic" | "phoneNumber" | "dialogListen" | "dialogKeyword" | "dialogPractice" | "selfIntro">("chinese"); // 题目类型
   const [quizTimer, setQuizTimer] = useState<0 | 5 | 7 | 10>(0); // 倒计时秒数
   const [currentQuizNumber, setCurrentQuizNumber] = useState(1); // 当前第几题
   const [quizWord, setQuizWord] = useState<Word | null>(null);
@@ -1337,6 +1460,17 @@ export default function GermanLearning() {
     dialogTitle: string;
   } | null>(null);
 
+  // 对话接龙练习数据
+  const [dialogPracticeData, setDialogPracticeData] = useState<{
+    dialogId: string;
+    context: string; // 前面的对话
+    question: string; // 当前句子（A说的）
+    questionSpeaker: string;
+    correctAnswer: string;
+    options: { german: string; chinese: string; isCorrect: boolean }[];
+    dialogTitle: string;
+  } | null>(null);
+
   // 是否显示对话听力题目
   const [showDialogListenQuestion, setShowDialogListenQuestion] = useState(false);
 
@@ -1361,6 +1495,7 @@ export default function GermanLearning() {
     // 将对话分类映射到对话ID
     const categoryMap: Record<string, string[]> = {
       daily: ["self-intro", "friends-chatting"],
+      meeting: ["meeting-greeting", "meeting-introduce", "meeting-askname", "meeting-origin", "meeting-work", "meeting-whyhere", "meeting-hobby", "meeting-smalltalk", "meeting-closing"],
       travel: ["asking-directions", "airport"],
       dining: ["restaurant-order"],
       shopping: ["shopping"],
@@ -2222,6 +2357,149 @@ export default function GermanLearning() {
       return;
     }
 
+    // 对话接龙练习题型
+    if (quizType === "dialogPractice") {
+      // 使用筛选后的对话列表
+      const availableDialogs = getFilteredDialogs();
+      if (availableDialogs.length === 0) {
+        alert("没有可用的对话，请先选择对话分类");
+        return;
+      }
+
+      // 随机选择一个对话
+      const randomDialog = availableDialogs[Math.floor(Math.random() * availableDialogs.length)];
+
+      // 随机选择一个B角色说话的句子（用于生成选项），但显示的是A的话，让用户选B的回复
+      // 对话通常是 A-B-A-B 交替，所以我们要找 B 说话的那句作为正确答案
+      const bLines = randomDialog.lines.filter(l => l.speaker === "B");
+      if (bLines.length === 0) {
+        // 如果没有B说的话，跳过这个对话，重新选择
+        const otherDialogs = availableDialogs.filter(d => d.id !== randomDialog.id);
+        if (otherDialogs.length === 0) {
+          alert("没有可用的对话");
+          return;
+        }
+        // 递归选择另一个对话
+        const newRandomDialog = otherDialogs[Math.floor(Math.random() * otherDialogs.length)];
+        const newBLines = newRandomDialog.lines.filter(l => l.speaker === "B");
+        if (newBLines.length === 0) {
+          alert("没有可用的对话");
+          return;
+        }
+        // 使用新对话
+        const correctBLines = newBLines[Math.floor(Math.random() * newBLines.length)];
+        const correctLineIndex = newRandomDialog.lines.findIndex(l => l.german === correctBLines.german);
+
+        let context = "";
+        if (correctLineIndex > 0) {
+          context = newRandomDialog.lines.slice(0, correctLineIndex).map(l =>
+            `${l.speaker === "A" ? "A" : "B"}: ${l.german}`
+          ).join("\n");
+        }
+
+        const questionLine = correctLineIndex > 0 ? newRandomDialog.lines[correctLineIndex - 1] : null;
+        const question = questionLine ? questionLine.german : newRandomDialog.lines[0].german;
+
+        // 生成错误选项
+        const wrongOptions: { german: string; chinese: string; isCorrect: boolean }[] = [];
+        const allOtherDialogs = dialogs.filter(d => d.id !== newRandomDialog.id);
+        while (wrongOptions.length < 3 && allOtherDialogs.length > 0) {
+          const randomOtherDialog = allOtherDialogs[Math.floor(Math.random() * allOtherDialogs.length)];
+          const otherBLines = randomOtherDialog.lines.filter(l => l.speaker === "B");
+          if (otherBLines.length > 0) {
+            const randomOtherLine = otherBLines[Math.floor(Math.random() * otherBLines.length)];
+            if (!wrongOptions.some(opt => opt.german === randomOtherLine.german)) {
+              wrongOptions.push({
+                german: randomOtherLine.german,
+                chinese: randomOtherLine.chinese,
+                isCorrect: false
+              });
+            }
+          }
+          allOtherDialogs.splice(allOtherDialogs.indexOf(randomOtherDialog), 1);
+        }
+
+        const allOptions = [
+          { german: correctBLines.german, chinese: correctBLines.chinese, isCorrect: true },
+          ...wrongOptions
+        ].sort(() => Math.random() - 0.5);
+
+        setDialogPracticeData({
+          dialogId: newRandomDialog.id,
+          context: context,
+          question: question,
+          questionSpeaker: questionLine ? questionLine.speaker : "A",
+          correctAnswer: correctBLines.german,
+          options: allOptions,
+          dialogTitle: newRandomDialog.title
+        });
+        setSelectedOption(null);
+        setQuizResult(null);
+        setQuizTimeout(false);
+        setTimeLeft(quizTimer);
+        setTimerActive(quizTimer > 0);
+        return;
+      }
+
+      const correctBLines = bLines[Math.floor(Math.random() * bLines.length)];
+      const correctLineIndex = randomDialog.lines.findIndex(l => l.german === correctBLines.german);
+
+      // 找到前一句对话（可能是A或B说的）
+      let context = "";
+      if (correctLineIndex > 0) {
+        context = randomDialog.lines.slice(0, correctLineIndex).map(l =>
+          `${l.speaker === "A" ? "A" : "B"}: ${l.german}`
+        ).join("\n");
+      }
+
+      // 生成错误选项（从其他对话的B角色句子中随机选择）
+      const otherDialogs = dialogs.filter(d => d.id !== randomDialog.id);
+      const wrongOptions: { german: string; chinese: string; isCorrect: boolean }[] = [];
+
+      while (wrongOptions.length < 3 && otherDialogs.length > 0) {
+        const randomOtherDialog = otherDialogs[Math.floor(Math.random() * otherDialogs.length)];
+        const otherBLines = randomOtherDialog.lines.filter(l => l.speaker === "B");
+        if (otherBLines.length > 0) {
+          const randomOtherLine = otherBLines[Math.floor(Math.random() * otherBLines.length)];
+          if (!wrongOptions.some(opt => opt.german === randomOtherLine.german)) {
+            wrongOptions.push({
+              german: randomOtherLine.german,
+              chinese: randomOtherLine.chinese,
+              isCorrect: false
+            });
+          }
+        }
+        otherDialogs.splice(otherDialogs.indexOf(randomOtherDialog), 1);
+      }
+
+      // 找到前一句是谁说的，作为题目显示
+      const questionLine = correctLineIndex > 0 ? randomDialog.lines[correctLineIndex - 1] : null;
+      const question = questionLine ? questionLine.german : randomDialog.lines[0].german;
+
+      // 组合选项并打乱
+      const allOptions = [
+        { german: correctBLines.german, chinese: correctBLines.chinese, isCorrect: true },
+        ...wrongOptions
+      ].sort(() => Math.random() - 0.5);
+
+      setDialogPracticeData({
+        dialogId: randomDialog.id,
+        context: context,
+        question: question,
+        questionSpeaker: questionLine ? questionLine.speaker : "A",
+        correctAnswer: correctBLines.german,
+        options: allOptions,
+        dialogTitle: randomDialog.title
+      });
+      setSelectedOption(null);
+      setQuizResult(null);
+      setQuizTimeout(false);
+      setTimeLeft(quizTimer);
+      setTimerActive(quizTimer > 0);
+
+      return;
+    }
+
     // 自我介绍题型
     if (quizType === "selfIntro") {
       const availablePhrases = getFilteredSelfIntroPhrases();
@@ -2665,6 +2943,32 @@ export default function GermanLearning() {
       <div className="max-w-4xl mx-auto">
         {/* 标题 */}
         <header className="text-center mb-8">
+          <div className="flex justify-end mb-2 gap-2">
+            <Link
+              href="/02-edu/001-language/listenning"
+              className="text-sm px-3 py-1 bg-teal-100 text-teal-600 rounded-full hover:bg-teal-200 transition"
+            >
+              📞 听力题 →
+            </Link>
+            <Link
+              href="/02-edu/001-language/SentencePractice"
+              className="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition"
+            >
+              📝 简单句子 →
+            </Link>
+            <Link
+              href="/02-edu/001-language/spelling-test"
+              className="text-sm px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 transition"
+            >
+              🔢 数字拼写 →
+            </Link>
+            <Link
+              href="/02-edu/001-language/select_question"
+              className="text-sm px-3 py-1 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-200 transition"
+            >
+              ❓ 选择题 →
+            </Link>
+          </div>
           <h1 className="text-4xl font-bold text-blue-800 mb-2">🇩🇪 德语学习</h1>
           <p className="text-gray-600">
             {mode === "learn" ? "点击卡片查看释义和发音" :
@@ -2679,6 +2983,7 @@ export default function GermanLearning() {
              quizType === "phoneNumber" ? "电话号码听力" :
              quizType === "dialogListen" ? "对话听力理解" :
              quizType === "dialogKeyword" ? "对话关键词记忆" :
+             quizType === "dialogPractice" ? "对话接龙练习" :
              quizType === "selfIntro" ? "自我介绍短句" :
              "选择正确的中文翻译"}
           </p>
@@ -3010,6 +3315,16 @@ export default function GermanLearning() {
                     }`}
                   >
                     对话听力
+                  </button>
+                  <button
+                    onClick={() => setQuizType("dialogPractice")}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                      quizType === "dialogPractice"
+                        ? "bg-indigo-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-indigo-50"
+                    }`}
+                  >
+                    对话接龙
                   </button>
                   <button
                     onClick={() => setQuizType("selfIntro")}
@@ -3474,6 +3789,7 @@ export default function GermanLearning() {
                   // 计算该分类下的对话数量
                   const categoryMap: Record<string, string[]> = {
                     daily: ["self-intro", "friends-chatting"],
+                    meeting: ["meeting-greeting", "meeting-introduce", "meeting-askname", "meeting-origin", "meeting-work", "meeting-whyhere", "meeting-hobby", "meeting-smalltalk", "meeting-closing"],
                     travel: ["asking-directions", "airport"],
                     dining: ["restaurant-order"],
                     shopping: ["shopping"],
@@ -3513,15 +3829,26 @@ export default function GermanLearning() {
 
             {/* 对话模式下的开始答题按钮 */}
             {selectedCategory === "dialog" ? (
-              <button
-                onClick={() => {
-                  setQuizType("dialogListen");
-                  startQuiz();
-                }}
-                className="px-6 py-2 bg-purple-500 text-white rounded-full font-medium hover:bg-purple-600 transition text-base"
-              >
-                开始对话听力 →
-              </button>
+              <div className="flex gap-2 justify-center flex-wrap">
+                <button
+                  onClick={() => {
+                    setQuizType("dialogListen");
+                    startQuiz();
+                  }}
+                  className="px-6 py-2 bg-purple-500 text-white rounded-full font-medium hover:bg-purple-600 transition text-base"
+                >
+                  开始对话听力 →
+                </button>
+                <button
+                  onClick={() => {
+                    setQuizType("dialogPractice");
+                    startQuiz();
+                  }}
+                  className="px-6 py-2 bg-indigo-500 text-white rounded-full font-medium hover:bg-indigo-600 transition text-base"
+                >
+                  开始对话接龙 →
+                </button>
+              </div>
             ) : selectedCategory === "selfIntro" ? (
               <button
                 onClick={() => {
@@ -4604,6 +4931,139 @@ export default function GermanLearning() {
                         </button>
                       </div>
                     )}
+                  </div>
+                )}
+              </div>
+            ) : quizType === "dialogPractice" ? (
+              // 对话接龙练习题型
+              <div className="flex-1 bg-white rounded-2xl shadow-lg p-6">
+                {/* 对话标题 */}
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400 mb-2 block">
+                    来自：{dialogPracticeData?.dialogTitle}
+                  </span>
+                </div>
+
+                {/* 对话上下文 */}
+                {dialogPracticeData?.context && (
+                  <div className="bg-gray-50 rounded-xl p-4 mb-4 text-left">
+                    <p className="text-xs text-gray-500 mb-2">对话上下文：</p>
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
+                      {dialogPracticeData.context}
+                    </pre>
+                  </div>
+                )}
+
+                {/* 当前句子（题目） */}
+                <div className="text-center mb-6">
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <span className="text-sm text-purple-600 font-medium">
+                      {dialogPracticeData?.questionSpeaker === "A" ? "A 说：" : "B 说："}
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-800 leading-relaxed">
+                    {dialogPracticeData?.question}
+                  </p>
+                  <button
+                    onClick={() => dialogPracticeData?.question && speak(dialogPracticeData.question)}
+                    className="mt-2 p-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition"
+                    title="播放发音"
+                  >
+                    🔊
+                  </button>
+                </div>
+
+                <p className="text-center text-gray-500 mb-4">
+                  B 会怎么回答？
+                </p>
+
+                {/* 选项 */}
+                <div className="space-y-3">
+                  {dialogPracticeData?.options.map((option, idx) => {
+                    const isSelected = selectedOption === idx;
+                    const showResult = quizResult !== null;
+                    const isCorrect = option.isCorrect;
+
+                    let buttonClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                    if (showResult) {
+                      if (isCorrect) {
+                        buttonClass += "bg-green-500 text-white";
+                      } else if (isSelected && !isCorrect) {
+                        buttonClass += "bg-red-500 text-white";
+                      } else {
+                        buttonClass += "bg-gray-100 text-gray-400";
+                      }
+                    } else {
+                      if (isSelected) {
+                        buttonClass += "bg-purple-500 text-white";
+                      } else {
+                        buttonClass += "bg-purple-50 text-purple-700 border-2 border-purple-200 hover:bg-purple-100";
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          if (showResult) return;
+                          setSelectedOption(idx);
+                          const isAnswerCorrect = option.isCorrect;
+
+                          if (isAnswerCorrect) {
+                            setQuizResult("correct");
+                            playSound("correct");
+                            setQuizRecords(prev => [...prev, {
+                              german: option.german,
+                              chinese: option.chinese,
+                              selected: option.chinese,
+                              isCorrect: true,
+                              isTimeout: false,
+                              gender: undefined
+                            }]);
+                          } else {
+                            setQuizResult("wrong");
+                            playSound("wrong");
+                            setQuizRecords(prev => [...prev, {
+                              german: option.german,
+                              chinese: option.chinese,
+                              selected: option.chinese,
+                              isCorrect: false,
+                              isTimeout: false,
+                              gender: undefined
+                            }]);
+                          }
+                        }}
+                        disabled={showResult}
+                        className={buttonClass}
+                      >
+                        <div className="flex items-center justify-between px-4">
+                          <span className="text-left">{option.german}</span>
+                          {showResult && isCorrect && <span>✓</span>}
+                          {showResult && isSelected && !isCorrect && <span>✗</span>}
+                        </div>
+                        {showResult && (
+                          <p className="text-sm mt-1 opacity-80">{option.chinese}</p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 显示正确答案（答题后） */}
+                {quizResult !== null && dialogPracticeData && (
+                  <div className="mt-4 bg-blue-50 rounded-xl p-4 text-center">
+                    <p className="text-gray-600 mb-2">正确答案：</p>
+                    <p className="text-xl font-bold text-blue-600 mb-2">
+                      {dialogPracticeData.correctAnswer}
+                    </p>
+
+                    {/* 下一题按钮 */}
+                    <button
+                      onClick={nextQuiz}
+                      className="mt-4 w-full py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition"
+                    >
+                      下一题 →
+                    </button>
                   </div>
                 )}
               </div>

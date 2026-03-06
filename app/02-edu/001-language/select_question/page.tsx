@@ -223,6 +223,9 @@ const questionWords: Sentence[] = [
   { id: 3, german: "Woher?", chinese: "从哪里？", category: "question" },
   { id: 4, german: "Was?", chinese: "什么？", category: "question" },
   { id: 5, german: "Wo?", chinese: "在哪里？", category: "question" },
+  { id: 6, german: "Wann?", chinese: "什么时候？", category: "question" },
+  { id: 7, german: "Warum?", chinese: "为什么？", category: "question" },
+  { id: 8, german: "Welcher?", chinese: "哪个？", category: "question" },
 ];
 
 // 发音函数

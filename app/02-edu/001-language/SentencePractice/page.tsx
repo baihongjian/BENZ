@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 // 简单德语句子数据
 interface Sentence {
@@ -124,15 +125,46 @@ export default function SentencePracticePage() {
     ? sentences
     : sentences.filter(s => s.category === category);
 
-  // 发音函数
-  const speak = (text: string) => {
+  // 发音函数 - 使用 Edge TTS
+  const speak = async (text: string) => {
     if (typeof window === "undefined") return;
+
+    try {
+      // 尝试使用 Edge TTS 服务器
+      const response = await fetch('http://localhost:8000/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, lang: 'de' })
+      });
+
+      const data = await response.json();
+
+      if (data.audio) {
+        const audio = new Audio(data.audio);
+        await audio.play();
+        return;
+      }
+    } catch (error) {
+      console.log('Edge TTS 不可用，使用浏览器语音');
+    }
+
+    // 回退到浏览器语音
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "de-DE";
     utterance.rate = 0.85;
-    const voices = speechSynthesis.getVoices();
-    const germanVoice = voices.find(v => v.lang.includes("de"));
-    if (germanVoice) utterance.voice = germanVoice;
+    utterance.pitch = 1;
+
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices();
+      const germanVoice = voices.find(v => v.lang.includes("de"));
+      if (germanVoice) utterance.voice = germanVoice;
+    };
+
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
     speechSynthesis.speak(utterance);
   };
 
@@ -195,6 +227,14 @@ export default function SentencePracticePage() {
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-6">
         <div className="max-w-2xl mx-auto px-4">
+          <div className="flex justify-between items-center mb-2">
+            <Link
+              href="/02-edu/001-language"
+              className="text-sm px-3 py-1 bg-white/20 text-white rounded-full hover:bg-white/30 transition"
+            >
+              ← 德语学习
+            </Link>
+          </div>
           <h1 className="text-2xl font-bold">📝 德语简单句子练习</h1>
           <p className="mt-1 opacity-90">德语日常短句学习与练习</p>
         </div>
