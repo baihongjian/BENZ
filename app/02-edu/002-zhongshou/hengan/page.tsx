@@ -910,6 +910,62 @@ export default function ExamsPage() {
                             && school.examDateKey === '2月4日以降') {
                             return false;
                           }
+                          // 安全型模式下，チャレンジ校（偏差值>自身偏差值）且为1月的不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation > userDevNum
+                            && school.examDateKey === '1月') {
+                            return false;
+                          }
+                          // 安全型模式下，チャレンジ校或実例相思校（偏差值>=自身偏差值）且为2月1日午前の不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation >= userDevNum
+                            && school.examDateKey === '2月1日-午前') {
+                            return false;
+                          }
+                          // 安全型模式下，チャレンジ校或安全校（偏差值!=自身偏差值）且为2月1日午後の不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation !== userDevNum
+                            && school.examDateKey === '2月1日-午後') {
+                            return false;
+                          }
+                          // 安全型模式下，実例相思校或安全校（偏差值<=自身偏差值）且为2月2日午前の不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation <= userDevNum
+                            && school.examDateKey === '2月2日-午前') {
+                            return false;
+                          }
+                          // 安全型模式下，実例相思校或チャレンジ校（偏差值>=自身偏差値）且为2月2日午後の不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation >= userDevNum
+                            && school.examDateKey === '2月2日-午後') {
+                            return false;
+                          }
+                          // 安全型模式下，安全校或チャレンジ校（偏差值!=自身偏差値）且为2月3日午前の不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation !== userDevNum
+                            && school.examDateKey === '2月3日-午前') {
+                            return false;
+                          }
+                          // 安全型模式下，実例相思校或チャレンジ校（偏差值>=自身偏差値）且为2月3日午後の不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation >= userDevNum
+                            && school.examDateKey === '2月3日-午後') {
+                            return false;
+                          }
+                          // 安全型模式下，実例相思校（偏差值=自身偏差値）且为2月4日以降的不显示
+                          if (henganType === 'safety'
+                            && userDeviation
+                            && group.deviation === userDevNum
+                            && school.examDateKey === '2月4日以降') {
+                            return false;
+                          }
                           return true;
                         });
 
@@ -946,8 +1002,56 @@ export default function ExamsPage() {
                           && group.deviation === userDevNum
                           && colIndex === 7;
 
+                        // 判断是否为1月列（安全型模式下且是チャレンジ校）
+                        const isSafetyChallengeJanCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation > userDevNum
+                          && colIndex === 0;
+
+                        // 判断是否为2月1日午前列（安全型模式下且是チャレンジ校或実例相思校）
+                        const isSafetyFeb1MorningCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation >= userDevNum
+                          && colIndex === 1;
+
+                        // 判断是否为2月1日午後列（安全型模式下且是チャレンジ校或安全校）
+                        const isSafetyFeb1AfternoonCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation !== userDevNum
+                          && colIndex === 2;
+
+                        // 判断是否为2月2日午前列（安全型模式下且是実例相思校或安全校）
+                        const isSafetyFeb2MorningCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation <= userDevNum
+                          && colIndex === 3;
+
+                        // 判断是否为2月2日午後列（安全型模式下且是実例相思校或チャレンジ校）
+                        const isSafetyFeb2AfternoonCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation >= userDevNum
+                          && colIndex === 4;
+
+                        // 判断是否为2月3日午前列（安全型模式下且是安全校或チャレンジ校）
+                        const isSafetyFeb3MorningCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation !== userDevNum
+                          && colIndex === 5;
+
+                        // 判断是否为2月3日午後列（安全型模式下且是実例相思校或チャレンジ校）
+                        const isSafetyFeb3AfternoonCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation >= userDevNum
+                          && colIndex === 6;
+
+                        // 判断是否为2月4日以降列（安全型模式下且是実例相思校）
+                        const isSafetyFeb4LaterCell = henganType === 'safety'
+                          && userDeviation
+                          && group.deviation === userDevNum
+                          && colIndex === 7;
+
                         return (
-                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell || isNormalFeb1MorningCell || isNormalFeb1AfternoonOrFeb2Cell || isNormalFeb3Cell || isNormalFeb4LaterCell ? 'bg-gray-200' : ''}`}>
+                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell || isNormalFeb1MorningCell || isNormalFeb1AfternoonOrFeb2Cell || isNormalFeb3Cell || isNormalFeb4LaterCell || isSafetyChallengeJanCell || isSafetyFeb1MorningCell || isSafetyFeb1AfternoonCell || isSafetyFeb2MorningCell || isSafetyFeb2AfternoonCell || isSafetyFeb3MorningCell || isSafetyFeb3AfternoonCell || isSafetyFeb4LaterCell ? 'bg-gray-200' : ''}`}>
                           {filteredSchools.length > 0 ? (
                             <div className="text-xs space-y-1">
                               {filteredSchools
