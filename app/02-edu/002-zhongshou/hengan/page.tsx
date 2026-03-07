@@ -108,7 +108,7 @@ export default function ExamsPage() {
   const [userDeviation, setUserDeviation] = useState('');
   const [availableDeviations, setAvailableDeviations] = useState<number[]>([]);
   const [displayMode, setDisplayMode] = useState<'normal' | 'hengan'>('normal');
-  const [henganType, setHenganType] = useState<'basic' | 'safety' | 'challenge'>('basic');
+  const [henganType, setHenganType] = useState<'basic' | 'safety' | 'challenge' | 'custom'>('basic');
   const [sortOption, setSortOption] = useState<'fee-asc' | 'university-desc'>('fee-asc');
   const [schoolDetailsMap, setSchoolDetailsMap] = useState<Map<string, SchoolDetail>>(new Map());
 
@@ -488,6 +488,16 @@ export default function ExamsPage() {
                 }`}
               >
                 チャレンジ型
+              </button>
+              <button
+                onClick={() => setHenganType('custom')}
+                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                  henganType === 'custom'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                カスタム型
               </button>
             </div>
 
