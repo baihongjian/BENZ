@@ -143,6 +143,7 @@ export default function ExamsPage() {
 
   // 预览弹窗状态
   const [showPreview, setShowPreview] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(true);
 
   // 选中的学校（用于併願规划）
   const [selectedSchools, setSelectedSchools] = useState<Set<string>>(new Set());
@@ -451,11 +452,29 @@ export default function ExamsPage() {
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* 検索エリア标题 */}
-        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2">
-          検索エリア
-        </h2>
+        <div className="flex items-center justify-between mb-4 border-b-2 border-blue-500 pb-2">
+          <h2 className="text-xl font-bold text-gray-800">
+            検索エリア
+          </h2>
+          <button
+            onClick={() => setSearchExpanded(!searchExpanded)}
+            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+          >
+            {searchExpanded ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            )}
+          </button>
+        </div>
 
-        {/* 模式选择 */}
+        {/* 搜索条件内容 - 可折叠 */}
+        {searchExpanded && (
+        <>
         <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
           <span className="text-sm font-medium text-gray-700 w-20 text-right">モード:</span>
           <button
@@ -875,6 +894,8 @@ export default function ExamsPage() {
             </div>
           </div>
         </div>
+        </>
+        )}
         {/* リスト結果标题 */}
         <div className="flex items-center justify-between mt-8 mb-4 border-b-2 border-blue-500 pb-2">
           <h2 className="text-xl font-bold text-gray-800">
