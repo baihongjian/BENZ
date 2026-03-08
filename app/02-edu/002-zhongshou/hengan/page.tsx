@@ -118,6 +118,9 @@ export default function ExamsPage() {
   const [schoolExams, setSchoolExams] = useState<SchoolExamInfo[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // 预览弹窗状态
+  const [showPreview, setShowPreview] = useState(false);
+
   // 选中的学校（用于併願规划）
   const [selectedSchools, setSelectedSchools] = useState<Set<string>>(new Set());
 
@@ -841,9 +844,23 @@ export default function ExamsPage() {
           </div>
         </div>
         {/* リスト結果标题 */}
-        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2 mt-8">
-          リスト結果
-        </h2>
+        <div className="flex items-center justify-between mt-8 mb-4 border-b-2 border-blue-500 pb-2">
+          <h2 className="text-xl font-bold text-gray-800">
+            リスト結果
+          </h2>
+          {displayMode === 'hengan' && selectedSchools.size > 0 && (
+            <button
+              onClick={() => setShowPreview(true)}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              選択した学校 ({selectedSchools.size})
+            </button>
+          )}
+        </div>
 
         {loading ? (
           <div className="text-center py-12">
@@ -1304,6 +1321,139 @@ export default function ExamsPage() {
               ) : (
                 <div className="text-center py-8 text-gray-500">データがありません</div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 選択した学校预览弹窗 */}
+      {showPreview && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPreview(false)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+              <h3 className="text-lg font-bold">選択した学校</h3>
+              <button onClick={() => setShowPreview(false)} className="text-white hover:text-gray-200">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              {/* 以考试日期为列头的表格形式显示 */}
+              {(() => {
+                // 收集选中的学校信息
+                const selectedSchoolsList: { name: string; code: string; deviation: number; examDateKey: string }[] = [];
+                deviationGroups.forEach(group => {
+                  group.schools.forEach(col => {
+                    col.forEach(school => {
+                      const uniqueKey = `${school.schoolCode}_${school.examDateKey}`;
+                      if (selectedSchools.has(uniqueKey)) {
+                        selectedSchoolsList.push({
+                          name: school.name,
+                          code: school.schoolCode,
+                          deviation: group.deviation,
+                          examDateKey: school.examDateKey
+                        });
+                      }
+                    });
+                  });
+                });
+
+                if (selectedSchoolsList.length === 0) {
+                  return <div className="text-center py-8 text-gray-500">選択した学校がありません</div>;
+                }
+
+                // 按考试日期分组
+                const groupedByDate = new Map<string, typeof selectedSchoolsList>();
+                EXAM_COLUMNS.forEach(col => {
+                  groupedByDate.set(col.key, []);
+                });
+                selectedSchoolsList.forEach(school => {
+                  if (groupedByDate.has(school.examDateKey)) {
+                    groupedByDate.get(school.examDateKey)!.push(school);
+                  }
+                });
+
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse table-fixed">
+                      <thead className="bg-gray-100 border-b-2 border-gray-400">
+                        <tr>
+                          <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
+                          <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-28 border-r border-gray-300">区分</th>
+                          {EXAM_COLUMNS.map(col => (
+                            <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-32" dangerouslySetInnerHTML={{ __html: col.label }}></th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* 获取所有有选中学校的偏差值 */}
+                        {(() => {
+                          const deviationsWithSchools = new Set<number>();
+                          selectedSchoolsList.forEach(s => deviationsWithSchools.add(s.deviation));
+                          const sortedDeviations = Array.from(deviationsWithSchools).sort((a, b) => b - a);
+                          const userDevNum = userDeviation ? parseInt(userDeviation) : 0;
+
+                          return sortedDeviations.map(deviation => {
+                            // 获取该偏差值下每个日期的学校
+                            const schoolsByDate = EXAM_COLUMNS.map(col => {
+                              return groupedByDate.get(col.key)!.filter(s => s.deviation === deviation);
+                            });
+
+                            // 只有当该偏差值至少有一个日期有学校时才显示
+                            const hasAnySchool = schoolsByDate.some(arr => arr.length > 0);
+                            if (!hasAnySchool) return null;
+
+                            // 计算区分
+                            let kubunLabel = '';
+                            let kubunColor = '';
+                            if (userDeviation) {
+                              if (deviation > userDevNum) {
+                                kubunLabel = 'チャレンジ';
+                                kubunColor = 'text-red-600 font-bold';
+                              } else if (deviation === userDevNum) {
+                                kubunLabel = '実力相応';
+                                kubunColor = 'text-orange-600 font-bold';
+                              } else {
+                                kubunLabel = '安全';
+                                kubunColor = 'text-green-600 font-bold';
+                              }
+                            }
+
+                            return (
+                              <tr key={deviation} className="border-b border-gray-200">
+                                <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300 bg-gray-50">
+                                  <span className="inline-block px-2 py-1 rounded text-sm font-bold bg-blue-500 text-white">
+                                    {deviation}
+                                  </span>
+                                </td>
+                                <td className={`py-3 px-2 text-sm text-center align-middle border-r border-gray-300 ${kubunColor}`}>
+                                  {kubunLabel}
+                                </td>
+                                {schoolsByDate.map((schools, colIndex) => (
+                                  <td key={colIndex} className="py-3 px-2 text-sm align-top border-r border-gray-200 align-top">
+                                    {schools.length > 0 ? (
+                                      <div className="text-xs space-y-1">
+                                        {schools.map((school, idx) => (
+                                          <div key={idx} className="text-gray-700 truncate">
+                                            {hideSchoolSuffix(school.name)}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <span className="text-gray-300">-</span>
+                                    )}
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          });
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
