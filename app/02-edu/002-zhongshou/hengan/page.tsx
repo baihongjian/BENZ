@@ -2,6 +2,29 @@
 
 import { useState, useEffect } from 'react';
 
+// 打印样式
+const printStyles = `
+  @media print {
+    body * { visibility: hidden; }
+    .print-only, .print-only * { visibility: visible; }
+    .print-only {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      margin: 0;
+      padding: 10mm;
+      background: white;
+    }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    table { font-size: 10px; }
+    th, td { border: 1px solid black !important; }
+  }
+  @media screen {
+    .print-only { display: none !important; }
+  }
+`;
+
 interface Exam {
   id: number;
   school_code: string;
@@ -416,6 +439,7 @@ export default function ExamsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <style>{printStyles}</style>
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-6">
         <div className="max-w-6xl mx-auto px-4">
@@ -1337,11 +1361,25 @@ export default function ExamsPage() {
           <div className="bg-white rounded-lg shadow-xl w-[98vw] max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
               <h3 className="text-lg font-bold">出願予定学校</h3>
-              <button onClick={() => setShowPreview(false)} className="text-white hover:text-gray-200">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    // 使用浏览器的打印功能
+                    window.print();
+                  }}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-blue-600 rounded hover:bg-gray-100 text-sm font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  PDFダウンロード
+                </button>
+                <button onClick={() => setShowPreview(false)} className="text-white hover:text-gray-200">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
             <div className="p-4">
               {/* 以考试日期为列头的表格形式显示 */}
@@ -1381,7 +1419,7 @@ export default function ExamsPage() {
 
                 return (
                   <div>
-                    <table className="w-full border-collapse border-2 border-black">
+                    <table id="preview-table" className="w-full border-collapse border-2 border-black">
                       <thead className="bg-gray-100">
                         <tr>
                           <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border border-black">偏差値</th>
@@ -1463,6 +1501,98 @@ export default function ExamsPage() {
           </div>
         </div>
       )}
+
+      {/* 打印专用区域 - 只在打印时显示 */}
+      <div className="print-only p-4">
+        <h1 className="text-xl font-bold text-center mb-4">出願予定学校</h1>
+        {(() => {
+          const selectedSchoolsList: { name: string; code: string; deviation: number; examDateKey: string }[] = [];
+          deviationGroups.forEach(group => {
+            group.schools.forEach(col => {
+              col.forEach(school => {
+                const uniqueKey = `${school.schoolCode}_${school.examDateKey}`;
+                if (selectedSchools.has(uniqueKey)) {
+                  selectedSchoolsList.push({
+                    name: school.name,
+                    code: school.schoolCode,
+                    deviation: group.deviation,
+                    examDateKey: school.examDateKey
+                  });
+                }
+              });
+            });
+          });
+
+          if (selectedSchoolsList.length === 0) {
+            return <p className="text-center">選択した学校がありません</p>;
+          }
+
+          const groupedByDate = new Map<string, typeof selectedSchoolsList>();
+          EXAM_COLUMNS.forEach(col => groupedByDate.set(col.key, []));
+          selectedSchoolsList.forEach(school => {
+            if (groupedByDate.has(school.examDateKey)) {
+              groupedByDate.get(school.examDateKey)!.push(school);
+            }
+          });
+
+          const deviationsWithSchools = new Set<number>();
+          selectedSchoolsList.forEach(s => deviationsWithSchools.add(s.deviation));
+          const sortedDeviations = Array.from(deviationsWithSchools).sort((a, b) => b - a);
+          const userDevNum = userDeviation ? parseInt(userDeviation) : 0;
+
+          return (
+            <table className="w-full border-collapse border border-black text-sm">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-black p-2 text-center">偏差値</th>
+                  <th className="border border-black p-2 text-center">区分</th>
+                  {EXAM_COLUMNS.map(col => (
+                    <th key={col.key} className="border border-black p-2 text-center" dangerouslySetInnerHTML={{ __html: col.label }}></th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedDeviations.map(deviation => {
+                  const schoolsByDate = EXAM_COLUMNS.map(col =>
+                    groupedByDate.get(col.key)!.filter(s => s.deviation === deviation)
+                  );
+                  const hasAnySchool = schoolsByDate.some(arr => arr.length > 0);
+                  if (!hasAnySchool) return null;
+
+                  let kubunLabel = '';
+                  let kubunColor = '';
+                  if (userDeviation) {
+                    if (deviation > userDevNum) {
+                      kubunLabel = 'チャレンジ';
+                      kubunColor = 'text-red-600';
+                    } else if (deviation === userDevNum) {
+                      kubunLabel = '実例相思';
+                      kubunColor = 'text-orange-600';
+                    } else {
+                      kubunLabel = '安全';
+                      kubunColor = 'text-green-600';
+                    }
+                  }
+
+                  return (
+                    <tr key={deviation}>
+                      <td className="border border-black p-2 text-center">{deviation}</td>
+                      <td className={`border border-black p-2 text-center ${kubunColor}`}>{kubunLabel}</td>
+                      {schoolsByDate.map((schools, colIdx) => (
+                        <td key={colIdx} className="border border-black p-2">
+                          {schools.map((school, idx) => (
+                            <div key={idx} className="text-xs">{hideSchoolSuffix(school.name)}</div>
+                          ))}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          );
+        })()}
+      </div>
     </div>
   );
 }
