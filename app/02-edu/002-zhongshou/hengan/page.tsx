@@ -873,17 +873,17 @@ export default function ExamsPage() {
             <p className="mt-2 text-gray-500">加载中...</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
+          <div className="bg-white rounded-lg border-2 border-black overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1000px] border-collapse table-fixed">
-                <thead className="bg-gray-100 border-b-2 border-gray-400">
+                <thead className="bg-gray-100 border-b-2 border-black">
                   <tr>
-                    <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
+                    <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-black">偏差値</th>
                     {displayMode === 'hengan' && userDeviation && (
-                      <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-28 border-r border-gray-300">区分</th>
+                      <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-28 border-r border-black">区分</th>
                     )}
                     {EXAM_COLUMNS.map(col => (
-                      <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-[110px]" dangerouslySetInnerHTML={{ __html: col.label }}></th>
+                      <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border-r border-black w-[110px]" dangerouslySetInnerHTML={{ __html: col.label }}></th>
                     ))}
                   </tr>
                 </thead>
@@ -898,14 +898,14 @@ export default function ExamsPage() {
                       return getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) !== '';
                     })
                     .map((group, groupIndex) => (
-                    <tr key={groupIndex} className={`border-b border-gray-200 hover:bg-blue-50 ${displayMode === 'hengan' ? getRowClass(group.deviation, parseInt(userDeviation)) : ''}`}>
-                      <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300 bg-gray-50">
+                    <tr key={groupIndex} className={`border-b border-black hover:bg-blue-50 ${displayMode === 'hengan' ? getRowClass(group.deviation, parseInt(userDeviation)) : ''}`}>
+                      <td className="py-3 px-2 text-sm text-center align-middle border-r border-black bg-gray-50">
                         <span className={`inline-block px-2 py-1 rounded text-sm font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
                           {group.deviation || '-'}
                         </span>
                       </td>
                       {displayMode === 'hengan' && userDeviation && (
-                        <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300">
+                        <td className="py-3 px-2 text-sm text-center align-middle border-r border-black">
                           {getSchoolTypeLabel(group.deviation, parseInt(userDeviation)) && (
                             <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${getDeviationClass(group.deviation, parseInt(userDeviation))}`}>
                               {getSchoolTypeLabel(group.deviation, parseInt(userDeviation))}
@@ -1195,7 +1195,7 @@ export default function ExamsPage() {
                           && colIndex === 7;
 
                         return (
-                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-gray-200 align-top ${isChallengeJanCell || isNormalFeb1MorningCell || isNormalFeb1AfternoonOrFeb2Cell || isNormalFeb3Cell || isNormalFeb4LaterCell || isSafetyChallengeJanCell || isChallengeSafetyJanCell || isChallengeFeb1MorningCell || isChallengeFeb1AfternoonCell || isChallengeFeb2AfternoonCell || isChallengeFeb2MorningCell || isChallengeFeb3MorningCell || isChallengeFeb3AfternoonCell || isChallengeFeb4LaterCell || isSafetyFeb1MorningCell || isSafetyFeb1AfternoonCell || isSafetyFeb2MorningCell || isSafetyFeb2AfternoonCell || isSafetyFeb3MorningCell || isSafetyFeb3AfternoonCell || isSafetyFeb4LaterCell ? 'bg-gray-200' : ''}`}>
+                        <td key={colIndex} className={`py-3 px-2 text-sm align-top border-r border-black ${isChallengeJanCell || isNormalFeb1MorningCell || isNormalFeb1AfternoonOrFeb2Cell || isNormalFeb3Cell || isNormalFeb4LaterCell || isSafetyChallengeJanCell || isChallengeSafetyJanCell || isChallengeFeb1MorningCell || isChallengeFeb1AfternoonCell || isChallengeFeb2AfternoonCell || isChallengeFeb2MorningCell || isChallengeFeb3MorningCell || isChallengeFeb3AfternoonCell || isChallengeFeb4LaterCell || isSafetyFeb1MorningCell || isSafetyFeb1AfternoonCell || isSafetyFeb2MorningCell || isSafetyFeb2AfternoonCell || isSafetyFeb3MorningCell || isSafetyFeb3AfternoonCell || isSafetyFeb4LaterCell ? 'bg-gray-200' : ''}`}>
                           {filteredSchools.length > 0 ? (
                             <div className="text-xs space-y-1">
                               {filteredSchools
@@ -1298,7 +1298,7 @@ export default function ExamsPage() {
                       <h4 className="font-bold text-gray-800 mb-2">試験日程</h4>
                       <div className="space-y-2 text-sm">
                         {schoolExams.map((exam, idx) => (
-                          <div key={idx} className="flex justify-between items-center border-b border-gray-200 pb-2 last:border-0">
+                          <div key={idx} className="flex justify-between items-center border-b border-black pb-2 last:border-0">
                             <div>
                               <div className="font-medium">{exam.exam_name}</div>
                               <div className="text-gray-500 text-xs">{exam.exam_date} {exam.start_time}</div>
@@ -1381,13 +1381,13 @@ export default function ExamsPage() {
 
                 return (
                   <div>
-                    <table className="w-full border-collapse">
-                      <thead className="bg-gray-100 border-b-2 border-gray-400">
+                    <table className="w-full border-collapse border-2 border-black">
+                      <thead className="bg-gray-100">
                         <tr>
-                          <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
-                          <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-28 border-r border-gray-300">区分</th>
+                          <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border border-black">偏差値</th>
+                          <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-28 border border-black">区分</th>
                           {EXAM_COLUMNS.map(col => (
-                            <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border-r border-gray-300 w-32" dangerouslySetInnerHTML={{ __html: col.label }}></th>
+                            <th key={col.key} className="text-center py-3 px-2 text-sm font-bold text-gray-800 border border-black w-32" dangerouslySetInnerHTML={{ __html: col.label }}></th>
                           ))}
                         </tr>
                       </thead>
@@ -1426,17 +1426,17 @@ export default function ExamsPage() {
                             }
 
                             return (
-                              <tr key={deviation} className="border-b border-gray-200">
-                                <td className="py-3 px-2 text-sm text-center align-middle border-r border-gray-300 bg-gray-50">
+                              <tr key={deviation}>
+                                <td className="py-3 px-2 text-sm text-center align-middle border border-black bg-gray-50">
                                   <span className="inline-block px-2 py-1 rounded text-sm font-bold bg-blue-500 text-white">
                                     {deviation}
                                   </span>
                                 </td>
-                                <td className={`py-3 px-2 text-sm text-center align-middle border-r border-gray-300 ${kubunColor}`}>
+                                <td className={`py-3 px-2 text-sm text-center align-middle border border-black ${kubunColor}`}>
                                   {kubunLabel}
                                 </td>
                                 {schoolsByDate.map((schools, colIndex) => (
-                                  <td key={colIndex} className="py-3 px-2 text-sm align-top border-r border-gray-200 align-top">
+                                  <td key={colIndex} className="py-3 px-2 text-sm align-top border border-black">
                                     {schools.length > 0 ? (
                                       <div className="text-xs space-y-1">
                                         {schools.map((school, idx) => (
