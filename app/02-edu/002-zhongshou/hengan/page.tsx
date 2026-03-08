@@ -1334,7 +1334,7 @@ export default function ExamsPage() {
       {/* 選択した学校预览弹窗 */}
       {showPreview && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPreview(false)}>
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-lg shadow-xl w-[98vw] max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
               <h3 className="text-lg font-bold">出願予定学校</h3>
               <button onClick={() => setShowPreview(false)} className="text-white hover:text-gray-200">
@@ -1343,7 +1343,7 @@ export default function ExamsPage() {
                 </svg>
               </button>
             </div>
-            <div className="p-6">
+            <div className="p-4">
               {/* 以考试日期为列头的表格形式显示 */}
               {(() => {
                 // 收集选中的学校信息
@@ -1380,8 +1380,8 @@ export default function ExamsPage() {
                 });
 
                 return (
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse table-fixed">
+                  <div>
+                    <table className="w-full border-collapse">
                       <thead className="bg-gray-100 border-b-2 border-gray-400">
                         <tr>
                           <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-gray-300">偏差値</th>
