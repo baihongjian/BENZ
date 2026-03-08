@@ -848,10 +848,15 @@ export default function ExamsPage() {
           <h2 className="text-xl font-bold text-gray-800">
             リスト結果
           </h2>
-          {displayMode === 'hengan' && selectedSchools.size > 0 && (
+          {displayMode === 'hengan' && (
             <button
               onClick={() => setShowPreview(true)}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+              disabled={selectedSchools.size === 0}
+              className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${
+                selectedSchools.size === 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-500 hover:bg-blue-600 text-white'
+              }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
