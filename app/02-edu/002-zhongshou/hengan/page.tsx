@@ -456,14 +456,14 @@ export default function ExamsPage() {
         </h2>
 
         {/* 模式选择 */}
-        <div className="mb-4 flex items-center gap-4">
+        <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
           <span className="text-sm font-medium text-gray-700 w-20 text-right">モード:</span>
           <button
             onClick={() => {
               setDisplayMode('normal');
               setUserDeviation('');
             }}
-            className={`px-4 py-1.5 rounded text-sm font-medium ${
+            className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
               displayMode === 'normal'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -475,7 +475,7 @@ export default function ExamsPage() {
             onClick={() => {
               setDisplayMode('hengan');
             }}
-            className={`px-4 py-1.5 rounded text-sm font-medium ${
+            className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
               displayMode === 'hengan'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -489,11 +489,11 @@ export default function ExamsPage() {
         {displayMode === 'hengan' && (
           <>
            {/* 併願型选择 */}
-           <div className="mb-4 flex items-center gap-4">
+           <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
               <span className="text-sm font-medium text-gray-700 w-20 text-right">併願型:</span>
               <button
                 onClick={() => setHenganType('basic')}
-                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
                   henganType === 'basic'
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -503,7 +503,7 @@ export default function ExamsPage() {
               </button>
               <button
                 onClick={() => setHenganType('safety')}
-                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
                   henganType === 'safety'
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -513,7 +513,7 @@ export default function ExamsPage() {
               </button>
               <button
                 onClick={() => setHenganType('challenge')}
-                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
                   henganType === 'challenge'
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -523,7 +523,7 @@ export default function ExamsPage() {
               </button>
               <button
                 onClick={() => setHenganType('custom')}
-                className={`px-4 py-1.5 rounded text-sm font-medium ${
+                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
                   henganType === 'custom'
                     ? 'bg-blue-500 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -579,14 +579,14 @@ export default function ExamsPage() {
         )}
 
         {/* 关键字搜索 */}
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <label className="text-sm font-medium text-gray-700 w-20 text-right">学校名:</label>
           <input
             type="text"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             placeholder="学校名を入力"
-            className="px-3 py-1.5 border border-gray-300 rounded text-sm w-48 focus:outline-none focus:border-blue-500"
+            className="px-3 py-1.5 border border-gray-300 rounded text-sm w-40 md:w-48 focus:outline-none focus:border-blue-500"
           />
           {searchKeyword && (
             <button
@@ -596,7 +596,9 @@ export default function ExamsPage() {
               クリア
             </button>
           )}
-          <span className="ml-4 text-sm font-medium text-gray-700 w-20 text-right">並び替え:</span>
+        </div>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-gray-700 w-20 text-right">並び替え:</span>
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as 'fee-asc' | 'university-desc')}
@@ -610,9 +612,9 @@ export default function ExamsPage() {
        
 
         {/* 筛选条件 */}
-        <div className="mb-4 flex items-center gap-4">
+        <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
           <label className="text-sm font-medium text-gray-700 w-20 text-right">学校設置:</label>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
             <label className="flex items-center gap-1 text-sm">
               <input
                 type="checkbox"
@@ -668,9 +670,9 @@ export default function ExamsPage() {
         </div>
 
         {/* 学校種別筛选条件 */}
-        <div className="mb-4 flex items-center gap-4">
+        <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
           <label className="text-sm font-medium text-gray-700 w-20 text-right">学校種別:</label>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
             <label className="flex items-center gap-1 text-sm">
               <input
                 type="checkbox"
@@ -726,9 +728,9 @@ export default function ExamsPage() {
         </div>
 
         {/* 都道府県筛选条件 */}
-        <div className="mb-4 flex items-center gap-4">
+        <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
           <label className="text-sm font-medium text-gray-700 w-20 text-right">都道府県:</label>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
             <label className="flex items-center gap-1 text-sm">
               <input
                 type="checkbox"
@@ -899,7 +901,7 @@ export default function ExamsPage() {
         ) : (
           <div className="bg-white rounded-lg border-2 border-black overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1000px] border-collapse table-fixed">
+              <table className="w-full min-w-[800px] md:min-w-[1000px] border-collapse table-fixed">
                 <thead className="bg-gray-100 border-b-2 border-black">
                   <tr>
                     <th className="text-center py-3 px-2 text-sm font-bold text-gray-800 w-16 border-r border-black">偏差値</th>
@@ -1359,23 +1361,24 @@ export default function ExamsPage() {
       {showPreview && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPreview(false)}>
           <div className="bg-white rounded-lg shadow-xl w-[98vw] max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-bold">出願予定学校</h3>
-              <div className="flex items-center gap-3">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+              <h3 className="text-base md:text-lg font-bold">出願予定学校</h3>
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => {
                     // 使用浏览器的打印功能
                     window.print();
                   }}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white text-blue-600 rounded hover:bg-gray-100 text-sm font-medium"
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 bg-white text-blue-600 rounded hover:bg-gray-100 text-xs md:text-sm font-medium"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  PDFダウンロード
+                  PDF
                 </button>
-                <button onClick={() => setShowPreview(false)} className="text-white hover:text-gray-200">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="text-xs text-blue-200">※另存PDF</span>
+                <button onClick={() => setShowPreview(false)} className="text-white hover:text-gray-200 ml-auto sm:ml-0">
+                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
