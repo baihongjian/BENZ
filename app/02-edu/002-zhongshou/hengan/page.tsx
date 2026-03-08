@@ -732,145 +732,147 @@ export default function ExamsPage() {
         </div>
 
         {/* 都道府県筛选条件 */}
-        <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
-          <label className="text-sm font-medium text-gray-700 w-20 text-right">都道府県:</label>
-          <div className="flex flex-wrap items-center gap-2 md:gap-4">
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('東京23区')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('東京23区');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '東京23区');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              東京23区
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('東京23区外')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('東京23区外');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '東京23区外');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              東京23区以外
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('神奈川県')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('神奈川県');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '神奈川県');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              神奈川県
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('埼玉県')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('埼玉県');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '埼玉県');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              埼玉県
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('千葉県')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('千葉県');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '千葉県');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              千葉県
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('茨城県')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('茨城県');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '茨城県');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              茨城県
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('栃木県')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('栃木県');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '栃木県');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              栃木県
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={selectedPrefectures.includes('群馬県')}
-                onChange={(e) => {
-                  let newPrefectures = selectedPrefectures;
-                  if (e.target.checked) {
-                    newPrefectures.push('群馬県');
-                  } else {
-                    newPrefectures = newPrefectures.filter(c => c !== '群馬県');
-                  }
-                  setSelectedPrefectures([...newPrefectures]);
-                }}
-                className="rounded"
-              />
-              群馬県
-            </label>
+        <div className="mb-4">
+          <div className="flex items-start gap-2 md:gap-4">
+            <label className="text-sm font-medium text-gray-700 w-20 text-right shrink-0 pt-1">都道府県:</label>
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('東京23区')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('東京23区');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '東京23区');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                東京23区
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('東京23区外')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('東京23区外');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '東京23区外');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                東京23区以外
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('神奈川県')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('神奈川県');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '神奈川県');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                神奈川県
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('埼玉県')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('埼玉県');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '埼玉県');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                埼玉県
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('千葉県')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('千葉県');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '千葉県');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                千葉県
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('茨城県')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('茨城県');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '茨城県');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                茨城県
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('栃木県')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('栃木県');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '栃木県');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                栃木県
+              </label>
+              <label className="flex items-center gap-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={selectedPrefectures.includes('群馬県')}
+                  onChange={(e) => {
+                    let newPrefectures = selectedPrefectures;
+                    if (e.target.checked) {
+                      newPrefectures.push('群馬県');
+                    } else {
+                      newPrefectures = newPrefectures.filter(c => c !== '群馬県');
+                    }
+                    setSelectedPrefectures([...newPrefectures]);
+                  }}
+                  className="rounded"
+                />
+                群馬県
+              </label>
+            </div>
           </div>
         </div>
         {/* リスト結果标题 */}
