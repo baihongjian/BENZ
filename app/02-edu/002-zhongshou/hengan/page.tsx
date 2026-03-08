@@ -423,6 +423,11 @@ export default function ExamsPage() {
 
       {/* 考试列表 */}
       <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* 検索エリア标题 */}
+        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2">
+          検索エリア
+        </h2>
+
         {/* 模式选择 */}
         <div className="mb-4 flex items-center gap-4">
           <span className="text-sm font-medium text-gray-700 w-20 text-right">モード:</span>
@@ -835,6 +840,11 @@ export default function ExamsPage() {
             </label>
           </div>
         </div>
+        {/* リスト結果标题 */}
+        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-500 pb-2 mt-8">
+          リスト結果
+        </h2>
+
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
