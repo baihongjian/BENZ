@@ -49,7 +49,7 @@ const speak = async (text: string) => {
 const playSound = (type: "correct" | "wrong") => {
   if (typeof window === "undefined") return;
 
-  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const AudioContext: typeof window.AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   if (!AudioContext) return;
 
   const ctx = new AudioContext();

@@ -2,6 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 
+// 简单的提示函数
+const showTip = (msg: string) => {
+  alert(msg);
+};
+
 interface Anime {
   mal_id: number;
   title: string;
@@ -171,7 +176,7 @@ export default function TVGuide() {
               </button>
               <button
                 className="px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
-                onClick={() => say("選択してください")}
+                onClick={() => showTip("選択してください")}
               >
                 番組提醒
               </button>
@@ -187,7 +192,7 @@ export default function TVGuide() {
             <span className="text-gray-500">地域：</span>
             <button
               className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-              onClick={() => say("選択してください")}
+              onClick={() => showTip("選択してください")}
             >
               <span className="text-gray-800 font-medium">関東・甲信越</span>
               <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,7 +311,7 @@ export default function TVGuide() {
             ))}
             <button
               className="px-3 py-1 text-sm text-cyan-600 hover:bg-cyan-100 rounded-full transition"
-              onClick={() => say("選択してください")}
+              onClick={() => showTip("選択してください")}
             >
               更多...
             </button>

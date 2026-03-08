@@ -231,7 +231,7 @@ export default function AdminPage() {
       }
 
       // 必须同时有 study1 和 yotsuya 数据
-      const hasBoth = s.study1 && s.yotsuya;
+      const hasBoth = !!s.study1 && !!s.yotsuya;
 
       return matchTypeFiltered && regionFiltered && hasBoth;
     });
@@ -931,9 +931,9 @@ export default function AdminPage() {
                   let matchTypeFiltered = true;
                   if (linkedFilter === 'exact') matchTypeFiltered = s.matchedBy === 'exact';
                   else if (linkedFilter === 'fuzzy') matchTypeFiltered = s.matchedBy === 'fuzzy';
-                  else if (linkedFilter === 'both') matchTypeFiltered = s.study1 && s.yotsuya;
-                  else if (linkedFilter === 'study1_only') matchTypeFiltered = s.study1 && !s.yotsuya;
-                  else if (linkedFilter === 'yotsuya_only') matchTypeFiltered = !s.study1 && s.yotsuya;
+                  else if (linkedFilter === 'both') matchTypeFiltered = !!s.study1 && !!s.yotsuya;
+                  else if (linkedFilter === 'study1_only') matchTypeFiltered = !!!!s.study1 && !s.yotsuya;
+                  else if (linkedFilter === 'yotsuya_only') matchTypeFiltered = !s.study1 && !!s.yotsuya;
 
                   // 区域筛选
                   let regionFiltered = true;
@@ -998,9 +998,9 @@ export default function AdminPage() {
                     let matchTypeFiltered = true;
                     if (linkedFilter === 'exact') matchTypeFiltered = s.matchedBy === 'exact';
                     else if (linkedFilter === 'fuzzy') matchTypeFiltered = s.matchedBy === 'fuzzy';
-                    else if (linkedFilter === 'both') matchTypeFiltered = s.study1 && s.yotsuya;
-                    else if (linkedFilter === 'study1_only') matchTypeFiltered = s.study1 && !s.yotsuya;
-                    else if (linkedFilter === 'yotsuya_only') matchTypeFiltered = !s.study1 && s.yotsuya;
+                    else if (linkedFilter === 'both') matchTypeFiltered = !!s.study1 && !!s.yotsuya;
+                    else if (linkedFilter === 'study1_only') matchTypeFiltered = !!s.study1 && !s.yotsuya;
+                    else if (linkedFilter === 'yotsuya_only') matchTypeFiltered = !!!s.study1 && !!s.yotsuya;
 
                     // 区域筛选 - 只从 study1 中获取区域信息
                     let regionFiltered = true;

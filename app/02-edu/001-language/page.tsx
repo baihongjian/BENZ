@@ -38,7 +38,7 @@ const speak = async (text: string) => {
 const playSound = (type: "correct" | "wrong") => {
   if (typeof window === "undefined") return;
 
-  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const AudioContext: typeof window.AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   if (!AudioContext) return;
 
   const ctx = new AudioContext();
@@ -117,7 +117,7 @@ const musicStyles: Record<MusicStyle, { notes: number[]; durations: number[]; sp
 const createBgMusicPlayer = (style: MusicStyle = "cheerful", onStop: () => void) => {
   if (typeof window === "undefined") return;
 
-  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const AudioContext: typeof window.AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   if (!AudioContext) return;
 
   const config = musicStyles[style];
@@ -163,7 +163,7 @@ const createBgMusicPlayer = (style: MusicStyle = "cheerful", onStop: () => void)
 const playMusicOnce = (style: MusicStyle) => {
   if (typeof window === "undefined") return;
 
-  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const AudioContext: typeof window.AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   if (!AudioContext) return;
 
   const config = musicStyles[style];
@@ -205,7 +205,7 @@ const stopBgMusicPlayer = () => {
 const playTickSound = () => {
   if (typeof window === "undefined") return;
 
-  const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const AudioContext: typeof window.AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   if (!AudioContext) return;
 
   const ctx = new AudioContext();

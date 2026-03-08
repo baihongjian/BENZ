@@ -57,8 +57,8 @@ export default function ChugakuNewsPage() {
     setLoading(true);
     setError('');
     try {
-      // 1. 通过 AWS API 获取前一天的数据
-      const response = await fetch('https://kmacsxuphh.execute-api.ap-northeast-1.amazonaws.com/dev/updates?limit=50');
+      // 1. 通过本地 API 代理获取前一天的数据（解决 CORS 问题）
+      const response = await fetch('/api/02-edu/002-zhongshou/news-aws');
       const data = await response.json();
 
       console.log('AWS API 返回数据:', data);
@@ -252,9 +252,9 @@ export default function ChugakuNewsPage() {
       return;
     }
 
-    console.log('加载的新闻数据:', loadResult.data.map(item => ({ id: item.id, title: item.title?.substring(0, 20), summary: item.summary })));
-    const unanalyzedItems = loadResult.data.filter(item => !item.summary);
-    console.log('未分析的项目:', unanalyzedItems.map(item => ({ id: item.id, title: item.title?.substring(0, 20) })));
+    console.log('加载的新闻数据:', loadResult.data.map((item: any) => ({ id: item.id, title: item.title?.substring(0, 20), summary: item.summary })));
+    const unanalyzedItems = loadResult.data.filter((item: any) => !item.summary);
+    console.log('未分析的项目:', unanalyzedItems.map((item: any) => ({ id: item.id, title: item.title?.substring(0, 20) })));
     if (unanalyzedItems.length === 0) {
       alert('所有新闻已分析完成');
       return;

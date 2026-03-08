@@ -286,6 +286,7 @@ export default function ExamsPage() {
         result.data.forEach((e: Exam) => {
           const deviation = e.deviation || 0;
           const examDateKey = getExamColumnKey(e.exam_date, e.start_time);
+          if (!examDateKey) return; // 跳过无法识别的日期
 
           if (!deviationMap.has(deviation)) {
             deviationMap.set(deviation, new Map());
