@@ -489,48 +489,52 @@ export default function ExamsPage() {
         {displayMode === 'hengan' && (
           <>
            {/* 併願型选择 */}
-           <div className="mb-4 flex flex-wrap items-center gap-2 md:gap-4">
-              <span className="text-sm font-medium text-gray-700 w-20 text-right">併願型:</span>
-              <button
-                onClick={() => setHenganType('basic')}
-                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
-                  henganType === 'basic'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                基本型
-              </button>
-              <button
-                onClick={() => setHenganType('safety')}
-                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
-                  henganType === 'safety'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                安全型
-              </button>
-              <button
-                onClick={() => setHenganType('challenge')}
-                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
-                  henganType === 'challenge'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                チャレンジ型
-              </button>
-              <button
-                onClick={() => setHenganType('custom')}
-                className={`px-3 py-1.5 md:px-4 rounded text-sm font-medium ${
-                  henganType === 'custom'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                カスタム型
-              </button>
+           <div className="mb-4">
+              <div className="flex items-center gap-2 md:gap-4">
+                <span className="text-sm font-medium text-gray-700 w-20 text-right shrink-0">併願型:</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setHenganType('basic')}
+                    className={`px-2 py-1.5 md:px-4 rounded text-xs md:text-sm font-medium ${
+                      henganType === 'basic'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    基本型
+                  </button>
+                  <button
+                    onClick={() => setHenganType('safety')}
+                    className={`px-2 py-1.5 md:px-4 rounded text-xs md:text-sm font-medium ${
+                      henganType === 'safety'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    安全型
+                  </button>
+                  <button
+                    onClick={() => setHenganType('challenge')}
+                    className={`px-2 py-1.5 md:px-4 rounded text-xs md:text-sm font-medium ${
+                      henganType === 'challenge'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    チャレンジ型
+                  </button>
+                  <button
+                    onClick={() => setHenganType('custom')}
+                    className={`px-2 py-1.5 md:px-4 rounded text-xs md:text-sm font-medium ${
+                      henganType === 'custom'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    カスタム型
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* 併願型说明文字 */}
