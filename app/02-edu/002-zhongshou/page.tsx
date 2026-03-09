@@ -98,14 +98,9 @@ export default function NewsListPage() {
                       <div className="flex flex-col gap-1">
                         {/* 学校名和日期 */}
                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <a
-                            href={item.school_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-blue-600 hover:underline"
-                          >
+                          <span className="font-medium text-blue-600">
                             {item.school_name}
-                          </a>
+                          </span>
                           <span>•</span>
                           <time>{item.news_date}</time>
                           {item.category && (
