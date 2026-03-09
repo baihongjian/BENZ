@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const awsUrl = 'https://kmacsxuphh.execute-api.ap-northeast-1.amazonaws.com/dev/updates?limit=50';
+    const awsUrl = 'https://kmacsxuphh.execute-api.ap-northeast-1.amazonaws.com/dev/updates?limit=100';
 
     const response = await fetch(awsUrl, {
       headers: {
