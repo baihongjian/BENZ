@@ -141,6 +141,13 @@ export default function NewsListPage() {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-gray-300 py-8 mt-12">
+        <div className="border-t border-gray-700 mt-6 pt-6 text-center text-sm text-gray-500">
+            © 中学受験ナビ - All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 }
