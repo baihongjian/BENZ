@@ -132,14 +132,24 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
   const limit = parseInt(searchParams.get('limit') || '50');
+  const days = parseInt(searchParams.get('days') || '0'); // 最近天数，0表示不限制
 
-  console.log('[SchoolNewsDB] GET 请求, category:', category, 'limit:', limit);
+  console.log('[SchoolNewsDB] GET 请求, category:', category, 'limit:', limit, 'days:', days);
 
   try {
     const db = await connectDb();
 
     let sql = 'SELECT * FROM news WHERE 1=1';
     const params = [];
+
+    // 筛选最近几天的数据
+    if (days > 0) {
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() - days);
+      const targetDateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+      sql += ' AND news_date >= ?';
+      params.push(targetDateStr);
+    }
 
     if (category && category !== 'all') {
       sql += ' AND category = ?';
