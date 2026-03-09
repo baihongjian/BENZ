@@ -2960,7 +2960,7 @@ export default function GermanLearning() {
               href="/02-edu/001-language/spelling-test"
               className="text-sm px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 transition"
             >
-              🔢 数字拼写 →
+              拼写题 →
             </Link>
             <Link
               href="/02-edu/001-language/select_question"
