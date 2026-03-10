@@ -11,22 +11,28 @@ export default function GermanLearning() {
         </header>
         <div className="flex justify-center gap-4 mb-8 flex-wrap">
           <Link
+            href="/02-edu/001-language/select_question"
+            className="px-6 py-3 bg-pink-100 text-pink-700 rounded-full hover:bg-pink-200 transition font-medium"
+          >
+            1️⃣ ❓ 选择题 →
+          </Link>
+          <Link
             href="/02-edu/001-language/listenning"
             className="px-6 py-3 bg-teal-100 text-teal-700 rounded-full hover:bg-teal-200 transition font-medium"
           >
-            📞 听力题 →
+            2️⃣ 📞 听力题 →
           </Link>
           <Link
             href="/02-edu/001-language/spelling-test"
             className="px-6 py-3 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200 transition font-medium"
           >
-            拼写题 →
+            3️⃣ 拼写题 →
           </Link>
           <Link
-            href="/02-edu/001-language/select_question"
-            className="px-6 py-3 bg-pink-100 text-pink-700 rounded-full hover:bg-pink-200 transition font-medium"
+            href="/02-edu/001-language/SentencePractice"
+            className="px-6 py-3 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition font-medium"
           >
-            ❓ 选择题 →
+            4️⃣ 📝 简单句子 →
           </Link>
         </div>
       </div>
