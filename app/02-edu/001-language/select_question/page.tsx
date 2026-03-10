@@ -228,6 +228,45 @@ const questionWords: Sentence[] = [
   { id: 8, german: "Welcher?", chinese: "哪个？", category: "question" },
 ];
 
+// 德语时刻数据
+const timeExpressions: Sentence[] = [
+  { id: 1, german: "Es ist ein Uhr.", chinese: "1点", category: "hour" },
+  { id: 2, german: "Es ist zwei Uhr.", chinese: "2点", category: "hour" },
+  { id: 3, german: "Es ist drei Uhr.", chinese: "3点", category: "hour" },
+  { id: 4, german: "Es ist vier Uhr.", chinese: "4点", category: "hour" },
+  { id: 5, german: "Es ist fünf Uhr.", chinese: "5点", category: "hour" },
+  { id: 6, german: "Es ist sechs Uhr.", chinese: "6点", category: "hour" },
+  { id: 7, german: "Es ist sieben Uhr.", chinese: "7点", category: "hour" },
+  { id: 8, german: "Es ist acht Uhr.", chinese: "8点", category: "hour" },
+  { id: 9, german: "Es ist neun Uhr.", chinese: "9点", category: "hour" },
+  { id: 10, german: "Es ist zehn Uhr.", chinese: "10点", category: "hour" },
+  { id: 11, german: "Es ist elf Uhr.", chinese: "11点", category: "hour" },
+  { id: 12, german: "Es ist zwölf Uhr.", chinese: "12点", category: "hour" },
+  { id: 13, german: "Es ist dreizehn Uhr.", chinese: "13点", category: "hour" },
+  { id: 14, german: "Es ist vierzehn Uhr.", chinese: "14点", category: "hour" },
+  { id: 15, german: "Es ist fünfzehn Uhr.", chinese: "15点", category: "hour" },
+  { id: 16, german: "Es ist sechzehn Uhr.", chinese: "16点", category: "hour" },
+  { id: 17, german: "Es ist siebzehn Uhr.", chinese: "17点", category: "hour" },
+  { id: 18, german: "Es ist achtzehn Uhr.", chinese: "18点", category: "hour" },
+  { id: 19, german: "Es ist neunzehn Uhr.", chinese: "19点", category: "hour" },
+  { id: 20, german: "Es ist zwanzig Uhr.", chinese: "20点", category: "hour" },
+  { id: 21, german: "Es ist einundzwanzig Uhr.", chinese: "21点", category: "hour" },
+  { id: 22, german: "Es ist zweiundzwanzig Uhr.", chinese: "22点", category: "hour" },
+  { id: 23, german: "Es ist dreiundzwanzig Uhr.", chinese: "23点", category: "hour" },
+  { id: 24, german: "Es ist null Uhr.", chinese: "0点/24点", category: "hour" },
+  // 半点
+  { id: 25, german: "Es ist halb zwei.", chinese: "1点半", category: "half" },
+  { id: 26, german: "Es ist halb drei.", chinese: "2点半", category: "half" },
+  { id: 27, german: "Es ist halb vier.", chinese: "3点半", category: "half" },
+  { id: 28, german: "Es ist halb fünf.", chinese: "4点半", category: "half" },
+  { id: 29, german: "Es ist halb sechs.", chinese: "5点半", category: "half" },
+  // 刻
+  { id: 30, german: "Es ist Viertel zwei.", chinese: "1点15分", category: "quarter" },
+  { id: 31, german: "Es ist Viertel drei.", chinese: "2点15分", category: "quarter" },
+  { id: 32, german: "Es ist dreiviertel zwei.", chinese: "1点45分", category: "quarter" },
+  { id: 33, german: "Es ist dreiviertel drei.", chinese: "2点45分", category: "quarter" },
+];
+
 // 发音函数
 const speak = async (text: string) => {
   if (typeof window === "undefined") return;
@@ -294,11 +333,15 @@ export default function SelectQuestionPage() {
   const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([]);
 
   // 对话模式相关状态
-  const [quizMode, setQuizMode] = useState<"sentence" | "dialog" | "vocab">("sentence");
+  const [quizMode, setQuizMode] = useState<"sentence" | "dialog" | "vocab" | "time">("sentence");
   const [currentDialogQuiz, setCurrentDialogQuiz] = useState<DialogQuiz | null>(null);
   const [dialogWrongBook, setDialogWrongBook] = useState<DialogQuiz[]>([]);
   const [vocabWrongBook, setVocabWrongBook] = useState<Sentence[]>([]);
   const [currentVocabQuiz, setCurrentVocabQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
+  // 时刻模式相关状态
+  const [timeQuizType, setTimeQuizType] = useState<"german" | "chinese">("german");
+  const [timeWrongBook, setTimeWrongBook] = useState<Sentence[]>([]);
+  const [currentTimeQuiz, setCurrentTimeQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
 
   // 从 localStorage 加载错题本
   useEffect(() => {
@@ -399,6 +442,39 @@ export default function SelectQuestionPage() {
     }
   };
 
+  // 从 localStorage 加载时刻错题本
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("timeWrongBook");
+      if (saved) {
+        try {
+          setTimeWrongBook(JSON.parse(saved));
+        } catch (e) {
+          console.error("加载时刻错题本失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存时刻错题本到 localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (timeWrongBook.length > 0) {
+        localStorage.setItem("timeWrongBook", JSON.stringify(timeWrongBook));
+      } else {
+        localStorage.removeItem("timeWrongBook");
+      }
+    }
+  }, [timeWrongBook]);
+
+  // 清空时刻错题本
+  const clearTimeWrongBook = () => {
+    if (confirm("确定要清空时刻错题本吗？")) {
+      setTimeWrongBook([]);
+      localStorage.removeItem("timeWrongBook");
+    }
+  };
+
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -415,6 +491,12 @@ export default function SelectQuestionPage() {
           } else {
             generateDialogQuiz();
           }
+        } else if (quizMode === "time" && currentTimeQuiz) {
+          if (currentQuestionCount >= quizCount) {
+            setQuizFinished(true);
+          } else {
+            generateTimeQuiz();
+          }
         } else if (quizMode === "sentence" && currentQuiz) {
           generateQuiz();
         }
@@ -422,7 +504,7 @@ export default function SelectQuestionPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [quizResult, currentQuiz, currentVocabQuiz, currentDialogQuiz, quizMode, currentQuestionCount, quizCount]);
+  }, [quizResult, currentQuiz, currentVocabQuiz, currentDialogQuiz, currentTimeQuiz, quizMode, currentQuestionCount, quizCount]);
 
   const filteredSentences = category === "all"
     ? sentences
@@ -506,6 +588,33 @@ export default function SelectQuestionPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成时刻题目
+  const generateTimeQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+    const available = timeExpressions;
+    const idx = Math.floor(Math.random() * available.length);
+    const question = available[idx];
+
+    // 生成错误选项
+    const wrong: Sentence[] = [];
+    const others = available.filter(s => s.id !== question.id);
+    while (wrong.length < 3 && others.length > 0) {
+      const r = Math.floor(Math.random() * others.length);
+      wrong.push(others[r]);
+      others.splice(r, 1);
+    }
+
+    const options = [question, ...wrong].sort(() => Math.random() - 0.5);
+    setCurrentTimeQuiz({ question, options });
+    setSelectedIndex(null);
+    setQuizResult(null);
+    setQuizStarted(true);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 开始新答题
   const startQuiz = () => {
     setCurrentQuestionCount(0);
@@ -516,6 +625,8 @@ export default function SelectQuestionPage() {
       generateDialogQuiz();
     } else if (quizMode === "vocab") {
       generateVocabQuiz();
+    } else if (quizMode === "time") {
+      generateTimeQuiz();
     } else {
       generateQuiz();
     }
@@ -557,6 +668,29 @@ export default function SelectQuestionPage() {
       setVocabWrongBook(prev => {
         if (prev.some(s => s.id === currentVocabQuiz.question.id)) return prev;
         return [...prev, currentVocabQuiz.question];
+      });
+    } else {
+      setCorrectCount(prev => prev + 1);
+    }
+
+    if (currentQuestionCount >= quizCount) {
+      setTimeout(() => setQuizFinished(true), 500);
+    }
+  };
+
+  // 时刻模式 - 选择答案
+  const handleTimeSelect = (index: number) => {
+    if (quizResult !== null || !currentTimeQuiz) return;
+    setSelectedIndex(index);
+    const selectedOption = currentTimeQuiz.options[index];
+    const isCorrect = selectedOption.id === currentTimeQuiz.question.id;
+    setQuizResult(isCorrect ? "correct" : "wrong");
+    playSound(isCorrect ? "correct" : "wrong");
+
+    if (!isCorrect) {
+      setTimeWrongBook(prev => {
+        if (prev.some(s => s.id === currentTimeQuiz.question.id)) return prev;
+        return [...prev, currentTimeQuiz.question];
       });
     } else {
       setCorrectCount(prev => prev + 1);
@@ -628,6 +762,12 @@ export default function SelectQuestionPage() {
             疑问词
           </button>
           <button
+            onClick={() => { setQuizMode("time"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${quizMode === "time" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+          >
+            时刻
+          </button>
+          <button
             onClick={() => { setQuizMode("dialog"); setQuizStarted(false); setShowWrongBook(false); }}
             className={`px-4 py-2 rounded-full text-sm ${quizMode === "dialog" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
           >
@@ -665,6 +805,24 @@ export default function SelectQuestionPage() {
             <button
               onClick={() => { setVocabQuizType("chinese"); setQuizStarted(false); }}
               className={`px-4 py-2 rounded-full text-sm ${vocabQuizType === "chinese" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              看德语选中文
+            </button>
+          </div>
+        )}
+
+        {/* 时刻模式：题型选择 */}
+        {quizMode === "time" && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => { setTimeQuizType("german"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${timeQuizType === "german" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              看中文选德语
+            </button>
+            <button
+              onClick={() => { setTimeQuizType("chinese"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${timeQuizType === "chinese" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
             >
               看德语选中文
             </button>
@@ -723,7 +881,7 @@ export default function SelectQuestionPage() {
             onClick={() => setShowWrongBook(true)}
             className={`px-6 py-2 rounded-full ${showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border"}`}
           >
-            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : wrongBook.length})
+            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : quizMode === "time" ? timeWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -732,7 +890,7 @@ export default function SelectQuestionPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : "错题本"}
+                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : quizMode === "time" ? "时刻错题本" : "错题本"}
               </h2>
               {quizMode === "dialog" ? (
                 dialogWrongBook.length > 0 && (
@@ -741,6 +899,10 @@ export default function SelectQuestionPage() {
               ) : quizMode === "vocab" ? (
                 vocabWrongBook.length > 0 && (
                   <button onClick={clearVocabWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
+                )
+              ) : quizMode === "time" ? (
+                timeWrongBook.length > 0 && (
+                  <button onClick={clearTimeWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
                 )
               ) : (
                 wrongBook.length > 0 && (
@@ -768,6 +930,22 @@ export default function SelectQuestionPage() {
               ) : (
                 <div className="space-y-3">
                   {vocabWrongBook.map(s => (
+                    <div key={s.id} className="bg-red-50 p-4 rounded-xl flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-gray-800">{s.german}</p>
+                        <p className="text-gray-600">{s.chinese}</p>
+                      </div>
+                      <button onClick={() => speak(s.german)} className="p-2 bg-amber-100 rounded-full">🔊</button>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : quizMode === "time" ? (
+              timeWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题</p>
+              ) : (
+                <div className="space-y-3">
+                  {timeWrongBook.map(s => (
                     <div key={s.id} className="bg-red-50 p-4 rounded-xl flex justify-between items-center">
                       <div>
                         <p className="font-bold text-gray-800">{s.german}</p>
@@ -810,6 +988,21 @@ export default function SelectQuestionPage() {
                 开始答题 ({quizCount}题)
               </button>
               <p className="text-gray-400 text-sm mt-4">共 {questionWords.length} 个疑问词</p>
+            </div>
+          ) : quizMode === "time" ? (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <div className="text-6xl mb-4">🕐</div>
+              <h2 className="text-xl font-bold mb-4">德语时刻练习</h2>
+              <p className="text-gray-600 mb-6">
+                {timeQuizType === "german" ? "看中文，选择正确的德语时刻表达" : "看德语时刻表达，选择正确的中文"}
+              </p>
+              <button
+                onClick={startQuiz}
+                className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600"
+              >
+                开始答题 ({quizCount}题)
+              </button>
+              <p className="text-gray-400 text-sm mt-4">共 {timeExpressions.length} 个时刻表达</p>
             </div>
           ) : quizMode === "dialog" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -995,6 +1188,75 @@ export default function SelectQuestionPage() {
               </div>
             )}
           </div>
+        ) : quizMode === "time" && currentTimeQuiz ? (
+          /* 时刻答题界面 */
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="text-center mb-6">
+              <p className="text-sm text-gray-500 mb-2">
+                {timeQuizType === "german" ? "请选择正确的德语时刻表达" : "请选择正确的中文"}
+              </p>
+              <p className="text-2xl font-bold text-gray-800">
+                {timeQuizType === "german" ? currentTimeQuiz.question.chinese : currentTimeQuiz.question.german}
+              </p>
+              {timeQuizType === "german" && (
+                <button onClick={() => speak(currentTimeQuiz.question.german)} className="mt-2 px-4 py-2 bg-amber-100 rounded-full">
+                  🔊 播放发音
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {currentTimeQuiz.options.map((option, idx) => {
+                const isSelected = selectedIndex === idx;
+                const showResult = quizResult !== null;
+                const isCorrect = option.id === currentTimeQuiz.question.id;
+
+                let btnClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                if (showResult) {
+                  if (isCorrect) btnClass += "bg-green-500 text-white";
+                  else if (isSelected) btnClass += "bg-red-500 text-white";
+                  else btnClass += "bg-gray-100 text-gray-400";
+                } else {
+                  btnClass += isSelected ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-700 border-2 border-pink-200 hover:bg-pink-100";
+                }
+
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleTimeSelect(idx)}
+                    disabled={showResult}
+                    className={btnClass}
+                  >
+                    <div className="flex justify-between px-4">
+                      <span>{timeQuizType === "german" ? option.german : option.chinese}</span>
+                      {showResult && isCorrect && <span>✓</span>}
+                      {showResult && isSelected && !isCorrect && <span>✗</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {quizResult && (
+              <div className="mt-6 text-center">
+                <p className={`text-xl font-bold ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
+                  {quizResult === "correct" ? "🎉 正确!" : "❌ 错误"}
+                </p>
+                <button
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      generateTimeQuiz();
+                    }
+                  }}
+                  className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
+                >
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
+                </button>
+              </div>
+            )}
+          </div>
         ) : quizMode === "dialog" && currentDialogQuiz ? (
           /* 对话答题界面 */
           <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -1137,9 +1399,11 @@ export default function SelectQuestionPage() {
       <footer className="text-center py-6 text-gray-400 text-sm">
         {quizMode === "vocab"
           ? `共 ${questionWords.length} 个疑问词`
-          : quizMode === "dialog"
-            ? `共 ${dialogQuizzes.length} 道对话题`
-            : `共 ${sentences.length} 个基础句子`}
+          : quizMode === "time"
+            ? `共 ${timeExpressions.length} 个时刻表达`
+            : quizMode === "dialog"
+              ? `共 ${dialogQuizzes.length} 道对话题`
+              : `共 ${sentences.length} 个基础句子`}
       </footer>
     </div>
   );
