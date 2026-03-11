@@ -280,6 +280,15 @@ const personalPronouns: Sentence[] = [
   { id: 6, german: "Sie", chinese: "您们（第二人称复数，正式）", category: "second-formal" },
 ];
 
+// 动词kommen变位数据
+const verbConjugation: Sentence[] = [
+  { id: 1, german: "ich komme", chinese: "我来", category: "1st-singular" },
+  { id: 2, german: "du kommst", chinese: "你来（非正式）", category: "2nd-singular" },
+  { id: 3, german: "wir kommen", chinese: "我们来", category: "1st-plural" },
+  { id: 4, german: "ihr kommt", chinese: "你们来", category: "2nd-plural" },
+  { id: 5, german: "Sie kommen", chinese: "您来（敬语）", category: "2nd-formal" },
+];
+
 // 发音函数
 const speak = async (text: string) => {
   if (typeof window === "undefined") return;
@@ -346,7 +355,7 @@ export default function SelectQuestionPage() {
   const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([]);
 
   // 对话模式相关状态
-  const [quizMode, setQuizMode] = useState<"sentence" | "dialog" | "vocab" | "time" | "pronoun">("sentence");
+  const [quizMode, setQuizMode] = useState<"sentence" | "dialog" | "vocab" | "time" | "pronoun" | "verb">("sentence");
   const [currentDialogQuiz, setCurrentDialogQuiz] = useState<DialogQuiz | null>(null);
   const [dialogWrongBook, setDialogWrongBook] = useState<DialogQuiz[]>([]);
   const [vocabWrongBook, setVocabWrongBook] = useState<Sentence[]>([]);
@@ -359,6 +368,10 @@ export default function SelectQuestionPage() {
   const [pronounQuizType, setPronounQuizType] = useState<"german" | "chinese">("german");
   const [pronounWrongBook, setPronounWrongBook] = useState<Sentence[]>([]);
   const [currentPronounQuiz, setCurrentPronounQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
+  // 动词变位模式相关状态
+  const [verbQuizType, setVerbQuizType] = useState<"german" | "chinese">("german");
+  const [verbWrongBook, setVerbWrongBook] = useState<Sentence[]>([]);
+  const [currentVerbQuiz, setCurrentVerbQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
 
   // 从 localStorage 加载错题本
   useEffect(() => {
@@ -525,6 +538,39 @@ export default function SelectQuestionPage() {
     }
   };
 
+  // 从 localStorage 加载动词变位错题本
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("verbWrongBook");
+      if (saved) {
+        try {
+          setVerbWrongBook(JSON.parse(saved));
+        } catch (e) {
+          console.error("加载动词变位错题本失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存动词变位错题本到 localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (verbWrongBook.length > 0) {
+        localStorage.setItem("verbWrongBook", JSON.stringify(verbWrongBook));
+      } else {
+        localStorage.removeItem("verbWrongBook");
+      }
+    }
+  }, [verbWrongBook]);
+
+  // 清空动词变位错题本
+  const clearVerbWrongBook = () => {
+    if (confirm("确定要清空动词变位错题本吗？")) {
+      setVerbWrongBook([]);
+      localStorage.removeItem("verbWrongBook");
+    }
+  };
+
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -553,6 +599,12 @@ export default function SelectQuestionPage() {
           } else {
             generatePronounQuiz();
           }
+        } else if (quizMode === "verb" && currentVerbQuiz) {
+          if (currentQuestionCount >= quizCount) {
+            setQuizFinished(true);
+          } else {
+            generateVerbQuiz();
+          }
         } else if (quizMode === "sentence" && currentQuiz) {
           generateQuiz();
         }
@@ -560,7 +612,7 @@ export default function SelectQuestionPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [quizResult, currentQuiz, currentVocabQuiz, currentDialogQuiz, currentTimeQuiz, currentPronounQuiz, quizMode, currentQuestionCount, quizCount]);
+  }, [quizResult, currentQuiz, currentVocabQuiz, currentDialogQuiz, currentTimeQuiz, currentPronounQuiz, currentVerbQuiz, quizMode, currentQuestionCount, quizCount]);
 
   const filteredSentences = category === "all"
     ? sentences
@@ -698,6 +750,55 @@ export default function SelectQuestionPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成动词变位题目
+  const generateVerbQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+    const available = verbConjugation;
+    const idx = Math.floor(Math.random() * available.length);
+    const question = available[idx];
+
+    // 生成混淆选项 - 基于正确选项的变位
+    const wrong: Sentence[] = [];
+
+    // 根据不同人称生成混淆选项
+    if (question.german.includes("ich komme")) {
+      // 正确答案: ich komme
+      wrong.push({ id: 1001, german: "ich kommt", chinese: "我来（错误）", category: "wrong" });
+      wrong.push({ id: 1002, german: "ich kommst", chinese: "我来（错误）", category: "wrong" });
+      wrong.push({ id: 1003, german: "ich kommen", chinese: "我来（错误）", category: "wrong" });
+    } else if (question.german.includes("du kommst")) {
+      // 正确答案: du kommst
+      wrong.push({ id: 1011, german: "du komme", chinese: "你来（错误）", category: "wrong" });
+      wrong.push({ id: 1012, german: "du kommt", chinese: "你来（错误）", category: "wrong" });
+      wrong.push({ id: 1013, german: "du kommen", chinese: "你来（错误）", category: "wrong" });
+    } else if (question.german.includes("wir kommen")) {
+      // 正确答案: wir kommen
+      wrong.push({ id: 1021, german: "wir komme", chinese: "我们来（错误）", category: "wrong" });
+      wrong.push({ id: 1022, german: "wir kommst", chinese: "我们来（错误）", category: "wrong" });
+      wrong.push({ id: 1023, german: "wir kommt", chinese: "我们来（错误）", category: "wrong" });
+    } else if (question.german.includes("ihr kommt")) {
+      // 正确答案: ihr kommt
+      wrong.push({ id: 1031, german: "ihr komme", chinese: "你们来（错误）", category: "wrong" });
+      wrong.push({ id: 1032, german: "ihr kommst", chinese: "你们来（错误）", category: "wrong" });
+      wrong.push({ id: 1033, german: "ihr kommen", chinese: "你们来（错误）", category: "wrong" });
+    } else if (question.german.includes("Sie kommen")) {
+      // 正确答案: Sie kommen
+      wrong.push({ id: 1041, german: "Sie komme", chinese: "您来（错误）", category: "wrong" });
+      wrong.push({ id: 1042, german: "Sie kommst", chinese: "您来（错误）", category: "wrong" });
+      wrong.push({ id: 1043, german: "Sie kommt", chinese: "您来（错误）", category: "wrong" });
+    }
+
+    const options = [question, ...wrong].sort(() => Math.random() - 0.5);
+    setCurrentVerbQuiz({ question, options });
+    setSelectedIndex(null);
+    setQuizResult(null);
+    setQuizStarted(true);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 开始新答题
   const startQuiz = () => {
     setCurrentQuestionCount(0);
@@ -712,6 +813,8 @@ export default function SelectQuestionPage() {
       generateTimeQuiz();
     } else if (quizMode === "pronoun") {
       generatePronounQuiz();
+    } else if (quizMode === "verb") {
+      generateVerbQuiz();
     } else {
       generateQuiz();
     }
@@ -809,6 +912,29 @@ export default function SelectQuestionPage() {
     }
   };
 
+  // 动词变位模式 - 选择答案
+  const handleVerbSelect = (index: number) => {
+    if (quizResult !== null || !currentVerbQuiz) return;
+    setSelectedIndex(index);
+    const selectedOption = currentVerbQuiz.options[index];
+    const isCorrect = selectedOption.id === currentVerbQuiz.question.id;
+    setQuizResult(isCorrect ? "correct" : "wrong");
+    playSound(isCorrect ? "correct" : "wrong");
+
+    if (!isCorrect) {
+      setVerbWrongBook(prev => {
+        if (prev.some(s => s.id === currentVerbQuiz.question.id)) return prev;
+        return [...prev, currentVerbQuiz.question];
+      });
+    } else {
+      setCorrectCount(prev => prev + 1);
+    }
+
+    if (currentQuestionCount >= quizCount) {
+      setTimeout(() => setQuizFinished(true), 500);
+    }
+  };
+
   // 选择答案
   const handleSelect = (index: number) => {
     if (quizResult !== null || !currentQuiz) return;
@@ -884,13 +1010,22 @@ export default function SelectQuestionPage() {
         </div>
 
         {/* 语法分类 */}
-        <div className="flex justify-center gap-2 mb-4">
-          <button
-            onClick={() => { setQuizMode("pronoun"); setQuizStarted(false); setShowWrongBook(false); }}
-            className={`px-4 py-2 rounded-full text-sm ${quizMode === "pronoun" ? "bg-purple-500 text-white" : "bg-purple-50 text-purple-600"}`}
+        <div className="flex justify-center mb-4">
+          <select
+            value={quizMode === "pronoun" || quizMode === "verb" ? quizMode : ""}
+            onChange={(e) => {
+              if (e.target.value) {
+                setQuizMode(e.target.value as "pronoun" | "verb");
+                setQuizStarted(false);
+                setShowWrongBook(false);
+              }
+            }}
+            className="px-4 py-2 rounded-full text-sm bg-white border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            语法1: 人称代词（第1人称和第2人称）
-          </button>
+            <option value="">选择语法练习...</option>
+            <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
+            <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
+          </select>
         </div>
 
         {/* 句子模式：题型选择 */}
@@ -965,6 +1100,24 @@ export default function SelectQuestionPage() {
           </div>
         )}
 
+        {/* 动词变位模式：题型选择 */}
+        {quizMode === "verb" && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => { setVerbQuizType("german"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbQuizType === "german" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              看中文选德语
+            </button>
+            <button
+              onClick={() => { setVerbQuizType("chinese"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbQuizType === "chinese" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              看德语选中文
+            </button>
+          </div>
+        )}
+
         {/* 句子模式：分类筛选 */}
         {quizMode === "sentence" && (
           <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -1017,7 +1170,7 @@ export default function SelectQuestionPage() {
             onClick={() => setShowWrongBook(true)}
             className={`px-6 py-2 rounded-full ${showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border"}`}
           >
-            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : quizMode === "time" ? timeWrongBook.length : quizMode === "pronoun" ? pronounWrongBook.length : wrongBook.length})
+            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : quizMode === "time" ? timeWrongBook.length : quizMode === "pronoun" ? pronounWrongBook.length : quizMode === "verb" ? verbWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -1026,7 +1179,7 @@ export default function SelectQuestionPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : quizMode === "time" ? "时刻错题本" : quizMode === "pronoun" ? "人称代词错题本" : "错题本"}
+                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : quizMode === "time" ? "时刻错题本" : quizMode === "pronoun" ? "人称代词错题本" : quizMode === "verb" ? "动词变位错题本" : "错题本"}
               </h2>
               {quizMode === "dialog" ? (
                 dialogWrongBook.length > 0 && (
@@ -1043,6 +1196,10 @@ export default function SelectQuestionPage() {
               ) : quizMode === "pronoun" ? (
                 pronounWrongBook.length > 0 && (
                   <button onClick={clearPronounWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
+                )
+              ) : quizMode === "verb" ? (
+                verbWrongBook.length > 0 && (
+                  <button onClick={clearVerbWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
                 )
               ) : (
                 wrongBook.length > 0 && (
@@ -1102,6 +1259,22 @@ export default function SelectQuestionPage() {
               ) : (
                 <div className="space-y-3">
                   {pronounWrongBook.map(s => (
+                    <div key={s.id} className="bg-red-50 p-4 rounded-xl flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-gray-800">{s.german}</p>
+                        <p className="text-gray-600">{s.chinese}</p>
+                      </div>
+                      <button onClick={() => speak(s.german)} className="p-2 bg-amber-100 rounded-full">🔊</button>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : quizMode === "verb" ? (
+              verbWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题</p>
+              ) : (
+                <div className="space-y-3">
+                  {verbWrongBook.map(s => (
                     <div key={s.id} className="bg-red-50 p-4 rounded-xl flex justify-between items-center">
                       <div>
                         <p className="font-bold text-gray-800">{s.german}</p>
@@ -1174,6 +1347,21 @@ export default function SelectQuestionPage() {
                 开始答题 ({quizCount}题)
               </button>
               <p className="text-gray-400 text-sm mt-4">共 {personalPronouns.length} 个人称代词</p>
+            </div>
+          ) : quizMode === "verb" ? (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <div className="text-6xl mb-4">🚗</div>
+              <h2 className="text-xl font-bold mb-4">动词kommen变位练习</h2>
+              <p className="text-gray-600 mb-6">
+                {verbQuizType === "german" ? "看中文，选择正确的动词kommen变位" : "看德语动词变位，选择正确的中文"}
+              </p>
+              <button
+                onClick={startQuiz}
+                className="px-8 py-3 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600"
+              >
+                开始答题 ({quizCount}题)
+              </button>
+              <p className="text-gray-400 text-sm mt-4">共 {verbConjugation.length} 个动词变位</p>
             </div>
           ) : quizMode === "dialog" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -1497,6 +1685,75 @@ export default function SelectQuestionPage() {
               </div>
             )}
           </div>
+        ) : quizMode === "verb" && currentVerbQuiz ? (
+          /* 动词变位答题界面 */
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="text-center mb-6">
+              <p className="text-sm text-gray-500 mb-2">
+                {verbQuizType === "german" ? "请选择正确的动词kommen变位" : "请选择正确的中文"}
+              </p>
+              <p className="text-2xl font-bold text-gray-800">
+                {verbQuizType === "german" ? currentVerbQuiz.question.chinese : currentVerbQuiz.question.german}
+              </p>
+              {verbQuizType === "german" && (
+                <button onClick={() => speak(currentVerbQuiz.question.german)} className="mt-2 px-4 py-2 bg-amber-100 rounded-full">
+                  🔊 播放发音
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {currentVerbQuiz.options.map((option, idx) => {
+                const isSelected = selectedIndex === idx;
+                const showResult = quizResult !== null;
+                const isCorrect = option.id === currentVerbQuiz.question.id;
+
+                let btnClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                if (showResult) {
+                  if (isCorrect) btnClass += "bg-green-500 text-white";
+                  else if (isSelected) btnClass += "bg-red-500 text-white";
+                  else btnClass += "bg-gray-100 text-gray-400";
+                } else {
+                  btnClass += isSelected ? "bg-orange-500 text-white" : "bg-orange-50 text-orange-700 border-2 border-orange-200 hover:bg-orange-100";
+                }
+
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleVerbSelect(idx)}
+                    disabled={showResult}
+                    className={btnClass}
+                  >
+                    <div className="flex justify-between px-4">
+                      <span>{verbQuizType === "german" ? option.german : option.chinese}</span>
+                      {showResult && isCorrect && <span>✓</span>}
+                      {showResult && isSelected && !isCorrect && <span>✗</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {quizResult && (
+              <div className="mt-6 text-center">
+                <p className={`text-xl font-bold ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
+                  {quizResult === "correct" ? "🎉 正确!" : "❌ 错误"}
+                </p>
+                <button
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      generateVerbQuiz();
+                    }
+                  }}
+                  className="mt-4 px-8 py-3 bg-orange-500 text-white rounded-full"
+                >
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
+                </button>
+              </div>
+            )}
+          </div>
         ) : quizMode === "dialog" && currentDialogQuiz ? (
           /* 对话答题界面 */
           <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -1643,9 +1900,11 @@ export default function SelectQuestionPage() {
             ? `共 ${timeExpressions.length} 个时刻表达`
             : quizMode === "pronoun"
               ? `共 ${personalPronouns.length} 个人称代词`
-              : quizMode === "dialog"
-                ? `共 ${dialogQuizzes.length} 道对话题`
-                : `共 ${sentences.length} 个基础句子`}
+              : quizMode === "verb"
+                ? `共 ${verbConjugation.length} 个动词变位`
+                : quizMode === "dialog"
+                  ? `共 ${dialogQuizzes.length} 道对话题`
+                  : `共 ${sentences.length} 个基础句子`}
       </footer>
     </div>
   );
