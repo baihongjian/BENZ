@@ -289,6 +289,15 @@ const verbConjugation: Sentence[] = [
   { id: 5, german: "Sie kommen", chinese: "您来（敬语）", category: "2nd-formal" },
 ];
 
+// 动词sein变位数据
+const seinConjugation: Sentence[] = [
+  { id: 201, german: "ich bin", chinese: "我是", category: "1st-singular" },
+  { id: 202, german: "du bist", chinese: "你是（非正式）", category: "2nd-singular" },
+  { id: 203, german: "wir sind", chinese: "我们是", category: "1st-plural" },
+  { id: 204, german: "ihr seid", chinese: "你们是", category: "2nd-plural" },
+  { id: 205, german: "Sie sind", chinese: "您是（敬语）", category: "2nd-formal" },
+];
+
 // 发音函数
 const speak = async (text: string) => {
   if (typeof window === "undefined") return;
@@ -370,7 +379,9 @@ export default function SelectQuestionPage() {
   const [currentPronounQuiz, setCurrentPronounQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
   // 动词变位模式相关状态
   const [verbQuizType, setVerbQuizType] = useState<"german" | "chinese">("german");
+  const [verbType, setVerbType] = useState<"kommen" | "sein">("kommen");
   const [verbWrongBook, setVerbWrongBook] = useState<Sentence[]>([]);
+  const [seinWrongBook, setSeinWrongBook] = useState<Sentence[]>([]);
   const [currentVerbQuiz, setCurrentVerbQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
 
   // 从 localStorage 加载错题本
@@ -566,8 +577,13 @@ export default function SelectQuestionPage() {
   // 清空动词变位错题本
   const clearVerbWrongBook = () => {
     if (confirm("确定要清空动词变位错题本吗？")) {
-      setVerbWrongBook([]);
-      localStorage.removeItem("verbWrongBook");
+      if (verbType === "kommen") {
+        setVerbWrongBook([]);
+        localStorage.removeItem("verbWrongBook");
+      } else {
+        setSeinWrongBook([]);
+        localStorage.removeItem("seinWrongBook");
+      }
     }
   };
 
@@ -756,39 +772,61 @@ export default function SelectQuestionPage() {
       setQuizFinished(true);
       return;
     }
-    const available = verbConjugation;
+
+    // 根据verbType选择对应的动词数据
+    const available = verbType === "kommen" ? verbConjugation : seinConjugation;
     const idx = Math.floor(Math.random() * available.length);
     const question = available[idx];
 
     // 生成混淆选项 - 基于正确选项的变位
     const wrong: Sentence[] = [];
 
-    // 根据不同人称生成混淆选项
-    if (question.german.includes("ich komme")) {
-      // 正确答案: ich komme
-      wrong.push({ id: 1001, german: "ich kommt", chinese: "我来（错误）", category: "wrong" });
-      wrong.push({ id: 1002, german: "ich kommst", chinese: "我来（错误）", category: "wrong" });
-      wrong.push({ id: 1003, german: "ich kommen", chinese: "我来（错误）", category: "wrong" });
-    } else if (question.german.includes("du kommst")) {
-      // 正确答案: du kommst
-      wrong.push({ id: 1011, german: "du komme", chinese: "你来（错误）", category: "wrong" });
-      wrong.push({ id: 1012, german: "du kommt", chinese: "你来（错误）", category: "wrong" });
-      wrong.push({ id: 1013, german: "du kommen", chinese: "你来（错误）", category: "wrong" });
-    } else if (question.german.includes("wir kommen")) {
-      // 正确答案: wir kommen
-      wrong.push({ id: 1021, german: "wir komme", chinese: "我们来（错误）", category: "wrong" });
-      wrong.push({ id: 1022, german: "wir kommst", chinese: "我们来（错误）", category: "wrong" });
-      wrong.push({ id: 1023, german: "wir kommt", chinese: "我们来（错误）", category: "wrong" });
-    } else if (question.german.includes("ihr kommt")) {
-      // 正确答案: ihr kommt
-      wrong.push({ id: 1031, german: "ihr komme", chinese: "你们来（错误）", category: "wrong" });
-      wrong.push({ id: 1032, german: "ihr kommst", chinese: "你们来（错误）", category: "wrong" });
-      wrong.push({ id: 1033, german: "ihr kommen", chinese: "你们来（错误）", category: "wrong" });
-    } else if (question.german.includes("Sie kommen")) {
-      // 正确答案: Sie kommen
-      wrong.push({ id: 1041, german: "Sie komme", chinese: "您来（错误）", category: "wrong" });
-      wrong.push({ id: 1042, german: "Sie kommst", chinese: "您来（错误）", category: "wrong" });
-      wrong.push({ id: 1043, german: "Sie kommt", chinese: "您来（错误）", category: "wrong" });
+    if (verbType === "kommen") {
+      // kommen 动词的混淆选项
+      if (question.german.includes("ich komme")) {
+        wrong.push({ id: 1001, german: "ich kommt", chinese: "我来（错误）", category: "wrong" });
+        wrong.push({ id: 1002, german: "ich kommst", chinese: "我来（错误）", category: "wrong" });
+        wrong.push({ id: 1003, german: "ich kommen", chinese: "我来（错误）", category: "wrong" });
+      } else if (question.german.includes("du kommst")) {
+        wrong.push({ id: 1011, german: "du komme", chinese: "你来（错误）", category: "wrong" });
+        wrong.push({ id: 1012, german: "du kommt", chinese: "你来（错误）", category: "wrong" });
+        wrong.push({ id: 1013, german: "du kommen", chinese: "你来（错误）", category: "wrong" });
+      } else if (question.german.includes("wir kommen")) {
+        wrong.push({ id: 1021, german: "wir komme", chinese: "我们来（错误）", category: "wrong" });
+        wrong.push({ id: 1022, german: "wir kommst", chinese: "我们来（错误）", category: "wrong" });
+        wrong.push({ id: 1023, german: "wir kommt", chinese: "我们来（错误）", category: "wrong" });
+      } else if (question.german.includes("ihr kommt")) {
+        wrong.push({ id: 1031, german: "ihr komme", chinese: "你们来（错误）", category: "wrong" });
+        wrong.push({ id: 1032, german: "ihr kommst", chinese: "你们来（错误）", category: "wrong" });
+        wrong.push({ id: 1033, german: "ihr kommen", chinese: "你们来（错误）", category: "wrong" });
+      } else if (question.german.includes("Sie kommen")) {
+        wrong.push({ id: 1041, german: "Sie komme", chinese: "您来（错误）", category: "wrong" });
+        wrong.push({ id: 1042, german: "Sie kommst", chinese: "您来（错误）", category: "wrong" });
+        wrong.push({ id: 1043, german: "Sie kommt", chinese: "您来（错误）", category: "wrong" });
+      }
+    } else {
+      // sein 动词的混淆选项
+      if (question.german.includes("ich bin")) {
+        wrong.push({ id: 2001, german: "ich bist", chinese: "我是（错误）", category: "wrong" });
+        wrong.push({ id: 2002, german: "ich ist", chinese: "我是（错误）", category: "wrong" });
+        wrong.push({ id: 2003, german: "ich sind", chinese: "我是（错误）", category: "wrong" });
+      } else if (question.german.includes("du bist")) {
+        wrong.push({ id: 2011, german: "du bin", chinese: "你是（错误）", category: "wrong" });
+        wrong.push({ id: 2012, german: "du ist", chinese: "你是（错误）", category: "wrong" });
+        wrong.push({ id: 2013, german: "du sind", chinese: "你是（错误）", category: "wrong" });
+      } else if (question.german.includes("wir sind")) {
+        wrong.push({ id: 2021, german: "wir bin", chinese: "我们是（错误）", category: "wrong" });
+        wrong.push({ id: 2022, german: "wir bist", chinese: "我们是（错误）", category: "wrong" });
+        wrong.push({ id: 2023, german: "wir ist", chinese: "我们是（错误）", category: "wrong" });
+      } else if (question.german.includes("ihr seid")) {
+        wrong.push({ id: 2031, german: "ihr bin", chinese: "你们是（错误）", category: "wrong" });
+        wrong.push({ id: 2032, german: "ihr bist", chinese: "你们是（错误）", category: "wrong" });
+        wrong.push({ id: 2033, german: "ihr ist", chinese: "你们是（错误）", category: "wrong" });
+      } else if (question.german.includes("Sie sind")) {
+        wrong.push({ id: 2041, german: "Sie bin", chinese: "您是（错误）", category: "wrong" });
+        wrong.push({ id: 2042, german: "Sie bist", chinese: "您是（错误）", category: "wrong" });
+        wrong.push({ id: 2043, german: "Sie ist", chinese: "您是（错误）", category: "wrong" });
+      }
     }
 
     const options = [question, ...wrong].sort(() => Math.random() - 0.5);
@@ -922,10 +960,18 @@ export default function SelectQuestionPage() {
     playSound(isCorrect ? "correct" : "wrong");
 
     if (!isCorrect) {
-      setVerbWrongBook(prev => {
-        if (prev.some(s => s.id === currentVerbQuiz.question.id)) return prev;
-        return [...prev, currentVerbQuiz.question];
-      });
+      // 根据verbType保存到对应的错题本
+      if (verbType === "kommen") {
+        setVerbWrongBook(prev => {
+          if (prev.some(s => s.id === currentVerbQuiz.question.id)) return prev;
+          return [...prev, currentVerbQuiz.question];
+        });
+      } else {
+        setSeinWrongBook(prev => {
+          if (prev.some(s => s.id === currentVerbQuiz.question.id)) return prev;
+          return [...prev, currentVerbQuiz.question];
+        });
+      }
     } else {
       setCorrectCount(prev => prev + 1);
     }
@@ -1100,6 +1146,24 @@ export default function SelectQuestionPage() {
           </div>
         )}
 
+        {/* 动词变位模式：动词选择 */}
+        {quizMode === "verb" && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => { setVerbType("kommen"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbType === "kommen" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              kommen（来）
+            </button>
+            <button
+              onClick={() => { setVerbType("sein"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbType === "sein" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              sein（是）
+            </button>
+          </div>
+        )}
+
         {/* 动词变位模式：题型选择 */}
         {quizMode === "verb" && (
           <div className="flex justify-center gap-2 mb-4">
@@ -1170,7 +1234,7 @@ export default function SelectQuestionPage() {
             onClick={() => setShowWrongBook(true)}
             className={`px-6 py-2 rounded-full ${showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border"}`}
           >
-            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : quizMode === "time" ? timeWrongBook.length : quizMode === "pronoun" ? pronounWrongBook.length : quizMode === "verb" ? verbWrongBook.length : wrongBook.length})
+            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : quizMode === "time" ? timeWrongBook.length : quizMode === "pronoun" ? pronounWrongBook.length : quizMode === "verb" ? (verbType === "kommen" ? verbWrongBook.length : seinWrongBook.length) : wrongBook.length})
           </button>
         </div>
 
@@ -1179,7 +1243,7 @@ export default function SelectQuestionPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : quizMode === "time" ? "时刻错题本" : quizMode === "pronoun" ? "人称代词错题本" : quizMode === "verb" ? "动词变位错题本" : "错题本"}
+                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : quizMode === "time" ? "时刻错题本" : quizMode === "pronoun" ? "人称代词错题本" : quizMode === "verb" ? `动词${verbType === "kommen" ? "kommen" : "sein"}变位错题本` : "错题本"}
               </h2>
               {quizMode === "dialog" ? (
                 dialogWrongBook.length > 0 && (
@@ -1198,7 +1262,7 @@ export default function SelectQuestionPage() {
                   <button onClick={clearPronounWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
                 )
               ) : quizMode === "verb" ? (
-                verbWrongBook.length > 0 && (
+                (verbType === "kommen" ? verbWrongBook : seinWrongBook).length > 0 && (
                   <button onClick={clearVerbWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
                 )
               ) : (
@@ -1270,11 +1334,11 @@ export default function SelectQuestionPage() {
                 </div>
               )
             ) : quizMode === "verb" ? (
-              verbWrongBook.length === 0 ? (
+              (verbType === "kommen" ? verbWrongBook : seinWrongBook).length === 0 ? (
                 <p className="text-gray-500 text-center py-8">暂无错题</p>
               ) : (
                 <div className="space-y-3">
-                  {verbWrongBook.map(s => (
+                  {(verbType === "kommen" ? verbWrongBook : seinWrongBook).map(s => (
                     <div key={s.id} className="bg-red-50 p-4 rounded-xl flex justify-between items-center">
                       <div>
                         <p className="font-bold text-gray-800">{s.german}</p>
@@ -1351,9 +1415,9 @@ export default function SelectQuestionPage() {
           ) : quizMode === "verb" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
               <div className="text-6xl mb-4">🚗</div>
-              <h2 className="text-xl font-bold mb-4">动词kommen变位练习</h2>
+              <h2 className="text-xl font-bold mb-4">动词{verbType === "kommen" ? "kommen" : "sein"}变位练习</h2>
               <p className="text-gray-600 mb-6">
-                {verbQuizType === "german" ? "看中文，选择正确的动词kommen变位" : "看德语动词变位，选择正确的中文"}
+                {verbQuizType === "german" ? `看中文，选择正确的动词${verbType === "kommen" ? "kommen" : "sein"}变位` : "看德语动词变位，选择正确的中文"}
               </p>
               <button
                 onClick={startQuiz}
@@ -1361,7 +1425,7 @@ export default function SelectQuestionPage() {
               >
                 开始答题 ({quizCount}题)
               </button>
-              <p className="text-gray-400 text-sm mt-4">共 {verbConjugation.length} 个动词变位</p>
+              <p className="text-gray-400 text-sm mt-4">共 {verbType === "kommen" ? verbConjugation.length : seinConjugation.length} 个动词变位</p>
             </div>
           ) : quizMode === "dialog" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -1901,7 +1965,7 @@ export default function SelectQuestionPage() {
             : quizMode === "pronoun"
               ? `共 ${personalPronouns.length} 个人称代词`
               : quizMode === "verb"
-                ? `共 ${verbConjugation.length} 个动词变位`
+                ? `共 ${verbType === "kommen" ? verbConjugation.length : seinConjugation.length} 个动词变位`
                 : quizMode === "dialog"
                   ? `共 ${dialogQuizzes.length} 道对话题`
                   : `共 ${sentences.length} 个基础句子`}
