@@ -276,19 +276,16 @@ export default function SpellingTestPage() {
         </div>
 
         {/* 语法分类 */}
-        <div className="flex justify-center gap-2 mb-4 flex-wrap">
-          <button
-            onClick={() => { setContentType("pronoun"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
-            className={`px-4 py-2 rounded-full text-sm ${contentType === "pronoun" ? "bg-purple-500 text-white" : "bg-purple-50 text-purple-600"}`}
+        <div className="flex justify-center mb-4">
+          <select
+            value={contentType === "number" || contentType === "questionWord" ? "" : contentType}
+            onChange={(e) => { setContentType(e.target.value as "pronoun" | "verb"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            className="px-4 py-2 rounded-full text-sm font-medium border-2 border-purple-200 bg-white text-gray-700 focus:outline-none focus:border-purple-400"
           >
-            语法1: 人称代词（第1人称和第2人称）
-          </button>
-          <button
-            onClick={() => { setContentType("verb"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
-            className={`px-4 py-2 rounded-full text-sm ${contentType === "verb" ? "bg-orange-500 text-white" : "bg-orange-50 text-orange-600"}`}
-          >
-            语法2: 动词变位（kommen）第1人称和第2人称
-          </button>
+            <option value="">选择语法类型</option>
+            <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
+            <option value="verb">语法2: 动词变位（kommen）第1人称和第2人称</option>
+          </select>
         </div>
 
         {/* 模式切换 */}
