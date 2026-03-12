@@ -135,6 +135,10 @@ export default function SpellingTestPage() {
   const [quizStarted, setQuizStarted] = useState(false);
   const [wrongBook, setWrongBook] = useState<typeof germanNumbers>([]);
   const [showWrongBook, setShowWrongBook] = useState(false);
+  const [quizCount, setQuizCount] = useState<5 | 10 | 15 | 20>(5);
+  const [currentQuestionCount, setCurrentQuestionCount] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [quizFinished, setQuizFinished] = useState(false);
 
   // 疑问词相关
   const [questionWordIndex, setQuestionWordIndex] = useState(0);
@@ -160,8 +164,23 @@ export default function SpellingTestPage() {
   // 当前动词变位
   const currentVerb = verbConjugation[verbIndex];
 
+  // 开始答题
+  const startQuiz = () => {
+    // 第一次开始，重置计数
+    setCurrentQuestionCount(0);
+    setCorrectCount(0);
+    setQuizFinished(false);
+    generateQuiz();
+  };
+
   // 生成答题题目
   const generateQuiz = () => {
+    // 检查是否已完成答题数量
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
     if (contentType === "questionWord") {
       const randomIndex = Math.floor(Math.random() * questionWords.length);
       setQuestionWordQuiz(questionWords[randomIndex]);
@@ -178,6 +197,7 @@ export default function SpellingTestPage() {
     setUserInput("");
     setQuizResult(null);
     setQuizStarted(true);
+    setCurrentQuestionCount(prev => prev + 1);
   };
 
   // 提交答案
@@ -218,6 +238,7 @@ export default function SpellingTestPage() {
 
     if (isCorrect) {
       setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
       playSound("correct");
     } else {
       setQuizResult("wrong");
@@ -228,13 +249,17 @@ export default function SpellingTestPage() {
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook) {
-        generateQuiz();
+      if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook && !quizFinished) {
+        if (currentQuestionCount >= quizCount) {
+          setQuizFinished(true);
+        } else {
+          generateQuiz();
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [quizResult, quizStarted, showWrongBook, contentType, questionWordQuiz, pronounQuiz, verbQuiz, quizNumber]);
+  }, [quizResult, quizStarted, showWrongBook, quizFinished, currentQuestionCount, quizCount]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50">
@@ -670,6 +695,24 @@ export default function SpellingTestPage() {
               )}
             </div>
 
+            {/* 答题数量选择 */}
+            {!quizStarted && !showWrongBook && (
+              <div className="flex justify-center gap-2 mb-6">
+                <span className="text-sm text-gray-600 self-center">答题数量:</span>
+                {[5, 10, 15, 20].map(count => (
+                  <button
+                    key={count}
+                    onClick={() => { setQuizCount(count as 5|10|15|20); setQuizStarted(false); }}
+                    className={`px-4 py-2 rounded-full text-sm ${
+                      quizCount === count ? "bg-indigo-500 text-white" : "bg-white text-gray-600 border"
+                    }`}
+                  >
+                    {count}题
+                  </button>
+                ))}
+              </div>
+            )}
+
             {!quizStarted ? (
               <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
                 <div className="text-6xl mb-6">
@@ -688,14 +731,47 @@ export default function SpellingTestPage() {
                         : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
                 </p>
                 <button
-                  onClick={generateQuiz}
+                  onClick={startQuiz}
                   className="px-8 py-3 bg-indigo-500 text-white rounded-full font-medium hover:bg-indigo-600 transition"
                 >
                   开始答题
                 </button>
               </div>
+            ) : quizFinished ? (
+              /* 答题完成 */
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-xl font-bold mb-4">练习完成!</h2>
+                <div className="text-4xl font-bold text-indigo-500 mb-2">
+                  {correctCount} / {quizCount}
+                </div>
+                <p className="text-gray-600 mb-6">
+                  正确率: {Math.round((correctCount / quizCount) * 100)}%
+                </p>
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={() => { setQuizStarted(false); setQuizFinished(false); setCurrentQuestionCount(0); setCorrectCount(0); }}
+                    className="px-6 py-3 bg-indigo-500 text-white rounded-full font-medium hover:bg-indigo-600"
+                  >
+                    重新开始
+                  </button>
+                  <button
+                    onClick={() => { setShowWrongBook(true); }}
+                    className="px-6 py-3 bg-red-500 text-white rounded-full font-medium hover:bg-red-600"
+                  >
+                    查看错题
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="bg-white rounded-2xl shadow-lg p-6">
+                {/* 进度显示 */}
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-500">
+                    进度: {currentQuestionCount} / {quizCount} 题 | 正确: {correctCount} 题
+                  </span>
+                </div>
+
                 {/* 题目 */}
                 <div className="text-center mb-6">
                   <p className="text-sm text-gray-500 mb-2">
@@ -771,10 +847,16 @@ export default function SpellingTestPage() {
                       </p>
                     </div>
                     <button
-                      onClick={generateQuiz}
+                      onClick={() => {
+                        if (currentQuestionCount >= quizCount) {
+                          setQuizFinished(true);
+                        } else {
+                          generateQuiz();
+                        }
+                      }}
                       className="px-8 py-3 bg-indigo-500 text-white rounded-full font-medium hover:bg-indigo-600"
                     >
-                      下一题 →
+                      {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
                     </button>
                   </div>
                 )}
