@@ -47,6 +47,15 @@ const verbConjugation = [
   { id: 5, german: "Sie kommen", chinese: "您来" },
 ];
 
+// 德语动词sein变位数据
+const seinConjugation = [
+  { id: 201, german: "ich bin", chinese: "我是" },
+  { id: 202, german: "du bist", chinese: "你是" },
+  { id: 203, german: "wir sind", chinese: "我们是" },
+  { id: 204, german: "ihr seid", chinese: "你们是" },
+  { id: 205, german: "Sie sind", chinese: "您是" },
+];
+
 // 发音函数 - 使用 Edge TTS
 const speak = async (text: string) => {
   if (typeof window === "undefined") return;
@@ -152,6 +161,7 @@ export default function SpellingTestPage() {
 
   // 动词变位相关
   const [verbIndex, setVerbIndex] = useState(0);
+  const [verbType, setVerbType] = useState<"kommen" | "sein">("kommen");
   const [verbQuiz, setVerbQuiz] = useState<typeof verbConjugation[0] | null>(null);
   const [verbWrongBook, setVerbWrongBook] = useState<typeof verbConjugation>([]);
 
@@ -162,7 +172,7 @@ export default function SpellingTestPage() {
   // 当前人称代词
   const currentPronoun = personalPronouns[pronounIndex];
   // 当前动词变位
-  const currentVerb = verbConjugation[verbIndex];
+  const currentVerb = verbType === "kommen" ? verbConjugation[verbIndex] : seinConjugation[verbIndex];
 
   // 开始答题
   const startQuiz = () => {
@@ -188,8 +198,9 @@ export default function SpellingTestPage() {
       const randomIndex = Math.floor(Math.random() * personalPronouns.length);
       setPronounQuiz(personalPronouns[randomIndex]);
     } else if (contentType === "verb") {
-      const randomIndex = Math.floor(Math.random() * verbConjugation.length);
-      setVerbQuiz(verbConjugation[randomIndex]);
+      const available = verbType === "kommen" ? verbConjugation : seinConjugation;
+      const randomIndex = Math.floor(Math.random() * available.length);
+      setVerbQuiz(available[randomIndex]);
     } else {
       const randomIndex = Math.floor(Math.random() * germanNumbers.length);
       setQuizNumber(germanNumbers[randomIndex]);
@@ -275,7 +286,7 @@ export default function SpellingTestPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold">
-            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "verb" ? "🔄 动词变位拼写" : "🔢 德语数字拼写"}
+            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : "🔢 德语数字拼写"}
           </h1>
           <p className="mt-1 opacity-90">
             {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "verb" ? "动词kommen变位听写练习" : "0-9 数字单词听写练习"}
@@ -309,9 +320,27 @@ export default function SpellingTestPage() {
           >
             <option value="">选择语法类型</option>
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
-            <option value="verb">语法2: 动词变位（kommen）第1人称和第2人称</option>
+            <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
           </select>
         </div>
+
+        {/* 动词类型选择 */}
+        {contentType === "verb" && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => { setVerbType("kommen"); setMode("learn"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbType === "kommen" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              kommen（来）
+            </button>
+            <button
+              onClick={() => { setVerbType("sein"); setMode("learn"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbType === "sein" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              sein（是）
+            </button>
+          </div>
+        )}
 
         {/* 模式切换 */}
         <div className="flex justify-center gap-4 mb-6">
@@ -578,9 +607,9 @@ export default function SpellingTestPage() {
               </div>
 
               <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">动词kommen变位总表</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">动词{verbType}变位总表</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {verbConjugation.map((word) => (
+                  {(verbType === "kommen" ? verbConjugation : seinConjugation).map((word) => (
                     <div key={word.id} className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <span className="text-xl font-bold text-orange-600 w-32">{word.german}</span>
@@ -719,7 +748,7 @@ export default function SpellingTestPage() {
                   {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "verb" ? "🔄" : "🔢"}
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "verb" ? "动词变位听写" : "德语数字听写"}
+                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "verb" ? `动词${verbType}变位听写` : "德语数字听写"}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {contentType === "questionWord"
@@ -727,7 +756,7 @@ export default function SpellingTestPage() {
                     : contentType === "pronoun"
                       ? "听中文，写出人称代词"
                       : contentType === "verb"
-                        ? "听中文，写出动词变位"
+                        ? `听中文，写出动词${verbType}变位`
                         : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
                 </p>
                 <button
@@ -867,7 +896,7 @@ export default function SpellingTestPage() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm">
-        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "verb" ? "动词变位拼写练习" : "德语数字 0-9 拼写练习"}
+        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : "德语数字 0-9 拼写练习"}
       </footer>
     </div>
   );

@@ -82,6 +82,7 @@ type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun"
 
 export default function ListenningPage() {
   const [quizType, setQuizType] = useState<QuizType>("phoneNumber");
+  const [verbType, setVerbType] = useState<"kommen" | "sein">("kommen");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [quizStarted, setQuizStarted] = useState(false);
@@ -159,6 +160,15 @@ export default function ListenningPage() {
     { german: "wir kommen", chinese: "我们来" },
     { german: "ihr kommt", chinese: "你们来" },
     { german: "Sie kommen", chinese: "您来" },
+  ];
+
+  // 动词sein变位听力数据
+  const seinConjugation = [
+    { german: "ich bin", chinese: "我是" },
+    { german: "du bist", chinese: "你是" },
+    { german: "wir sind", chinese: "我们是" },
+    { german: "ihr seid", chinese: "你们是" },
+    { german: "Sie sind", chinese: "您是" },
   ];
 
   const [questionWordData, setQuestionWordData] = useState<{
@@ -369,7 +379,8 @@ export default function ListenningPage() {
       return;
     }
 
-    const shuffled = [...verbConjugation].sort(() => Math.random() - 0.5);
+    const available = verbType === "kommen" ? verbConjugation : seinConjugation;
+    const shuffled = [...available].sort(() => Math.random() - 0.5);
     const selected = shuffled[0];
 
     setVerbData({
@@ -609,9 +620,27 @@ export default function ListenningPage() {
           >
             <option value="">选择语法类型</option>
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
-            <option value="verb">语法2: 动词变位（kommen）第1人称和第2人称</option>
+            <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
           </select>
         </div>
+
+        {/* 动词类型选择 */}
+        {quizType === "verb" && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => { setVerbType("kommen"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbType === "kommen" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              kommen（来）
+            </button>
+            <button
+              onClick={() => { setVerbType("sein"); setQuizStarted(false); }}
+              className={`px-4 py-2 rounded-full text-sm ${verbType === "sein" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+            >
+              sein（是）
+            </button>
+          </div>
+        )}
 
         {/* 答题数量选择 */}
         {!quizStarted && !showWrongBook && (
@@ -674,7 +703,7 @@ export default function ListenningPage() {
               {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : quizType === "pronoun" ? "👤" : quizType === "verb" ? "🔄" : "❓"}
             </div>
             <h2 className="text-xl font-bold text-gray-800 mb-4">
-              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "verb" ? "动词变位听力" : "疑问词听力"}
+              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "verb" ? `动词${verbType}变位听力` : "疑问词听力"}
             </h2>
             <p className="text-gray-600 mb-6">
               {quizType === "phoneNumber" ? "听德语读出的电话号码，输入正确的数字" :
@@ -1038,7 +1067,7 @@ export default function ListenningPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  {verbConjugation.map((word) => {
+                  {(verbType === "kommen" ? verbConjugation : seinConjugation).map((word) => {
                     const isSelected = quizResult !== null;
                     const isCorrect = word.german === verbData.answer;
                     let btnClass = "py-4 rounded-xl text-lg font-medium transition ";
