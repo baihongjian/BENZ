@@ -93,6 +93,7 @@ export default function ListenningPage() {
   const [currentQuestionCount, setCurrentQuestionCount] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
+  const [lastPlayedKey, setLastPlayedKey] = useState("");
 
   // 监听键盘事件 - 按回车键下一题
   useEffect(() => {
@@ -191,6 +192,30 @@ export default function ListenningPage() {
     answer: string;
     answerChinese: string;
   } | null>(null);
+
+  // 监听题目数据变化，自动播放音频
+  useEffect(() => {
+    if (!quizStarted) return;
+
+    // 根据当前题目类型生成唯一的key
+    let currentKey = "";
+    if (quizType === "verb" && verbData) {
+      currentKey = `verb-${verbData.question}`;
+    } else if (quizType === "pronoun" && pronounData) {
+      currentKey = `pronoun-${pronounData.question}`;
+    } else if (quizType === "questionWord" && questionWordData) {
+      currentKey = `questionWord-${questionWordData.question}`;
+    }
+
+    // 如果key变化了，说明是新题目，自动播放
+    if (currentKey && currentKey !== lastPlayedKey) {
+      const timer = setTimeout(() => {
+        playCurrentQuestion();
+        setLastPlayedKey(currentKey);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [quizStarted, verbData, pronounData, questionWordData, quizType]);
 
   // 生成电话号码题目
   const generatePhoneQuiz = () => {
