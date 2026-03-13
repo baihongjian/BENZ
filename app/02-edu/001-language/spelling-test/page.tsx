@@ -38,23 +38,55 @@ const personalPronouns = [
   { id: 5, german: "Sie", chinese: "您" },
 ];
 
-// 德语动词kommen变位数据
-const verbConjugation = [
-  { id: 1, german: "ich komme", chinese: "我来" },
-  { id: 2, german: "du kommst", chinese: "你来" },
-  { id: 3, german: "wir kommen", chinese: "我们来" },
-  { id: 4, german: "ihr kommt", chinese: "你们来" },
-  { id: 5, german: "Sie kommen", chinese: "您来" },
-];
+// 动词变位数据
+const verbConjugationData: Record<string, { id: number; german: string; chinese: string }[]> = {
+  kommen: [
+    { id: 1, german: "Ich komme aus China.", chinese: "我来自中国" },
+    { id: 2, german: "Du kommst aus Deutschland.", chinese: "你来自德国" },
+    { id: 3, german: "Wir kommen aus der Schule.", chinese: "我们来自学校" },
+    { id: 4, german: "Ihr kommt aus dem Büro.", chinese: "你们来自办公室" },
+    { id: 5, german: "Sie kommen aus Berlin.", chinese: "您来自柏林" },
+  ],
+  sein: [
+    { id: 201, german: "Ich bin Student.", chinese: "我是学生" },
+    { id: 202, german: "Du bist müde.", chinese: "你累了" },
+    { id: 203, german: "Wir sind müde.", chinese: "我们累了" },
+    { id: 204, german: "Ihr seid hungrig.", chinese: "你们饿了" },
+    { id: 205, german: "Sie sind müde.", chinese: "您累了" },
+  ],
+  heißen: [
+    { id: 301, german: "Ich heiße Li Ming.", chinese: "我叫李明" },
+    { id: 302, german: "Du heißt Maria.", chinese: "你叫玛丽亚" },
+    { id: 303, german: "Wir heißen Li Ming und Wang Tao.", chinese: "我们叫李明和王涛" },
+    { id: 304, german: "Ihr heißt Anna und Peter.", chinese: "你们叫安娜和彼得" },
+    { id: 305, german: "Sie heißen Herr Wang.", chinese: "您叫王先生" },
+  ],
+  arbeiten: [
+    { id: 401, german: "Ich arbeite in China.", chinese: "我在中国工作" },
+    { id: 402, german: "Du arbeitest in Berlin.", chinese: "你在柏林工作" },
+    { id: 403, german: "Wir arbeiten in der Firma.", chinese: "我们在公司工作" },
+    { id: 404, german: "Ihr arbeitet in der Schule.", chinese: "你们在学校工作" },
+    { id: 405, german: "Sie arbeiten in Shanghai.", chinese: "您在上海工作" },
+  ],
+  wohnen: [
+    { id: 501, german: "Ich wohne in Beijing.", chinese: "我住在北京" },
+    { id: 502, german: "Du wohnst in München.", chinese: "你住在慕尼黑" },
+    { id: 503, german: "Wir wohnen in Hamburg.", chinese: "我们住在汉堡" },
+    { id: 504, german: "Ihr wohnt in Köln.", chinese: "你们住在科隆" },
+    { id: 505, german: "Sie wohnen in Frankfurt.", chinese: "您住在法兰克福" },
+  ],
+};
 
-// 德语动词sein变位数据
-const seinConjugation = [
-  { id: 201, german: "ich bin", chinese: "我是" },
-  { id: 202, german: "du bist", chinese: "你是" },
-  { id: 203, german: "wir sind", chinese: "我们是" },
-  { id: 204, german: "ihr seid", chinese: "你们是" },
-  { id: 205, german: "Sie sind", chinese: "您是" },
-];
+const verbList = ["kommen", "sein", "heißen", "arbeiten", "wohnen"] as const;
+type VerbType = typeof verbList[number];
+
+const verbChineseNames: Record<VerbType, string> = {
+ kommen: "来",
+ sein: "是",
+ heißen: "叫",
+ arbeiten: "工作",
+ wohnen: "住",
+};
 
 // 发音函数 - 使用 Edge TTS
 const speak = async (text: string) => {
@@ -161,9 +193,9 @@ export default function SpellingTestPage() {
 
   // 动词变位相关
   const [verbIndex, setVerbIndex] = useState(0);
-  const [verbType, setVerbType] = useState<"kommen" | "sein">("kommen");
-  const [verbQuiz, setVerbQuiz] = useState<typeof verbConjugation[0] | null>(null);
-  const [verbWrongBook, setVerbWrongBook] = useState<typeof verbConjugation>([]);
+  const [verbType, setVerbType] = useState<VerbType>("kommen");
+  const [verbQuiz, setVerbQuiz] = useState<typeof verbConjugationData["kommen"][0] | null>(null);
+  const [verbWrongBook, setVerbWrongBook] = useState<typeof verbConjugationData["kommen"]>([]);
 
   // 当前数字
   const currentNumber = germanNumbers[currentIndex];
@@ -172,7 +204,7 @@ export default function SpellingTestPage() {
   // 当前人称代词
   const currentPronoun = personalPronouns[pronounIndex];
   // 当前动词变位
-  const currentVerb = verbType === "kommen" ? verbConjugation[verbIndex] : seinConjugation[verbIndex];
+  const currentVerb = verbConjugationData[verbType][verbIndex];
 
   // 开始答题
   const startQuiz = () => {
@@ -198,7 +230,7 @@ export default function SpellingTestPage() {
       const randomIndex = Math.floor(Math.random() * personalPronouns.length);
       setPronounQuiz(personalPronouns[randomIndex]);
     } else if (contentType === "verb") {
-      const available = verbType === "kommen" ? verbConjugation : seinConjugation;
+      const available = verbConjugationData[verbType];
       const randomIndex = Math.floor(Math.random() * available.length);
       setVerbQuiz(available[randomIndex]);
     } else {
@@ -326,19 +358,18 @@ export default function SpellingTestPage() {
 
         {/* 动词类型选择 */}
         {contentType === "verb" && (
-          <div className="flex justify-center gap-2 mb-4">
-            <button
-              onClick={() => { setVerbType("kommen"); setMode("learn"); setQuizStarted(false); }}
-              className={`px-4 py-2 rounded-full text-sm ${verbType === "kommen" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+          <div className="flex justify-center mb-4">
+            <select
+              value={verbType}
+              onChange={(e) => { setVerbType(e.target.value as VerbType); setMode("learn"); setQuizStarted(false); setVerbIndex(0); }}
+              className="px-4 py-2 rounded-full text-sm font-medium border-2 border-orange-200 bg-white text-gray-700 focus:outline-none focus:border-orange-400"
             >
-              kommen（来）
-            </button>
-            <button
-              onClick={() => { setVerbType("sein"); setMode("learn"); setQuizStarted(false); }}
-              className={`px-4 py-2 rounded-full text-sm ${verbType === "sein" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
-            >
-              sein（是）
-            </button>
+              {verbList.map(verb => (
+                <option key={verb} value={verb}>
+                  {verb}（{verbChineseNames[verb]}）
+                </option>
+              ))}
+            </select>
           </div>
         )}
 
@@ -595,11 +626,11 @@ export default function SpellingTestPage() {
                   ← 上一位
                 </button>
                 <span className="px-4 py-2 text-gray-600">
-                  {verbIndex + 1} / {verbConjugation.length}
+                  {verbIndex + 1} / {verbConjugationData[verbType].length}
                 </span>
                 <button
-                  onClick={() => setVerbIndex(i => Math.min(verbConjugation.length - 1, i + 1))}
-                  disabled={verbIndex === verbConjugation.length - 1}
+                  onClick={() => setVerbIndex(i => Math.min(verbConjugationData[verbType].length - 1, i + 1))}
+                  disabled={verbIndex === verbConjugationData[verbType].length - 1}
                   className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
                 >
                   下一位 →
@@ -609,7 +640,7 @@ export default function SpellingTestPage() {
               <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">动词{verbType}变位总表</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {(verbType === "kommen" ? verbConjugation : seinConjugation).map((word) => (
+                  {verbConjugationData[verbType].map((word) => (
                     <div key={word.id} className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <span className="text-xl font-bold text-orange-600 w-32">{word.german}</span>

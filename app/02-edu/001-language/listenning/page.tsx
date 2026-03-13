@@ -82,7 +82,7 @@ type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun"
 
 export default function ListenningPage() {
   const [quizType, setQuizType] = useState<QuizType>("phoneNumber");
-  const [verbType, setVerbType] = useState<"kommen" | "sein">("kommen");
+  const [verbType, setVerbType] = useState<typeof verbList[number]>("kommen");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [quizStarted, setQuizStarted] = useState(false);
@@ -154,23 +154,46 @@ export default function ListenningPage() {
     { german: "Sie", chinese: "您" },
   ];
 
-  // 动词kommen变位听力数据
-  const verbConjugation = [
-    { german: "ich komme", chinese: "我来" },
-    { german: "du kommst", chinese: "你来" },
-    { german: "wir kommen", chinese: "我们来" },
-    { german: "ihr kommt", chinese: "你们来" },
-    { german: "Sie kommen", chinese: "您来" },
-  ];
+  // 动词变位听力数据
+  const verbConjugation = {
+    kommen: [
+      { german: "Ich komme aus China.", chinese: "我来自中国" },
+      { german: "Du kommst aus Deutschland.", chinese: "你来自德国" },
+      { german: "Wir kommen aus der Schule.", chinese: "我们来自学校" },
+      { german: "Ihr kommt aus dem Büro.", chinese: "你们来自办公室" },
+      { german: "Sie kommen aus Berlin.", chinese: "您来自柏林" },
+    ],
+    sein: [
+      { german: "Ich bin Student.", chinese: "我是学生" },
+      { german: "Du bist müde.", chinese: "你累了" },
+      { german: "Wir sind müde.", chinese: "我们累了" },
+      { german: "Ihr seid hungrig.", chinese: "你们饿了" },
+      { german: "Sie sind müde.", chinese: "您累了" },
+    ],
+    heißen: [
+      { german: "Ich heiße Li Ming.", chinese: "我叫李明" },
+      { german: "Du heißt Maria.", chinese: "你叫玛丽亚" },
+      { german: "Wir heißen Li Ming und Wang Tao.", chinese: "我们叫李明和王涛" },
+      { german: "Ihr heißt Anna und Peter.", chinese: "你们叫安娜和彼得" },
+      { german: "Sie heißen Herr Wang.", chinese: "您叫王先生" },
+    ],
+    arbeiten: [
+      { german: "Ich arbeite in China.", chinese: "我在中国工作" },
+      { german: "Du arbeitest in Berlin.", chinese: "你在柏林工作" },
+      { german: "Wir arbeiten in der Firma.", chinese: "我们在公司工作" },
+      { german: "Ihr arbeitet in der Schule.", chinese: "你们在学校工作" },
+      { german: "Sie arbeiten in Shanghai.", chinese: "您在上海工作" },
+    ],
+    wohnen: [
+      { german: "Ich wohne in Beijing.", chinese: "我住在北京" },
+      { german: "Du wohnst in München.", chinese: "你住在慕尼黑" },
+      { german: "Wir wohnen in Hamburg.", chinese: "我们住在汉堡" },
+      { german: "Ihr wohnt in Köln.", chinese: "你们住在科隆" },
+      { german: "Sie wohnen in Frankfurt.", chinese: "您住在法兰克福" },
+    ],
+  };
 
-  // 动词sein变位听力数据
-  const seinConjugation = [
-    { german: "ich bin", chinese: "我是" },
-    { german: "du bist", chinese: "你是" },
-    { german: "wir sind", chinese: "我们是" },
-    { german: "ihr seid", chinese: "你们是" },
-    { german: "Sie sind", chinese: "您是" },
-  ];
+  const verbList = ["kommen", "sein", "heißen", "arbeiten", "wohnen"] as const;
 
   const [questionWordData, setQuestionWordData] = useState<{
     question: string;
@@ -404,7 +427,7 @@ export default function ListenningPage() {
       return;
     }
 
-    const available = verbType === "kommen" ? verbConjugation : seinConjugation;
+    const available = verbConjugation[verbType];
     const shuffled = [...available].sort(() => Math.random() - 0.5);
     const selected = shuffled[0];
 
@@ -651,19 +674,16 @@ export default function ListenningPage() {
 
         {/* 动词类型选择 */}
         {quizType === "verb" && (
-          <div className="flex justify-center gap-2 mb-4">
-            <button
-              onClick={() => { setVerbType("kommen"); setQuizStarted(false); }}
-              className={`px-4 py-2 rounded-full text-sm ${verbType === "kommen" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
-            >
-              kommen（来）
-            </button>
-            <button
-              onClick={() => { setVerbType("sein"); setQuizStarted(false); }}
-              className={`px-4 py-2 rounded-full text-sm ${verbType === "sein" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
-            >
-              sein（是）
-            </button>
+          <div className="flex justify-center gap-2 mb-4 flex-wrap">
+            {verbList.map(verb => (
+              <button
+                key={verb}
+                onClick={() => { setVerbType(verb); setQuizStarted(false); }}
+                className={`px-4 py-2 rounded-full text-sm ${verbType === verb ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+              >
+                {verb}
+              </button>
+            ))}
           </div>
         )}
 
@@ -1092,7 +1112,7 @@ export default function ListenningPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  {(verbType === "kommen" ? verbConjugation : seinConjugation).map((word) => {
+                  {verbConjugation[verbType].map((word) => {
                     const isSelected = quizResult !== null;
                     const isCorrect = word.german === verbData.answer;
                     let btnClass = "py-4 rounded-xl text-lg font-medium transition ";
