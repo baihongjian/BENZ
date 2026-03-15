@@ -39,41 +39,41 @@ const personalPronouns = [
 ];
 
 // 动词变位数据
-const verbConjugationData: Record<string, { id: number; german: string; chinese: string }[]> = {
+const verbConjugationData: Record<string, { id: number; verb: string; chinese: string }[]> = {
   kommen: [
-    { id: 1, german: "Ich komme aus China.", chinese: "我来自中国" },
-    { id: 2, german: "Du kommst aus Deutschland.", chinese: "你来自德国" },
-    { id: 3, german: "Wir kommen aus der Schule.", chinese: "我们来自学校" },
-    { id: 4, german: "Ihr kommt aus dem Büro.", chinese: "你们来自办公室" },
-    { id: 5, german: "Sie kommen aus Berlin.", chinese: "您来自柏林" },
+    { id: 1, verb: "komme", chinese: "我来" },
+    { id: 2, verb: "kommst", chinese: "你来" },
+    { id: 3, verb: "kommen", chinese: "我们来" },
+    { id: 4, verb: "kommt", chinese: "你们来" },
+    { id: 5, verb: "kommen", chinese: "您来" },
   ],
   sein: [
-    { id: 201, german: "Ich bin Student.", chinese: "我是学生" },
-    { id: 202, german: "Du bist müde.", chinese: "你累了" },
-    { id: 203, german: "Wir sind müde.", chinese: "我们累了" },
-    { id: 204, german: "Ihr seid hungrig.", chinese: "你们饿了" },
-    { id: 205, german: "Sie sind müde.", chinese: "您累了" },
+    { id: 201, verb: "bin", chinese: "我是" },
+    { id: 202, verb: "bist", chinese: "你是" },
+    { id: 203, verb: "sind", chinese: "我们是" },
+    { id: 204, verb: "seid", chinese: "你们是" },
+    { id: 205, verb: "sind", chinese: "您是" },
   ],
   heißen: [
-    { id: 301, german: "Ich heiße Li Ming.", chinese: "我叫李明" },
-    { id: 302, german: "Du heißt Maria.", chinese: "你叫玛丽亚" },
-    { id: 303, german: "Wir heißen Li Ming und Wang Tao.", chinese: "我们叫李明和王涛" },
-    { id: 304, german: "Ihr heißt Anna und Peter.", chinese: "你们叫安娜和彼得" },
-    { id: 305, german: "Sie heißen Herr Wang.", chinese: "您叫王先生" },
+    { id: 301, verb: "heiße", chinese: "我叫" },
+    { id: 302, verb: "heißt", chinese: "你叫" },
+    { id: 303, verb: "heißen", chinese: "我们叫" },
+    { id: 304, verb: "heißt", chinese: "你们叫" },
+    { id: 305, verb: "heißen", chinese: "您叫" },
   ],
   arbeiten: [
-    { id: 401, german: "Ich arbeite in China.", chinese: "我在中国工作" },
-    { id: 402, german: "Du arbeitest in Berlin.", chinese: "你在柏林工作" },
-    { id: 403, german: "Wir arbeiten in der Firma.", chinese: "我们在公司工作" },
-    { id: 404, german: "Ihr arbeitet in der Schule.", chinese: "你们在学校工作" },
-    { id: 405, german: "Sie arbeiten in Shanghai.", chinese: "您在上海工作" },
+    { id: 401, verb: "arbeite", chinese: "我工作" },
+    { id: 402, verb: "arbeitest", chinese: "你工作" },
+    { id: 403, verb: "arbeiten", chinese: "我们工作" },
+    { id: 404, verb: "arbeitet", chinese: "你们工作" },
+    { id: 405, verb: "arbeiten", chinese: "您工作" },
   ],
   wohnen: [
-    { id: 501, german: "Ich wohne in Beijing.", chinese: "我住在北京" },
-    { id: 502, german: "Du wohnst in München.", chinese: "你住在慕尼黑" },
-    { id: 503, german: "Wir wohnen in Hamburg.", chinese: "我们住在汉堡" },
-    { id: 504, german: "Ihr wohnt in Köln.", chinese: "你们住在科隆" },
-    { id: 505, german: "Sie wohnen in Frankfurt.", chinese: "您住在法兰克福" },
+    { id: 501, verb: "wohne", chinese: "我住" },
+    { id: 502, verb: "wohnst", chinese: "你住" },
+    { id: 503, verb: "wohnen", chinese: "我们住" },
+    { id: 504, verb: "wohnt", chinese: "你们住" },
+    { id: 505, verb: "wohnen", chinese: "您住" },
   ],
 };
 
@@ -267,7 +267,7 @@ export default function SpellingTestPage() {
     } else if (contentType === "verb" && verbQuiz) {
       // 支持小写
       const userAns = userInput.trim().toLowerCase();
-      const correctAns = verbQuiz.german.toLowerCase();
+      const correctAns = verbQuiz.verb.toLowerCase();
       isCorrect = userAns === correctAns;
       if (!isCorrect) {
         setVerbWrongBook(prev => prev.some(w => w.id === verbQuiz.id) ? prev : [...prev, verbQuiz]);
@@ -321,7 +321,7 @@ export default function SpellingTestPage() {
             {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : "🔢 德语数字拼写"}
           </h1>
           <p className="mt-1 opacity-90">
-            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "verb" ? "动词kommen变位听写练习" : "0-9 数字单词听写练习"}
+            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : "0-9 数字单词听写练习"}
           </p>
         </div>
       </header>
@@ -604,13 +604,13 @@ export default function SpellingTestPage() {
             <>
               <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
                 <div className="text-5xl font-bold text-orange-600 mb-4">
-                  {currentVerb.german}
+                  {currentVerb.verb}
                 </div>
                 <div className="text-3xl font-bold text-orange-600 mb-2">
                   {currentVerb.chinese}
                 </div>
                 <button
-                  onClick={() => speak(currentVerb.german)}
+                  onClick={() => speak(currentVerb.verb)}
                   className="px-6 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition flex items-center gap-2 mx-auto"
                 >
                   <span>🔊</span> 播放发音
@@ -643,11 +643,11 @@ export default function SpellingTestPage() {
                   {verbConjugationData[verbType].map((word) => (
                     <div key={word.id} className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
                       <div className="flex items-center gap-3">
-                        <span className="text-xl font-bold text-orange-600 w-32">{word.german}</span>
+                        <span className="text-xl font-bold text-orange-600 w-32">{word.verb}</span>
                         <span className="text-lg text-orange-600">{word.chinese}</span>
                       </div>
                       <button
-                        onClick={() => speak(word.german)}
+                        onClick={() => speak(word.verb)}
                         className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
                       >
                         🔊
@@ -853,7 +853,7 @@ export default function SpellingTestPage() {
                           : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
                   </div>
                   <button
-                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "verb" ? verbQuiz?.german || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
+                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
                     className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200"
                   >
                     🔊 播放
@@ -900,7 +900,7 @@ export default function SpellingTestPage() {
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
                       <p className="text-gray-600">正确答案：</p>
                       <p className="text-2xl font-bold text-indigo-600">
-                        {contentType === "questionWord" ? questionWordQuiz?.german : contentType === "pronoun" ? pronounQuiz?.german : contentType === "verb" ? verbQuiz?.german : quizNumber?.german}
+                        {contentType === "questionWord" ? questionWordQuiz?.german : contentType === "pronoun" ? pronounQuiz?.german : contentType === "verb" ? verbQuiz?.verb : quizNumber?.german}
                       </p>
                       <p className="text-gray-500">
                         ({contentType === "questionWord" ? questionWordQuiz?.chinese : contentType === "pronoun" ? pronounQuiz?.chinese : contentType === "verb" ? verbQuiz?.chinese : quizNumber?.chinese})
