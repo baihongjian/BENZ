@@ -38,6 +38,14 @@ const personalPronouns = [
   { id: 5, german: "Sie", chinese: "您" },
 ];
 
+// 德语人称代词（第3人称）数据
+const personalPronouns3rd = [
+  { id: 101, german: "er", chinese: "他" },
+  { id: 102, german: "sie", chinese: "她" },
+  { id: 103, german: "es", chinese: "它" },
+  { id: 104, german: "sie", chinese: "他们/她们/它们" },
+];
+
 // 动词变位数据
 const verbConjugationData: Record<string, { id: number; verb: string; chinese: string }[]> = {
   kommen: [
@@ -164,7 +172,7 @@ const playSound = (type: "correct" | "wrong") => {
 };
 
 export default function SpellingTestPage() {
-  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "verb">("number");
+  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "pronoun3rd" | "verb">("number");
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -191,6 +199,11 @@ export default function SpellingTestPage() {
   const [pronounQuiz, setPronounQuiz] = useState<typeof personalPronouns[0] | null>(null);
   const [pronounWrongBook, setPronounWrongBook] = useState<typeof personalPronouns>([]);
 
+  // 人称代词（第3人称）相关
+  const [pronoun3rdIndex, setPronoun3rdIndex] = useState(0);
+  const [pronoun3rdQuiz, setPronoun3rdQuiz] = useState<typeof personalPronouns3rd[0] | null>(null);
+  const [pronoun3rdWrongBook, setPronoun3rdWrongBook] = useState<typeof personalPronouns3rd>([]);
+
   // 动词变位相关
   const [verbIndex, setVerbIndex] = useState(0);
   const [verbType, setVerbType] = useState<VerbType>("kommen");
@@ -203,6 +216,8 @@ export default function SpellingTestPage() {
   const currentQuestionWord = questionWords[questionWordIndex];
   // 当前人称代词
   const currentPronoun = personalPronouns[pronounIndex];
+  // 当前人称代词（第3人称）
+  const currentPronoun3rd = personalPronouns3rd[pronoun3rdIndex];
   // 当前动词变位
   const currentVerb = verbConjugationData[verbType][verbIndex];
 
@@ -229,6 +244,9 @@ export default function SpellingTestPage() {
     } else if (contentType === "pronoun") {
       const randomIndex = Math.floor(Math.random() * personalPronouns.length);
       setPronounQuiz(personalPronouns[randomIndex]);
+    } else if (contentType === "pronoun3rd") {
+      const randomIndex = Math.floor(Math.random() * personalPronouns3rd.length);
+      setPronoun3rdQuiz(personalPronouns3rd[randomIndex]);
     } else if (contentType === "verb") {
       const available = verbConjugationData[verbType];
       const randomIndex = Math.floor(Math.random() * available.length);
@@ -263,6 +281,14 @@ export default function SpellingTestPage() {
       isCorrect = userAns === correctAns;
       if (!isCorrect) {
         setPronounWrongBook(prev => prev.some(w => w.id === pronounQuiz.id) ? prev : [...prev, pronounQuiz]);
+      }
+    } else if (contentType === "pronoun3rd" && pronoun3rdQuiz) {
+      // 支持小写
+      const userAns = userInput.trim().toLowerCase();
+      const correctAns = pronoun3rdQuiz.german.toLowerCase();
+      isCorrect = userAns === correctAns;
+      if (!isCorrect) {
+        setPronoun3rdWrongBook(prev => prev.some(w => w.id === pronoun3rdQuiz.id) ? prev : [...prev, pronoun3rdQuiz]);
       }
     } else if (contentType === "verb" && verbQuiz) {
       // 支持小写
@@ -318,10 +344,10 @@ export default function SpellingTestPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold">
-            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : "🔢 德语数字拼写"}
+            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "pronoun3rd" ? "👥 人称代词（第3人称）拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : "🔢 德语数字拼写"}
           </h1>
           <p className="mt-1 opacity-90">
-            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : "0-9 数字单词听写练习"}
+            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : "0-9 数字单词听写练习"}
           </p>
         </div>
       </header>
@@ -347,11 +373,12 @@ export default function SpellingTestPage() {
         <div className="flex justify-center mb-4">
           <select
             value={contentType === "number" || contentType === "questionWord" ? "" : contentType}
-            onChange={(e) => { setContentType(e.target.value as "pronoun" | "verb"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            onChange={(e) => { setContentType(e.target.value as "pronoun" | "pronoun3rd" | "verb"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
             className="px-4 py-2 rounded-full text-sm font-medium border-2 border-purple-200 bg-white text-gray-700 focus:outline-none focus:border-purple-400"
           >
             <option value="">选择语法类型</option>
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
+            <option value="pronoun3rd">语法10: 人称代词（第3人称）</option>
             <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
           </select>
         </div>
@@ -397,7 +424,7 @@ export default function SpellingTestPage() {
               showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border border-gray-300"
             }`}
           >
-            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "verb" ? verbWrongBook.length : wrongBook.length})
+            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "pronoun3rd" ? pronoun3rdWrongBook.length : contentType === "verb" ? verbWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -599,6 +626,64 @@ export default function SpellingTestPage() {
                 </div>
               </div>
             </>
+          ) : contentType === "pronoun3rd" ? (
+            /* 人称代词（第3人称）学习 */
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
+                <div className="text-6xl font-bold text-teal-600 mb-4">
+                  {currentPronoun3rd.german}
+                </div>
+                <div className="text-3xl font-bold text-teal-600 mb-2">
+                  {currentPronoun3rd.chinese}
+                </div>
+                <button
+                  onClick={() => speak(currentPronoun3rd.german)}
+                  className="px-6 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition flex items-center gap-2 mx-auto"
+                >
+                  <span>🔊</span> 播放发音
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setPronoun3rdIndex(i => Math.max(0, i - 1))}
+                  disabled={pronoun3rdIndex === 0}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  ← 上一位
+                </button>
+                <span className="px-4 py-2 text-gray-600">
+                  {pronoun3rdIndex + 1} / {personalPronouns3rd.length}
+                </span>
+                <button
+                  onClick={() => setPronoun3rdIndex(i => Math.min(personalPronouns3rd.length - 1, i + 1))}
+                  disabled={pronoun3rdIndex === personalPronouns3rd.length - 1}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  下一位 →
+                </button>
+              </div>
+
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">人称代词（第3人称）总表</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {personalPronouns3rd.map((word) => (
+                    <div key={word.id} className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl font-bold text-teal-600 w-8">{word.german}</span>
+                        <span className="text-lg text-teal-600">{word.chinese}</span>
+                      </div>
+                      <button
+                        onClick={() => speak(word.german)}
+                        className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           ) : contentType === "verb" ? (
             /* 动词变位学习 */
             <>
@@ -776,19 +861,21 @@ export default function SpellingTestPage() {
             {!quizStarted ? (
               <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
                 <div className="text-6xl mb-6">
-                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "verb" ? "🔄" : "🔢"}
+                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "pronoun3rd" ? "👥" : contentType === "verb" ? "🔄" : "🔢"}
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "verb" ? `动词${verbType}变位听写` : "德语数字听写"}
+                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "pronoun3rd" ? "人称代词（第3人称）听写" : contentType === "verb" ? `动词${verbType}变位听写` : "德语数字听写"}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {contentType === "questionWord"
                     ? "听中文，写出德语疑问词"
                     : contentType === "pronoun"
                       ? "听中文，写出人称代词"
-                      : contentType === "verb"
-                        ? `听中文，写出动词${verbType}变位`
-                        : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
+                      : contentType === "pronoun3rd"
+                        ? "听中文，写出人称代词（第3人称）"
+                        : contentType === "verb"
+                          ? `听中文，写出动词${verbType}变位`
+                          : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
                 </p>
                 <button
                   onClick={startQuiz}
@@ -839,21 +926,25 @@ export default function SpellingTestPage() {
                       ? "请写出这个中文对应的德语疑问词"
                       : contentType === "pronoun"
                         ? "请写出这个中文对应的人称代词"
-                        : contentType === "verb"
-                          ? "请写出这个中文对应的动词变位"
-                          : quizType === "digitToWord" ? "请写出这个数字的德语" : "请写出这个德语对应的数字"}
+                        : contentType === "pronoun3rd"
+                          ? "请写出这个中文对应的人称代词（第3人称）"
+                          : contentType === "verb"
+                            ? "请写出这个中文对应的动词变位"
+                            : quizType === "digitToWord" ? "请写出这个数字的德语" : "请写出这个德语对应的数字"}
                   </p>
-                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "verb" ? "text-orange-600" : "text-indigo-600"}`}>
+                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "pronoun3rd" ? "text-teal-600" : contentType === "verb" ? "text-orange-600" : "text-indigo-600"}`}>
                     {contentType === "questionWord"
                       ? questionWordQuiz?.chinese
                       : contentType === "pronoun"
                         ? pronounQuiz?.chinese
-                        : contentType === "verb"
-                          ? verbQuiz?.chinese
-                          : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
+                        : contentType === "pronoun3rd"
+                          ? pronoun3rdQuiz?.chinese
+                          : contentType === "verb"
+                            ? verbQuiz?.chinese
+                            : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
                   </div>
                   <button
-                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
+                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
                     className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200"
                   >
                     🔊 播放
@@ -900,10 +991,10 @@ export default function SpellingTestPage() {
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
                       <p className="text-gray-600">正确答案：</p>
                       <p className="text-2xl font-bold text-indigo-600">
-                        {contentType === "questionWord" ? questionWordQuiz?.german : contentType === "pronoun" ? pronounQuiz?.german : contentType === "verb" ? verbQuiz?.verb : quizNumber?.german}
+                        {contentType === "questionWord" ? questionWordQuiz?.german : contentType === "pronoun" ? pronounQuiz?.german : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german : contentType === "verb" ? verbQuiz?.verb : quizNumber?.german}
                       </p>
                       <p className="text-gray-500">
-                        ({contentType === "questionWord" ? questionWordQuiz?.chinese : contentType === "pronoun" ? pronounQuiz?.chinese : contentType === "verb" ? verbQuiz?.chinese : quizNumber?.chinese})
+                        ({contentType === "questionWord" ? questionWordQuiz?.chinese : contentType === "pronoun" ? pronounQuiz?.chinese : contentType === "pronoun3rd" ? pronoun3rdQuiz?.chinese : contentType === "verb" ? verbQuiz?.chinese : quizNumber?.chinese})
                       </p>
                     </div>
                     <button
@@ -927,7 +1018,7 @@ export default function SpellingTestPage() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm">
-        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : "德语数字 0-9 拼写练习"}
+        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : "德语数字 0-9 拼写练习"}
       </footer>
     </div>
   );
