@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
 // 发音函数 - 使用 Edge TTS
@@ -78,7 +78,7 @@ const playSound = (type: "correct" | "wrong") => {
   }
 };
 
-type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun" | "pronoun3rd" | "verb";
+type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article";
 
 export default function ListenningPage() {
   const [quizType, setQuizType] = useState<QuizType>("phoneNumber");
@@ -94,10 +94,18 @@ export default function ListenningPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [lastPlayedKey, setLastPlayedKey] = useState("");
+  const playCurrentQuestionRef = useRef<() => void>(() => {});
 
-  // 监听键盘事件 - 按回车键下一题
+  // 监听键盘事件 - 按回车键下一题，按P键播放音频
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 按P键播放音频
+      if ((e.key === "p" || e.key === "P") && quizStarted && !quizFinished) {
+        e.preventDefault();
+        playCurrentQuestionRef.current();
+        return;
+      }
+      // 按回车键下一题
       if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook && !quizFinished) {
         if (currentQuestionCount >= quizCount) {
           setQuizFinished(true);
@@ -143,6 +151,22 @@ export default function ListenningPage() {
     { german: "Wann?", chinese: "什么时候？" },
     { german: "Warum?", chinese: "为什么？" },
     { german: "Welcher?", chinese: "哪个？" },
+  ];
+
+  // 时间听力数据（14:15 的不同表达方式）
+  const timeExpressions = [
+    { german: "Es ist Viertel nach zwei.", chinese: "两点十五分" },
+    { german: "Es ist fünfzehn nach zwei.", chinese: "两点十五分" },
+    { german: "Es ist vierzehn Uhr fünfzehn.", chinese: "两点十五分" },
+    { german: "Es ist zwei Uhr fünfzehn.", chinese: "两点十五分" },
+  ];
+
+  // 定冠词和名词数据（第1格和第4格）
+  const articleNouns = [
+    { noun: "Mann", chinese: "男人", nominative: "der Mann", accusative: "den Mann", gender: "m" },
+    { noun: "Frau", chinese: "女人", nominative: "die Frau", accusative: "die Frau", gender: "f" },
+    { noun: "Kind", chinese: "孩子", nominative: "das Kind", accusative: "das Kind", gender: "n" },
+    { noun: "Leute", chinese: "人们", nominative: "die Leute", accusative: "die Leute", gender: "pl" },
   ];
 
   // 人称代词听力数据
@@ -231,6 +255,21 @@ export default function ListenningPage() {
     answerChinese: string;
   } | null>(null);
 
+  const [timeData, setTimeData] = useState<{
+    question: string;
+    questionChinese: string;
+    answer: string;
+    answerChinese: string;
+  } | null>(null);
+
+  const [articleData, setArticleData] = useState<{
+    question: string;
+    questionChinese: string;
+    answer: string;
+    answerChinese: string;
+    caseType: "nominative" | "accusative";
+  } | null>(null);
+
   // 监听题目数据变化，自动播放音频
   useEffect(() => {
     if (!quizStarted) return;
@@ -245,6 +284,10 @@ export default function ListenningPage() {
       currentKey = `pronoun3rd-${pronoun3rdData.question}`;
     } else if (quizType === "questionWord" && questionWordData) {
       currentKey = `questionWord-${questionWordData.question}`;
+    } else if (quizType === "time" && timeData) {
+      currentKey = `time-${timeData.question}`;
+    } else if (quizType === "article" && articleData) {
+      currentKey = `article-${articleData.question}`;
     }
 
     // 如果key变化了，说明是新题目，自动播放
@@ -255,7 +298,7 @@ export default function ListenningPage() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [quizStarted, verbData, pronounData, pronoun3rdData, questionWordData, quizType]);
+  }, [quizStarted, verbData, pronounData, pronoun3rdData, questionWordData, timeData, articleData, quizType]);
 
   // 生成电话号码题目
   const generatePhoneQuiz = () => {
@@ -415,6 +458,57 @@ export default function ListenningPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成时间听力题目
+  const generateTimeQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
+    const shuffled = [...timeExpressions].sort(() => Math.random() - 0.5);
+    const selected = shuffled[0];
+
+    setTimeData({
+      question: selected.german,
+      questionChinese: selected.chinese,
+      answer: selected.german,
+      answerChinese: selected.chinese
+    });
+    setQuizResult(null);
+    setQuizStarted(true);
+    setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
+  // 生成定冠词和名词听力题目（第1格和第4格）
+  const generateArticleQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
+    // 随机选择名词
+    const shuffledNouns = [...articleNouns].sort(() => Math.random() - 0.5);
+    const selectedNoun = shuffledNouns[0];
+
+    // 随机选择第1格或第4格
+    const caseType: "nominative" | "accusative" = Math.random() > 0.5 ? "nominative" : "accusative";
+    const correctAnswer = caseType === "nominative" ? selectedNoun.nominative : selectedNoun.accusative;
+    const caseChinese = caseType === "nominative" ? "第1格（主格）" : "第4格（宾格）";
+
+    setArticleData({
+      question: correctAnswer,
+      questionChinese: selectedNoun.chinese,
+      answer: correctAnswer,
+      answerChinese: `${selectedNoun.chinese}（${caseChinese}）`,
+      caseType
+    });
+    setQuizResult(null);
+    setQuizStarted(true);
+    setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 生成人称代词听力题目
   const generatePronounQuiz = () => {
     if (currentQuestionCount >= quizCount) {
@@ -497,10 +591,12 @@ export default function ListenningPage() {
     else if (quizType === "pronoun") generatePronounQuiz();
     else if (quizType === "pronoun3rd") generatePronoun3rdQuiz();
     else if (quizType === "verb") generateVerbQuiz();
+    else if (quizType === "time") generateTimeQuiz();
+    else if (quizType === "article") generateArticleQuiz();
   };
 
   // 播放当前题目
-  const playCurrentQuestion = () => {
+  const playCurrentQuestion = useCallback(() => {
     let text = "";
     if (quizType === "phoneNumber" && phoneNumberData) {
       text = phoneNumberData.germanText.replace(/\s/g, ' ').replace(/\//g, ',');
@@ -516,6 +612,10 @@ export default function ListenningPage() {
       text = pronoun3rdData.question;
     } else if (quizType === "verb" && verbData) {
       text = verbData.question;
+    } else if (quizType === "time" && timeData) {
+      text = timeData.question;
+    } else if (quizType === "article" && articleData) {
+      text = articleData.question;
     }
 
     if (text) {
@@ -523,7 +623,12 @@ export default function ListenningPage() {
       speak(text);
       setTimeout(() => setIsPlayingAudio(false), 2500);
     }
-  };
+  }, [quizType, phoneNumberData, weekdayData, monthData, questionWordData, pronounData, pronoun3rdData, verbData, timeData, articleData]);
+
+  // 更新 playCurrentQuestion 的 ref
+  useEffect(() => {
+    playCurrentQuestionRef.current = playCurrentQuestion;
+  }, [playCurrentQuestion]);
 
   // 提交电话号码答案
   const submitPhoneAnswer = () => {
@@ -613,6 +718,36 @@ export default function ListenningPage() {
       setQuizResult("wrong");
       playSound("wrong");
       setWrongBook(prev => prev.includes(questionWordData.question) ? prev : [...prev, questionWordData.question]);
+    }
+  };
+
+  // 选择时间答案
+  const selectTimeAnswer = (selected: string) => {
+    if (quizResult !== null || !timeData) return;
+    const isCorrect = selected === timeData.answer;
+    if (isCorrect) {
+      setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
+      playSound("correct");
+    } else {
+      setQuizResult("wrong");
+      playSound("wrong");
+      setWrongBook(prev => prev.includes(timeData.question) ? prev : [...prev, timeData.question]);
+    }
+  };
+
+  // 选择定冠词和名词答案
+  const selectArticleAnswer = (selected: string) => {
+    if (quizResult !== null || !articleData) return;
+    const isCorrect = selected === articleData.answer;
+    if (isCorrect) {
+      setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
+      playSound("correct");
+    } else {
+      setQuizResult("wrong");
+      playSound("wrong");
+      setWrongBook(prev => prev.includes(articleData.question) ? prev : [...prev, articleData.question]);
     }
   };
 
@@ -714,19 +849,28 @@ export default function ListenningPage() {
           >
             ❓ 疑问词
           </button>
+          <button
+            onClick={() => { setQuizType("time"); setQuizStarted(false); }}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              quizType === "time" ? "bg-amber-500 text-white" : "bg-white text-gray-600"
+            }`}
+          >
+            ⏰ 时间表达
+          </button>
         </div>
 
         {/* 语法分类 */}
         <div className="flex justify-center mb-4">
           <select
-            value={quizType === "phoneNumber" || quizType === "weekday" || quizType === "month" || quizType === "questionWord" ? "" : quizType}
-            onChange={(e) => { setQuizType(e.target.value as "pronoun" | "pronoun3rd" | "verb"); setQuizStarted(false); }}
+            value={quizType === "phoneNumber" || quizType === "weekday" || quizType === "month" || quizType === "questionWord" || quizType === "time" ? "" : quizType}
+            onChange={(e) => { setQuizType(e.target.value as "pronoun" | "pronoun3rd" | "verb" | "article"); setQuizStarted(false); }}
             className="px-4 py-2 rounded-full text-sm font-medium border-2 border-purple-200 bg-white text-gray-700 focus:outline-none focus:border-purple-400"
           >
             <option value="">选择语法类型</option>
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
             <option value="pronoun3rd">语法10: 人称代词（第3人称）</option>
             <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
+            <option value="article">语法11: 定冠词和名词（第1格和第4格）</option>
           </select>
         </div>
 
@@ -803,10 +947,10 @@ export default function ListenningPage() {
           /* 开始答题 */
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="text-6xl mb-6">
-              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : quizType === "pronoun" ? "👤" : quizType === "pronoun3rd" ? "👥" : quizType === "verb" ? "🔄" : "❓"}
+              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : quizType === "pronoun" ? "👤" : quizType === "pronoun3rd" ? "👥" : quizType === "verb" ? "🔄" : quizType === "time" ? "⏰" : quizType === "article" ? "📝" : "❓"}
             </div>
             <h2 className="text-xl font-bold text-gray-800 mb-4">
-              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "pronoun3rd" ? "人称代词（第3人称）听力" : quizType === "verb" ? `动词${verbType}变位听力` : "疑问词听力"}
+              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "pronoun3rd" ? "人称代词（第3人称）听力" : quizType === "verb" ? `动词${verbType}变位听力` : quizType === "time" ? "时间表达听力" : quizType === "article" ? "定冠词和名词（第1格和第4格）" : "疑问词听力"}
             </h2>
             <p className="text-gray-600 mb-6">
               {quizType === "phoneNumber" ? "听德语读出的电话号码，输入正确的数字" :
@@ -815,6 +959,8 @@ export default function ListenningPage() {
                quizType === "pronoun" ? "听人称代词，选择正确的中文含义" :
                quizType === "pronoun3rd" ? "听人称代词（第3人称），选择正确的中文含义" :
                quizType === "verb" ? "听动词变位，选择正确的中文含义" :
+               quizType === "time" ? "听时间表达，选择正确的德语" :
+               quizType === "article" ? "听定冠词和名词，选择正确的德语" :
                "听德语疑问词，选择正确的中文含义"}
             </p>
             <button
@@ -1083,6 +1229,129 @@ export default function ListenningPage() {
               </>
             )}
 
+            {/* 时间表达题型 */}
+            {quizType === "time" && timeData && (
+              <>
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400">听时间，选择正确的德语表达</span>
+                </div>
+
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowText(!showText)}
+                    className={`px-3 py-1 rounded-full text-sm ${showText ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {showText ? "🙈 隐藏" : "👁️ 显示"}
+                  </button>
+                </div>
+
+                {showText && (
+                  <div className="bg-amber-50 rounded-xl p-6 mb-6 text-center">
+                    <p className="text-xl font-medium">两点十五分</p>
+                    <p className="text-lg text-gray-500 mt-2">{timeData.question}</p>
+                  </div>
+                )}
+
+                <div className="text-center mb-6">
+                  <button
+                    onClick={playCurrentQuestion}
+                    disabled={isPlayingAudio}
+                    className={`px-8 py-4 rounded-full ${isPlayingAudio ? "bg-green-100 text-green-600" : "bg-amber-100 text-amber-700 hover:bg-amber-200"}`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🎧 播放德语"}
+                  </button>
+                </div>
+
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400">两点十五分 用德语怎么说？</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {timeExpressions.map((expr) => {
+                    const isSelected = quizResult !== null;
+                    const isCorrect = expr.german === timeData.answer;
+                    let btnClass = "py-4 rounded-xl text-lg font-medium transition ";
+                    if (isSelected) {
+                      if (isCorrect) btnClass += "bg-green-500 text-white";
+                      else btnClass += "bg-gray-100 text-gray-400";
+                    } else {
+                      btnClass += "bg-amber-50 text-amber-700 border-2 border-amber-200 hover:bg-amber-100";
+                    }
+                    return (
+                      <button key={expr.german} onClick={() => selectTimeAnswer(expr.german)} disabled={quizResult !== null} className={btnClass}>
+                        {expr.german}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* 定冠词和名词题型（第1格和第4格） */}
+            {quizType === "article" && articleData && (
+              <>
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400">听定冠词和名词，选择正确的德语</span>
+                </div>
+
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowText(!showText)}
+                    className={`px-3 py-1 rounded-full text-sm ${showText ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {showText ? "🙈 隐藏" : "👁️ 显示"}
+                  </button>
+                </div>
+
+                {showText && (
+                  <div className="bg-indigo-50 rounded-xl p-6 mb-6 text-center">
+                    <p className="text-xl font-medium">{articleData.questionChinese}</p>
+                    <p className="text-lg text-gray-500 mt-2">{articleData.question}</p>
+                  </div>
+                )}
+
+                <div className="text-center mb-6">
+                  <button
+                    onClick={playCurrentQuestion}
+                    disabled={isPlayingAudio}
+                    className={`px-8 py-4 rounded-full ${isPlayingAudio ? "bg-green-100 text-green-600" : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"}`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🎧 播放德语"}
+                  </button>
+                </div>
+
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400">{articleData.questionChinese} 用德语怎么说？</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {articleNouns.map((noun) => {
+                    // 显示第1格和第4格两个选项
+                    const options = [
+                      { german: noun.nominative, chinese: `${noun.chinese} 第1格` },
+                      { german: noun.accusative, chinese: `${noun.chinese} 第4格` },
+                    ];
+                    return options.map((opt) => {
+                      const isSelected = quizResult !== null;
+                      const isCorrect = opt.german === articleData.answer;
+                      let btnClass = "py-4 rounded-xl text-lg font-medium transition ";
+                      if (isSelected) {
+                        if (isCorrect) btnClass += "bg-green-500 text-white";
+                        else btnClass += "bg-gray-100 text-gray-400";
+                      } else {
+                        btnClass += "bg-indigo-50 text-indigo-700 border-2 border-indigo-200 hover:bg-indigo-100";
+                      }
+                      return (
+                        <button key={opt.german} onClick={() => selectArticleAnswer(opt.german)} disabled={quizResult !== null} className={btnClass}>
+                          {opt.chinese}
+                        </button>
+                      );
+                    });
+                  })}
+                </div>
+              </>
+            )}
+
             {/* 人称代词题型 */}
             {quizType === "pronoun" && pronounData && (
               <>
@@ -1262,6 +1531,12 @@ export default function ListenningPage() {
                 )}
                 {quizType === "questionWord" && questionWordData && (
                   <p className="text-gray-600">正确答案：{questionWordData.answer} ({questionWordData.answerChinese})</p>
+                )}
+                {quizType === "time" && timeData && (
+                  <p className="text-gray-600">正确答案：{timeData.answer} ({timeData.answerChinese})</p>
+                )}
+                {quizType === "article" && articleData && (
+                  <p className="text-gray-600">正确答案：{articleData.answer} ({articleData.answerChinese})</p>
                 )}
                 {quizType === "pronoun" && pronounData && (
                   <p className="text-gray-600">正确答案：{pronounData.answer} ({pronounData.answerChinese})</p>

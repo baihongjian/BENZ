@@ -265,6 +265,45 @@ const timeExpressions: Sentence[] = [
   { id: 31, german: "Es ist Viertel drei.", chinese: "2点15分", category: "quarter" },
   { id: 32, german: "Es ist dreiviertel zwei.", chinese: "1点45分", category: "quarter" },
   { id: 33, german: "Es ist dreiviertel drei.", chinese: "2点45分", category: "quarter" },
+  // 特殊时刻：14点15分（多种正确表达）
+  { id: 901, german: "14点15分（下午2:15）", chinese: "14点15分", category: "special" },
+];
+
+// 特殊时刻选择题（单选题：正确答案是14点15分，干扰项是其他时间）
+interface TimeSpecialQuiz {
+  id: number;
+  questionZh: string;      // 题目（中文）
+  correctAnswer: string;   // 正确答案（14点15分的一种表达）
+  wrongAnswers: string[];  // 干扰项（3个错误选项）
+  options: string[];       // 打乱后的所有选项
+  correctIndex: number;     // 正确答案在选项中的索引
+}
+
+const timeSpecialQuizzes: TimeSpecialQuiz[] = [
+  {
+    id: 1,
+    questionZh: "14点15分（下午2:15）",
+    correctAnswer: "Es ist Viertel nach zwei.",
+    wrongAnswers: ["Es ist zwei Uhr.", "Es ist halb zwei.", "Es ist dreiviertel zwei."],
+  },
+  {
+    id: 2,
+    questionZh: "14点15分（下午2:15）",
+    correctAnswer: "Es ist fünfzehn nach zwei.",
+    wrongAnswers: ["Es ist drei Uhr.", "Es ist Viertel nach drei.", "Es ist halb drei."],
+  },
+  {
+    id: 3,
+    questionZh: "14点15分（下午2:15）",
+    correctAnswer: "Es ist vierzehn Uhr fünfzehn.",
+    wrongAnswers: ["Es ist vierzehn Uhr.", "Es ist fünfzehn Uhr.", "Es ist dreizehn Uhr fünfzehn."],
+  },
+  {
+    id: 4,
+    questionZh: "14点15分（下午2:15）",
+    correctAnswer: "Es ist zwei Uhr fünfzehn.",
+    wrongAnswers: ["Es ist zwei Uhr.", "Es ist halb drei.", "Es ist drei Uhr fünfzehn."],
+  },
 ];
 
 // 德语人称代词数据
@@ -415,8 +454,11 @@ export default function SelectQuestionPage() {
   const [currentVocabQuiz, setCurrentVocabQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
   // 时刻模式相关状态
   const [timeQuizType, setTimeQuizType] = useState<"german" | "chinese">("german");
+  const [timeSubType, setTimeSubType] = useState<"all" | "hour" | "half" | "quarter" | "special">("all");
   const [timeWrongBook, setTimeWrongBook] = useState<Sentence[]>([]);
   const [currentTimeQuiz, setCurrentTimeQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
+  // 特殊时刻题目（多正确答案）
+  const [currentTimeSpecialQuiz, setCurrentTimeSpecialQuiz] = useState<TimeSpecialQuiz | null>(null);
   // 人称代词模式相关状态
   const [pronounQuizType, setPronounQuizType] = useState<"german" | "chinese">("german");
   const [pronounWrongBook, setPronounWrongBook] = useState<Sentence[]>([]);
@@ -675,7 +717,7 @@ export default function SelectQuestionPage() {
           } else {
             generateDialogQuiz();
           }
-        } else if (quizMode === "time" && currentTimeQuiz) {
+        } else if (quizMode === "time" && (currentTimeQuiz || currentTimeSpecialQuiz)) {
           if (currentQuestionCount >= quizCount) {
             setQuizFinished(true);
           } else {
@@ -796,7 +838,42 @@ export default function SelectQuestionPage() {
       setQuizFinished(true);
       return;
     }
-    const available = timeExpressions;
+
+    // 如果选择特殊时刻类型（14点15分），直接生成特殊题目
+    if (timeSubType === "special") {
+      if (timeSpecialQuizzes.length > 0) {
+        const specialIdx = Math.floor(Math.random() * timeSpecialQuizzes.length);
+        const specialQuiz = timeSpecialQuizzes[specialIdx];
+        // 打乱选项：把正确答案和干扰项合并后随机排序
+        const allOptions = [specialQuiz.correctAnswer, ...specialQuiz.wrongAnswers];
+        const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
+        // 记录正确答案在打乱后的索引
+        const correctIndex = shuffledOptions.indexOf(specialQuiz.correctAnswer);
+        setCurrentTimeSpecialQuiz({
+          ...specialQuiz,
+          options: shuffledOptions,
+          correctIndex: correctIndex
+        });
+        setCurrentTimeQuiz(null);
+        setSelectedIndex(null);
+        setQuizResult(null);
+        setQuizStarted(true);
+        setCurrentQuestionCount(prev => prev + 1);
+      }
+      return;
+    }
+
+    // 根据子类型筛选时刻数据
+    let available = timeExpressions;
+    if (timeSubType !== "all") {
+      available = timeExpressions.filter(s => s.category === timeSubType);
+    }
+
+    // 如果筛选后数据不足4条，返回全部数据
+    if (available.length < 4) {
+      available = timeExpressions;
+    }
+
     const idx = Math.floor(Math.random() * available.length);
     const question = available[idx];
 
@@ -811,6 +888,7 @@ export default function SelectQuestionPage() {
 
     const options = [question, ...wrong].sort(() => Math.random() - 0.5);
     setCurrentTimeQuiz({ question, options });
+    setCurrentTimeSpecialQuiz(null); // 清空特殊题目
     setSelectedIndex(null);
     setQuizResult(null);
     setQuizStarted(true);
@@ -1059,7 +1137,33 @@ export default function SelectQuestionPage() {
 
   // 时刻模式 - 选择答案
   const handleTimeSelect = (index: number) => {
-    if (quizResult !== null || !currentTimeQuiz) return;
+    if (quizResult !== null) return;
+
+    // 检查是否是特殊时刻题目
+    if (currentTimeSpecialQuiz) {
+      // 使用索引判断正确答案
+      const isCorrect = index === currentTimeSpecialQuiz.correctIndex;
+      console.log("选择的索引:", index);
+      console.log("正确答案索引:", currentTimeSpecialQuiz.correctIndex);
+      console.log("是否正确:", isCorrect);
+      setSelectedIndex(index);
+      setQuizResult(isCorrect ? "correct" : "wrong");
+      playSound(isCorrect ? "correct" : "wrong");
+
+      if (!isCorrect) {
+        // 特殊题目答错不加入错题本
+      } else {
+        setCorrectCount(prev => prev + 1);
+      }
+
+      if (currentQuestionCount >= quizCount) {
+        setTimeout(() => setQuizFinished(true), 500);
+      }
+      return;
+    }
+
+    // 普通时刻题目
+    if (!currentTimeQuiz) return;
     setSelectedIndex(index);
     const selectedOption = currentTimeQuiz.options[index];
     const isCorrect = selectedOption.id === currentTimeQuiz.question.id;
@@ -1295,6 +1399,23 @@ export default function SelectQuestionPage() {
             >
               看德语选中文
             </button>
+          </div>
+        )}
+
+        {/* 时刻模式：子类型选择 */}
+        {quizMode === "time" && (
+          <div className="flex justify-center mb-4">
+            <select
+              value={timeSubType}
+              onChange={(e) => { setTimeSubType(e.target.value as "all" | "hour" | "half" | "quarter" | "special"); setQuizStarted(false); }}
+              className="px-4 py-2 rounded-full text-sm bg-white border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500"
+            >
+              <option value="all">全部时刻</option>
+              <option value="hour">整点</option>
+              <option value="half">半点</option>
+              <option value="quarter">刻（15分/45分）</option>
+              <option value="special">14点15分专项</option>
+            </select>
           </div>
         )}
 
@@ -1590,9 +1711,13 @@ export default function SelectQuestionPage() {
           ) : quizMode === "time" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
               <div className="text-6xl mb-4">🕐</div>
-              <h2 className="text-xl font-bold mb-4">德语时刻练习</h2>
+              <h2 className="text-xl font-bold mb-4">
+                {timeSubType === "special" ? "14点15分时刻练习" : "德语时刻练习"}
+              </h2>
               <p className="text-gray-600 mb-6">
-                {timeQuizType === "german" ? "看中文，选择正确的德语时刻表达" : "看德语时刻表达，选择正确的中文"}
+                {timeSubType === "special"
+                  ? "14点15分（下午2:15）的德语表达"
+                  : timeQuizType === "german" ? "看中文，选择正确的德语时刻表达" : "看德语时刻表达，选择正确的中文"}
               </p>
               <button
                 onClick={startQuiz}
@@ -1600,7 +1725,11 @@ export default function SelectQuestionPage() {
               >
                 开始答题 ({quizCount}题)
               </button>
-              <p className="text-gray-400 text-sm mt-4">共 {timeExpressions.length} 个时刻表达</p>
+              <p className="text-gray-400 text-sm mt-4">
+                {timeSubType === "special"
+                  ? `共 ${timeSpecialQuizzes.length} 道14点15分题目`
+                  : `共 ${timeSubType === "all" ? timeExpressions.length : timeExpressions.filter(s => s.category === timeSubType).length} 个时刻表达`}
+              </p>
             </div>
           ) : quizMode === "pronoun" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -1822,6 +1951,90 @@ export default function SelectQuestionPage() {
                       setQuizFinished(true);
                     } else {
                       generateVocabQuiz();
+                    }
+                  }}
+                  className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
+                >
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : quizMode === "time" && currentTimeSpecialQuiz ? (
+          /* 特殊时刻答题界面（多正确答案） */
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="text-center mb-6">
+              <p className="text-sm text-gray-500 mb-2">
+                请选择正确的德语时刻表达
+              </p>
+              <p className="text-2xl font-bold text-gray-800">
+                {currentTimeSpecialQuiz.questionZh}
+              </p>
+              <button
+                onClick={() => speak(currentTimeSpecialQuiz.questionZh.replace("（下午2:15）", ""))}
+                className="mt-2 px-4 py-2 bg-amber-100 rounded-full text-sm"
+              >
+                🔊 播放题目
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {currentTimeSpecialQuiz.options.map((option, idx) => {
+                const isSelected = selectedIndex === idx;
+                const showResult = quizResult !== null;
+                const isCorrect = idx === currentTimeSpecialQuiz.correctIndex;
+
+                let btnClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                if (showResult) {
+                  if (isCorrect) btnClass += "bg-green-500 text-white";
+                  else if (isSelected) btnClass += "bg-red-500 text-white";
+                  else btnClass += "bg-gray-100 text-gray-400";
+                } else {
+                  btnClass += isSelected ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-700 border-2 border-pink-200 hover:bg-pink-100";
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleTimeSelect(idx)}
+                    disabled={showResult}
+                    className={btnClass}
+                  >
+                    <div className="flex justify-between items-center px-4">
+                      <span>{option}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); speak(option); }}
+                          className="p-1 hover:bg-white/20 rounded"
+                        >
+                          🔊
+                        </button>
+                        {showResult && isCorrect && <span>✓</span>}
+                        {showResult && isSelected && !isCorrect && <span>✗</span>}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {quizResult && (
+              <div className="mt-6 text-center">
+                <p className={`text-xl font-bold ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
+                  {quizResult === "correct" ? "🎉 正确!" : "❌ 错误"}
+                </p>
+                {quizResult !== "correct" && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    正确答案：
+                    <p className="text-green-600">{currentTimeSpecialQuiz.options[currentTimeSpecialQuiz.correctIndex]}</p>
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      generateTimeQuiz();
                     }
                   }}
                   className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
@@ -2248,7 +2461,9 @@ export default function SelectQuestionPage() {
         {quizMode === "vocab"
           ? `共 ${questionWords.length} 个疑问词`
           : quizMode === "time"
-            ? `共 ${timeExpressions.length} 个时刻表达`
+            ? timeSubType === "special"
+              ? `共 ${timeSpecialQuizzes.length} 道14点15分题目`
+              : `共 ${timeSubType === "all" ? timeExpressions.length : timeExpressions.filter(s => s.category === timeSubType).length} 个时刻表达`
             : quizMode === "pronoun"
               ? `共 ${personalPronouns.length} 个人称代词`
               : quizMode === "verb"
