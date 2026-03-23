@@ -46,6 +46,75 @@ const personalPronouns3rd = [
   { id: 104, german: "sie", chinese: "他们/她们/它们" },
 ];
 
+// 德语时间数据
+const germanTimeData = [
+  {
+    id: 1,
+    time: "14:15",
+    hour: 14,
+    minute: 15,
+    answers: [
+      "Es ist Viertel nach zwei.",
+      "Es ist fünfzehn nach zwei.",
+      "Es ist vierzehn Uhr fünfzehn.",
+      "Es ist zwei Uhr fünfzehn.",
+    ],
+    chinese: "14点15分（下午2点15分）",
+  },
+];
+
+// 德语职业和身份数据
+const occupationsData = [
+  { id: 1, german: "der Arzt", chinese: "医生" },
+  { id: 2, german: "der Beruf", chinese: "职业" },
+  { id: 3, german: "die Firma", chinese: "公司" },
+  { id: 4, german: "der Lehrer", chinese: "教师" },
+  { id: 5, german: "der Professor", chinese: "教授" },
+  { id: 6, german: "die Hausfrau", chinese: "家庭主妇" },
+  { id: 7, german: "der Schüler", chinese: "学生" },
+  { id: 8, german: "der Student", chinese: "大学生" },
+];
+
+// 定冠词和名词数据（第1格和第4格）
+const definiteArticlesData = [
+  {
+    id: 1,
+    noun: "Mann",
+    nounChinese: "男人",
+    nominative: "der Mann",
+    nominativeChinese: "第1格",
+    accusative: "den Mann",
+    accusativeChinese: "第4格",
+  },
+  {
+    id: 2,
+    noun: "Frau",
+    nounChinese: "女人",
+    nominative: "die Frau",
+    nominativeChinese: "第1格",
+    accusative: "die Frau",
+    accusativeChinese: "第4格",
+  },
+  {
+    id: 3,
+    noun: "Kind",
+    nounChinese: "孩子",
+    nominative: "das Kind",
+    nominativeChinese: "第1格",
+    accusative: "das Kind",
+    accusativeChinese: "第4格",
+  },
+  {
+    id: 4,
+    noun: "Leute",
+    nounChinese: "人们",
+    nominative: "die Leute",
+    nominativeChinese: "第1格",
+    accusative: "die Leute",
+    accusativeChinese: "第4格",
+  },
+];
+
 // 动词变位数据
 const verbConjugationData: Record<string, { id: number; verb: string; chinese: string }[]> = {
   kommen: [
@@ -172,7 +241,7 @@ const playSound = (type: "correct" | "wrong") => {
 };
 
 export default function SpellingTestPage() {
-  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "pronoun3rd" | "verb">("number");
+  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation">("number");
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -210,6 +279,24 @@ export default function SpellingTestPage() {
   const [verbQuiz, setVerbQuiz] = useState<typeof verbConjugationData["kommen"][0] | null>(null);
   const [verbWrongBook, setVerbWrongBook] = useState<typeof verbConjugationData["kommen"]>([]);
 
+  // 德语时间相关
+  const [timeIndex, setTimeIndex] = useState(0);
+  const [timeQuiz, setTimeQuiz] = useState<typeof germanTimeData[0] | null>(null);
+  const [timeWrongBook, setTimeWrongBook] = useState<typeof germanTimeData>([]);
+
+  // 定冠词和名词相关
+  const [articleIndex, setArticleIndex] = useState(0);
+  const [articleQuiz, setArticleQuiz] = useState<typeof definiteArticlesData[0] | null>(null);
+  const [articleWrongBook, setArticleWrongBook] = useState<typeof definiteArticlesData>([]);
+  const [articleCaseType, setArticleCaseType] = useState<"nominative" | "accusative">("nominative");
+
+  // 职业相关
+  const [occupationIndex, setOccupationIndex] = useState(0);
+  const [occupationQuiz, setOccupationQuiz] = useState<typeof occupationsData[0] | null>(null);
+  const [occupationWrongBook, setOccupationWrongBook] = useState<typeof occupationsData>([]);
+  // 用于控制Enter键的延迟，防止同时触发提交和下一题
+  const [canPressEnter, setCanPressEnter] = useState(true);
+
   // 当前数字
   const currentNumber = germanNumbers[currentIndex];
   // 当前疑问词
@@ -220,6 +307,12 @@ export default function SpellingTestPage() {
   const currentPronoun3rd = personalPronouns3rd[pronoun3rdIndex];
   // 当前动词变位
   const currentVerb = verbConjugationData[verbType][verbIndex];
+  // 当前德语时间
+  const currentTime = germanTimeData[timeIndex];
+  // 当前定冠词和名词
+  const currentArticle = definiteArticlesData[articleIndex];
+  // 当前职业
+  const currentOccupation = occupationsData[occupationIndex];
 
   // 开始答题
   const startQuiz = () => {
@@ -251,6 +344,15 @@ export default function SpellingTestPage() {
       const available = verbConjugationData[verbType];
       const randomIndex = Math.floor(Math.random() * available.length);
       setVerbQuiz(available[randomIndex]);
+    } else if (contentType === "time") {
+      const randomIndex = Math.floor(Math.random() * germanTimeData.length);
+      setTimeQuiz(germanTimeData[randomIndex]);
+    } else if (contentType === "article") {
+      const randomIndex = Math.floor(Math.random() * definiteArticlesData.length);
+      setArticleQuiz(definiteArticlesData[randomIndex]);
+    } else if (contentType === "occupation") {
+      const randomIndex = Math.floor(Math.random() * occupationsData.length);
+      setOccupationQuiz(occupationsData[randomIndex]);
     } else {
       const randomIndex = Math.floor(Math.random() * germanNumbers.length);
       setQuizNumber(germanNumbers[randomIndex]);
@@ -264,6 +366,11 @@ export default function SpellingTestPage() {
   // 提交答案
   const submitAnswer = () => {
     if (!userInput.trim()) return;
+    if (!canPressEnter) return; // 防止重复提交
+
+    // 暂时禁用Enter键，防止同时触发提交和下一题
+    setCanPressEnter(false);
+    setTimeout(() => setCanPressEnter(true), 500);
 
     let isCorrect = false;
     if (contentType === "questionWord" && questionWordQuiz) {
@@ -298,6 +405,29 @@ export default function SpellingTestPage() {
       if (!isCorrect) {
         setVerbWrongBook(prev => prev.some(w => w.id === verbQuiz.id) ? prev : [...prev, verbQuiz]);
       }
+    } else if (contentType === "time" && timeQuiz) {
+      // 时间答案支持多个正确写法
+      const userAns = userInput.trim().toLowerCase();
+      isCorrect = timeQuiz.answers.some(ans => ans.toLowerCase() === userAns);
+      if (!isCorrect) {
+        setTimeWrongBook(prev => prev.some(t => t.id === timeQuiz.id) ? prev : [...prev, timeQuiz]);
+      }
+    } else if (contentType === "article" && articleQuiz) {
+      // 定冠词和名词答案
+      const userAns = userInput.trim().toLowerCase();
+      const correctAns = articleCaseType === "nominative" ? articleQuiz.nominative.toLowerCase() : articleQuiz.accusative.toLowerCase();
+      isCorrect = userAns === correctAns;
+      if (!isCorrect) {
+        setArticleWrongBook(prev => prev.some(a => a.id === articleQuiz.id) ? prev : [...prev, articleQuiz]);
+      }
+    } else if (contentType === "occupation" && occupationQuiz) {
+      // 职业答案
+      const userAns = userInput.trim().toLowerCase();
+      const correctAns = occupationQuiz.german.toLowerCase();
+      isCorrect = userAns === correctAns;
+      if (!isCorrect) {
+        setOccupationWrongBook(prev => prev.some(o => o.id === occupationQuiz.id) ? prev : [...prev, occupationQuiz]);
+      }
     } else if (quizNumber) {
       isCorrect = userInput.trim().toLowerCase() === quizNumber.german.toLowerCase();
       if (!isCorrect) {
@@ -315,10 +445,15 @@ export default function SpellingTestPage() {
     }
   };
 
-  // 监听键盘事件 - 按回车键下一题
+  // 监听键盘事件
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook && !quizFinished) {
+      // 没有显示结果时，按回车键提交答案
+      if (e.key === "Enter" && quizResult === null && quizStarted && !showWrongBook && !quizFinished && canPressEnter) {
+        submitAnswer();
+      }
+      // 显示结果后，按回车键进入下一题
+      if (e.key === "Enter" && quizResult !== null && quizStarted && !showWrongBook && !quizFinished && canPressEnter) {
         if (currentQuestionCount >= quizCount) {
           setQuizFinished(true);
         } else {
@@ -328,7 +463,7 @@ export default function SpellingTestPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [quizResult, quizStarted, showWrongBook, quizFinished, currentQuestionCount, quizCount]);
+  }, [quizResult, quizStarted, showWrongBook, quizFinished, currentQuestionCount, quizCount, canPressEnter]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50">
@@ -344,10 +479,10 @@ export default function SpellingTestPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold">
-            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "pronoun3rd" ? "👥 人称代词（第3人称）拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : "🔢 德语数字拼写"}
+            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "pronoun3rd" ? "👥 人称代词（第3人称）拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : contentType === "time" ? "⏰ 德语时间拼写" : contentType === "article" ? "📝 定冠词和名词拼写" : contentType === "occupation" ? "👔 职业和身份拼写" : "🔢 德语数字拼写"}
           </h1>
           <p className="mt-1 opacity-90">
-            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : "0-9 数字单词听写练习"}
+            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : contentType === "time" ? "德语时间表达听写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）听写练习" : contentType === "occupation" ? "职业和身份单词听写练习" : "0-9 数字单词听写练习"}
           </p>
         </div>
       </header>
@@ -367,16 +502,31 @@ export default function SpellingTestPage() {
           >
             ❓ 疑问词
           </button>
+          <button
+            onClick={() => { setContentType("time"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${contentType === "time" ? "bg-amber-500 text-white" : "bg-white text-gray-600"}`}
+          >
+            ⏰ 时间
+          </button>
+          <button
+            onClick={() => { setContentType("occupation"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${contentType === "occupation" ? "bg-emerald-500 text-white" : "bg-white text-gray-600"}`}
+          >
+            👔 职业
+          </button>
         </div>
 
         {/* 语法分类 */}
         <div className="flex justify-center mb-4">
           <select
-            value={contentType === "number" || contentType === "questionWord" ? "" : contentType}
-            onChange={(e) => { setContentType(e.target.value as "pronoun" | "pronoun3rd" | "verb"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            value={contentType === "number" || contentType === "questionWord" || contentType === "time" || contentType === "article" || contentType === "occupation" ? "" : contentType}
+            onChange={(e) => { setContentType(e.target.value as "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
             className="px-4 py-2 rounded-full text-sm font-medium border-2 border-purple-200 bg-white text-gray-700 focus:outline-none focus:border-purple-400"
           >
             <option value="">选择语法类型</option>
+            <option value="time">⏰ 德语时间表达</option>
+            <option value="article">📝 定冠词和名词（第1格和第4格）</option>
+            <option value="occupation">👔 职业和身份</option>
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
             <option value="pronoun3rd">语法10: 人称代词（第3人称）</option>
             <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
@@ -396,6 +546,20 @@ export default function SpellingTestPage() {
                   {verb}（{verbChineseNames[verb]}）
                 </option>
               ))}
+            </select>
+          </div>
+        )}
+
+        {/* 定冠词和名词格选择 */}
+        {contentType === "article" && (
+          <div className="flex justify-center mb-4">
+            <select
+              value={articleCaseType}
+              onChange={(e) => { setArticleCaseType(e.target.value as "nominative" | "accusative"); setMode("learn"); setQuizStarted(false); setArticleIndex(0); }}
+              className="px-4 py-2 rounded-full text-sm font-medium border-2 border-teal-200 bg-white text-gray-700 focus:outline-none focus:border-teal-400"
+            >
+              <option value="nominative">第1格（Nominativ）</option>
+              <option value="accusative">第4格（Akkusativ）</option>
             </select>
           </div>
         )}
@@ -424,7 +588,7 @@ export default function SpellingTestPage() {
               showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border border-gray-300"
             }`}
           >
-            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "pronoun3rd" ? pronoun3rdWrongBook.length : contentType === "verb" ? verbWrongBook.length : wrongBook.length})
+            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "pronoun3rd" ? pronoun3rdWrongBook.length : contentType === "verb" ? verbWrongBook.length : contentType === "time" ? timeWrongBook.length : contentType === "article" ? articleWrongBook.length : contentType === "occupation" ? occupationWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -477,8 +641,74 @@ export default function SpellingTestPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {verbWrongBook.map((word) => (
                     <div key={word.id} className="bg-red-50 rounded-xl p-4 text-center">
-                      <div className="text-2xl font-bold text-gray-800">{word.german}</div>
+                      <div className="text-2xl font-bold text-gray-800">{word.verb}</div>
                       <div className="text-lg text-orange-600">{word.chinese}</div>
+                      <button
+                        onClick={() => speak(word.verb)}
+                        className="mt-2 p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : contentType === "time" ? (
+              timeWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题，继续加油！</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3">
+                  {timeWrongBook.map((t) => (
+                    <div key={t.id} className="bg-red-50 rounded-xl p-4">
+                      <div className="text-xl font-bold text-gray-800 mb-2">{t.time}</div>
+                      <div className="text-lg text-amber-600 mb-2">{t.chinese}</div>
+                      {t.answers.map((ans, idx) => (
+                        <div key={idx} className="flex justify-between items-center bg-white rounded-lg p-2 mb-1">
+                          <span className="text-gray-800">{ans}</span>
+                          <button
+                            onClick={() => speak(ans)}
+                            className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                          >
+                            🔊
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : contentType === "article" ? (
+              articleWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题，继续加油！</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3">
+                  {articleWrongBook.map((a) => (
+                    <div key={a.id} className="bg-red-50 rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xl font-bold text-gray-800">{a.noun}</span>
+                        <span className="text-lg text-teal-600">{a.nounChinese}</span>
+                      </div>
+                      <div className="bg-white rounded-lg p-2 mb-1">
+                        <span className="text-gray-600">第1格: </span>
+                        <span className="text-gray-800">{a.nominative}</span>
+                      </div>
+                      <div className="bg-white rounded-lg p-2">
+                        <span className="text-gray-600">第4格: </span>
+                        <span className="text-gray-800">{a.accusative}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : contentType === "occupation" ? (
+              occupationWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题，继续加油！</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {occupationWrongBook.map((word) => (
+                    <div key={word.id} className="bg-red-50 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-gray-800">{word.german}</div>
+                      <div className="text-lg text-emerald-600">{word.chinese}</div>
                       <button
                         onClick={() => speak(word.german)}
                         className="mt-2 p-2 bg-amber-100 rounded-full hover:bg-amber-200"
@@ -742,6 +972,214 @@ export default function SpellingTestPage() {
                 </div>
               </div>
             </>
+          ) : contentType === "time" ? (
+            /* 德语时间学习 */
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
+                <div className="text-6xl font-bold text-amber-600 mb-4">
+                  {currentTime.time}
+                </div>
+                <div className="text-2xl font-bold text-amber-600 mb-2">
+                  {currentTime.chinese}
+                </div>
+                <div className="mt-4 text-left bg-amber-50 rounded-xl p-4">
+                  <p className="text-lg font-bold text-gray-800 mb-2">正确写法：</p>
+                  {currentTime.answers.map((ans, idx) => (
+                    <div key={idx} className="flex justify-between items-center mb-2">
+                      <span className="text-gray-700">{ans}</span>
+                      <button
+                        onClick={() => speak(ans)}
+                        className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => speak(currentTime.answers[0])}
+                  className="mt-4 px-6 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition flex items-center gap-2 mx-auto"
+                >
+                  <span>🔊</span> 播放发音
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setTimeIndex(i => Math.max(0, i - 1))}
+                  disabled={timeIndex === 0}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  ← 上一位
+                </button>
+                <span className="px-4 py-2 text-gray-600">
+                  {timeIndex + 1} / {germanTimeData.length}
+                </span>
+                <button
+                  onClick={() => setTimeIndex(i => Math.min(germanTimeData.length - 1, i + 1))}
+                  disabled={timeIndex === germanTimeData.length - 1}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  下一位 →
+                </button>
+              </div>
+
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">德语时间总表</h3>
+                <div className="space-y-4">
+                  {germanTimeData.map((t) => (
+                    <div key={t.id} className="bg-gray-50 rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xl font-bold text-amber-600">{t.time}</span>
+                        <span className="text-lg text-amber-600">{t.chinese}</span>
+                      </div>
+                      <div className="space-y-1">
+                        {t.answers.map((ans, idx) => (
+                          <div key={idx} className="flex justify-between items-center bg-white rounded-lg p-2">
+                            <span className="text-gray-700">{ans}</span>
+                            <button
+                              onClick={() => speak(ans)}
+                              className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                            >
+                              🔊
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : contentType === "article" ? (
+            /* 定冠词和名词学习 */
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
+                <div className="text-6xl font-bold text-teal-600 mb-4">
+                  {currentArticle.noun}
+                </div>
+                <div className="text-2xl font-bold text-teal-600 mb-2">
+                  {currentArticle.nounChinese}
+                </div>
+                <div className="mt-4 text-left bg-teal-50 rounded-xl p-4">
+                  <p className="text-lg font-bold text-gray-800 mb-2">变格：</p>
+                  <div className="bg-white rounded-lg p-3 mb-2">
+                    <span className="text-gray-600">第1格（Nominativ）: </span>
+                    <span className="text-xl font-bold text-gray-800">{currentArticle.nominative}</span>
+                  </div>
+                  <div className="bg-white rounded-lg p-3">
+                    <span className="text-gray-600">第4格（Akkusativ）: </span>
+                    <span className="text-xl font-bold text-gray-800">{currentArticle.accusative}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => speak(articleCaseType === "nominative" ? currentArticle.nominative : currentArticle.accusative)}
+                  className="mt-4 px-6 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition flex items-center gap-2 mx-auto"
+                >
+                  <span>🔊</span> 播放发音
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setArticleIndex(i => Math.max(0, i - 1))}
+                  disabled={articleIndex === 0}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  ← 上一位
+                </button>
+                <span className="px-4 py-2 text-gray-600">
+                  {articleIndex + 1} / {definiteArticlesData.length}
+                </span>
+                <button
+                  onClick={() => setArticleIndex(i => Math.min(definiteArticlesData.length - 1, i + 1))}
+                  disabled={articleIndex === definiteArticlesData.length - 1}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  下一位 →
+                </button>
+              </div>
+
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">定冠词和名词总表</h3>
+                <div className="space-y-4">
+                  {definiteArticlesData.map((a) => (
+                    <div key={a.id} className="bg-gray-50 rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xl font-bold text-teal-600">{a.noun}</span>
+                        <span className="text-lg text-teal-600">{a.nounChinese}</span>
+                      </div>
+                      <div className="bg-white rounded-lg p-2 mb-1">
+                        <span className="text-gray-600">第1格: </span>
+                        <span className="text-gray-800">{a.nominative}</span>
+                      </div>
+                      <div className="bg-white rounded-lg p-2">
+                        <span className="text-gray-600">第4格: </span>
+                        <span className="text-gray-800">{a.accusative}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : contentType === "occupation" ? (
+            /* 职业学习 */
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
+                <div className="text-5xl font-bold text-emerald-600 mb-4">
+                  {currentOccupation.german}
+                </div>
+                <div className="text-3xl font-bold text-emerald-600 mb-2">
+                  {currentOccupation.chinese}
+                </div>
+                <button
+                  onClick={() => speak(currentOccupation.german)}
+                  className="px-6 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition flex items-center gap-2 mx-auto"
+                >
+                  <span>🔊</span> 播放发音
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setOccupationIndex(i => Math.max(0, i - 1))}
+                  disabled={occupationIndex === 0}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  ← 上一位
+                </button>
+                <span className="px-4 py-2 text-gray-600">
+                  {occupationIndex + 1} / {occupationsData.length}
+                </span>
+                <button
+                  onClick={() => setOccupationIndex(i => Math.min(occupationsData.length - 1, i + 1))}
+                  disabled={occupationIndex === occupationsData.length - 1}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  下一位 →
+                </button>
+              </div>
+
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">职业和身份总表</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {occupationsData.map((word) => (
+                    <div key={word.id} className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl font-bold text-emerald-600">{word.german}</span>
+                        <span className="text-lg text-emerald-600">{word.chinese}</span>
+                      </div>
+                      <button
+                        onClick={() => speak(word.german)}
+                        className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           ) : (
             /* 数字学习 */
             <>
@@ -861,10 +1299,10 @@ export default function SpellingTestPage() {
             {!quizStarted ? (
               <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
                 <div className="text-6xl mb-6">
-                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "pronoun3rd" ? "👥" : contentType === "verb" ? "🔄" : "🔢"}
+                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "pronoun3rd" ? "👥" : contentType === "verb" ? "🔄" : contentType === "time" ? "⏰" : contentType === "article" ? "📝" : contentType === "occupation" ? "👔" : "🔢"}
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "pronoun3rd" ? "人称代词（第3人称）听写" : contentType === "verb" ? `动词${verbType}变位听写` : "德语数字听写"}
+                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "pronoun3rd" ? "人称代词（第3人称）听写" : contentType === "verb" ? `动词${verbType}变位听写` : contentType === "time" ? "德语时间听写" : contentType === "article" ? "定冠词和名词听写" : contentType === "occupation" ? "职业和身份听写" : "德语数字听写"}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {contentType === "questionWord"
@@ -875,7 +1313,13 @@ export default function SpellingTestPage() {
                         ? "听中文，写出人称代词（第3人称）"
                         : contentType === "verb"
                           ? `听中文，写出动词${verbType}变位`
-                          : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
+                          : contentType === "time"
+                            ? "听时间，写出德语时间表达（任一正确写法均可）"
+                            : contentType === "article"
+                              ? `听中文，写出${articleCaseType === "nominative" ? "第1格" : "第4格"}的定冠词和名词`
+                              : contentType === "occupation"
+                                ? "听中文，写出德语职业词汇"
+                                : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
                 </p>
                 <button
                   onClick={startQuiz}
@@ -930,9 +1374,15 @@ export default function SpellingTestPage() {
                           ? "请写出这个中文对应的人称代词（第3人称）"
                           : contentType === "verb"
                             ? "请写出这个中文对应的动词变位"
-                            : quizType === "digitToWord" ? "请写出这个数字的德语" : "请写出这个德语对应的数字"}
+                            : contentType === "time"
+                              ? "请写出这个时间的德语表达（任一正确写法均可）"
+                              : contentType === "article"
+                                ? `请写出这个中文对应的${articleCaseType === "nominative" ? "第1格" : "第4格"}定冠词和名词`
+                                : contentType === "occupation"
+                                  ? "请写出这个中文对应的德语职业词汇"
+                                  : quizType === "digitToWord" ? "请写出这个数字的德语" : "请写出这个德语对应的数字"}
                   </p>
-                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "pronoun3rd" ? "text-teal-600" : contentType === "verb" ? "text-orange-600" : "text-indigo-600"}`}>
+                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "pronoun3rd" ? "text-teal-600" : contentType === "verb" ? "text-orange-600" : contentType === "time" ? "text-amber-600" : contentType === "article" ? "text-teal-600" : contentType === "occupation" ? "text-emerald-600" : "text-indigo-600"}`}>
                     {contentType === "questionWord"
                       ? questionWordQuiz?.chinese
                       : contentType === "pronoun"
@@ -941,10 +1391,16 @@ export default function SpellingTestPage() {
                           ? pronoun3rdQuiz?.chinese
                           : contentType === "verb"
                             ? verbQuiz?.chinese
-                            : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
+                            : contentType === "time"
+                              ? timeQuiz?.time
+                              : contentType === "article"
+                                ? articleQuiz?.nounChinese
+                                : contentType === "occupation"
+                                  ? occupationQuiz?.chinese
+                                  : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
                   </div>
                   <button
-                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
+                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : contentType === "time" ? timeQuiz?.answers[0] || "" : contentType === "article" ? (articleCaseType === "nominative" ? articleQuiz?.nominative || "" : articleQuiz?.accusative || "") : contentType === "occupation" ? occupationQuiz?.german || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
                     className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200"
                   >
                     🔊 播放
@@ -977,7 +1433,7 @@ export default function SpellingTestPage() {
                           : "bg-gray-200 text-gray-400"
                       }`}
                     >
-                      确认答案
+                      确认答案 (Enter)
                     </button>
                   </div>
                 )}
@@ -988,14 +1444,58 @@ export default function SpellingTestPage() {
                     <p className={`text-2xl font-bold mb-4 ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
                       {quizResult === "correct" ? "🎉 回答正确！" : "❌ 回答错误"}
                     </p>
+                    {quizResult === "wrong" && userInput && (
+                      <div className="bg-red-50 rounded-xl p-3 mb-4">
+                        <p className="text-gray-600 text-sm">你的答案：</p>
+                        <p className="text-xl font-bold text-red-600">{userInput}</p>
+                      </div>
+                    )}
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
                       <p className="text-gray-600">正确答案：</p>
-                      <p className="text-2xl font-bold text-indigo-600">
-                        {contentType === "questionWord" ? questionWordQuiz?.german : contentType === "pronoun" ? pronounQuiz?.german : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german : contentType === "verb" ? verbQuiz?.verb : quizNumber?.german}
-                      </p>
-                      <p className="text-gray-500">
-                        ({contentType === "questionWord" ? questionWordQuiz?.chinese : contentType === "pronoun" ? pronounQuiz?.chinese : contentType === "pronoun3rd" ? pronoun3rdQuiz?.chinese : contentType === "verb" ? verbQuiz?.chinese : quizNumber?.chinese})
-                      </p>
+                      {contentType === "time" ? (
+                        <div className="text-left">
+                          <p className="text-2xl font-bold text-amber-600 mb-2">{timeQuiz?.time}</p>
+                          <p className="text-lg text-amber-600 mb-2">{timeQuiz?.chinese}</p>
+                          {timeQuiz?.answers.map((ans, idx) => (
+                            <div key={idx} className="flex justify-between items-center bg-white rounded-lg p-2 mb-1">
+                              <span className="text-gray-800">{ans}</span>
+                              <button
+                                onClick={() => speak(ans)}
+                                className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                              >
+                                🔊
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : contentType === "article" ? (
+                        <div className="text-left">
+                          <p className="text-2xl font-bold text-teal-600 mb-2">{articleQuiz?.noun}</p>
+                          <p className="text-lg text-teal-600 mb-2">{articleQuiz?.nounChinese}</p>
+                          <div className="bg-white rounded-lg p-2 mb-1">
+                            <span className="text-gray-600">第1格: </span>
+                            <span className="text-gray-800 font-bold">{articleQuiz?.nominative}</span>
+                          </div>
+                          <div className="bg-white rounded-lg p-2">
+                            <span className="text-gray-600">第4格: </span>
+                            <span className="text-gray-800 font-bold">{articleQuiz?.accusative}</span>
+                          </div>
+                        </div>
+                      ) : contentType === "occupation" ? (
+                        <div className="text-left">
+                          <p className="text-2xl font-bold text-emerald-600 mb-2">{occupationQuiz?.german}</p>
+                          <p className="text-lg text-emerald-600">({occupationQuiz?.chinese})</p>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-2xl font-bold text-indigo-600">
+                            {contentType === "questionWord" ? questionWordQuiz?.german : contentType === "pronoun" ? pronounQuiz?.german : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german : contentType === "verb" ? verbQuiz?.verb : quizNumber?.german}
+                          </p>
+                          <p className="text-gray-500">
+                            ({contentType === "questionWord" ? questionWordQuiz?.chinese : contentType === "pronoun" ? pronounQuiz?.chinese : contentType === "pronoun3rd" ? pronoun3rdQuiz?.chinese : contentType === "verb" ? verbQuiz?.chinese : quizNumber?.chinese})
+                          </p>
+                        </>
+                      )}
                     </div>
                     <button
                       onClick={() => {
@@ -1007,7 +1507,7 @@ export default function SpellingTestPage() {
                       }}
                       className="px-8 py-3 bg-indigo-500 text-white rounded-full font-medium hover:bg-indigo-600"
                     >
-                      {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
+                      {currentQuestionCount >= quizCount ? "查看结果 (Enter)" : "下一题 (Enter)"}
                     </button>
                   </div>
                 )}
@@ -1018,7 +1518,7 @@ export default function SpellingTestPage() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm">
-        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : "德语数字 0-9 拼写练习"}
+        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : contentType === "time" ? "德语时间表达拼写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）拼写练习" : contentType === "occupation" ? "职业和身份拼写练习" : "德语数字 0-9 拼写练习"}
       </footer>
     </div>
   );
