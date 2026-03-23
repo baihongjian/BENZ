@@ -46,6 +46,16 @@ const sentences: Sentence[] = [
 
   // 疑问
   { id: 14, german: "Wie bitte?", chinese: "什么?/请再说一次?", category: "question" },
+
+  // 职业 & 身份
+  { id: 15, german: "der Arzt", chinese: "医生", category: "profession" },
+  { id: 16, german: "der Beruf", chinese: "职业", category: "profession" },
+  { id: 17, german: "die Firma", chinese: "公司", category: "profession" },
+  { id: 18, german: "der Lehrer", chinese: "老师", category: "profession" },
+  { id: 19, german: "der Professor", chinese: "教授", category: "profession" },
+  { id: 20, german: "die Hausfrau", chinese: "家庭主妇", category: "profession" },
+  { id: 21, german: "der Schüler", chinese: "学生", category: "profession" },
+  { id: 22, german: "der Student", chinese: "大学生", category: "profession" },
 ];
 
 const categories = [
@@ -57,6 +67,7 @@ const categories = [
   { id: "polite", name: "礼貌用语" },
   { id: "sorry", name: "道歉" },
   { id: "question", name: "疑问" },
+  { id: "profession", name: "职业 & 身份" },
 ];
 
 // 对话选择题数据：题干是A的问题，选项是B的回答
@@ -275,8 +286,8 @@ interface TimeSpecialQuiz {
   questionZh: string;      // 题目（中文）
   correctAnswer: string;   // 正确答案（14点15分的一种表达）
   wrongAnswers: string[];  // 干扰项（3个错误选项）
-  options: string[];       // 打乱后的所有选项
-  correctIndex: number;     // 正确答案在选项中的索引
+  options?: string[];       // 打乱后的所有选项（动态添加）
+  correctIndex?: number;   // 正确答案在选项中的索引（动态添加）
 }
 
 const timeSpecialQuizzes: TimeSpecialQuiz[] = [
@@ -379,6 +390,82 @@ const verbConjugationData: Record<string, Sentence[]> = {
   ],
 };
 
+// 德语定冠词和名词格数数据
+interface ArticleNoun {
+  id: number;
+  noun: string;        // 名词（单数形式）
+  nounZh: string;      // 名词中文
+  gender: "m" | "n" | "f" | "pl";  // 阳性/中性/阴性/复数
+  nominativ: string;   // 第一格（der/das/die）
+  akkusativ: string;  // 第四格（den/das/die）
+}
+
+const articleNouns: ArticleNoun[] = [
+  // 阳性（m）
+  { id: 1, noun: "der Mann", nounZh: "男人", gender: "m", nominativ: "der Mann", akkusativ: "den Mann" },
+  // 阴性（f）
+  { id: 2, noun: "die Frau", nounZh: "女人", gender: "f", nominativ: "die Frau", akkusativ: "die Frau" },
+  // 中性（n）
+  { id: 3, noun: "das Kind", nounZh: "孩子", gender: "n", nominativ: "das Kind", akkusativ: "das Kind" },
+  // 复数（pl）
+  { id: 4, noun: "die Leute", nounZh: "人们", gender: "pl", nominativ: "die Leute", akkusativ: "die Leute" },
+];
+
+// 定冠词格数练习题目
+interface ArticleCaseQuiz {
+  id: number;
+  noun: string;        // 名词
+  nounZh: string;      // 名词中文
+  gender: "m" | "n" | "f" | "pl";
+  caseType: "nominativ" | "akkusativ";  // 第一格或第四格
+  question: string;     // 题目（德语）
+  correctAnswer: string; // 正确答案（定冠词+名词）
+  options: string[];   // 所有选项
+  correctIndex: number; // 正确答案索引
+}
+
+const articleCaseQuizzes: ArticleCaseQuiz[] = [];
+
+const articleCaseTypes = ["nominativ", "akkusativ"] as const;
+const genderLabels: Record<string, string> = { m: "阳性", n: "中性", f: "阴性", pl: "复数" };
+const caseLabels: Record<string, string> = { nominativ: "第一格", akkusativ: "第四格" };
+
+// 生成题目
+articleNouns.forEach(noun => {
+  articleCaseTypes.forEach(caseType => {
+    const correctAnswer = caseType === "nominativ" ? noun.nominativ : noun.akkusativ;
+    const question = `${noun.nounZh}（${genderLabels[noun.gender]}）${caseLabels[caseType]}`;
+
+    // 生成干扰选项
+    const otherNouns = articleNouns.filter(n => n.id !== noun.id);
+    const wrongAnswers: string[] = [];
+    while (wrongAnswers.length < 3 && otherNouns.length > 0) {
+      const randomIdx = Math.floor(Math.random() * otherNouns.length);
+      const wrongNoun = otherNouns[randomIdx];
+      const wrongAnswer = caseType === "nominativ" ? wrongNoun.nominativ : wrongNoun.akkusativ;
+      if (!wrongAnswers.includes(wrongAnswer) && wrongAnswer !== correctAnswer) {
+        wrongAnswers.push(wrongAnswer);
+      }
+      otherNouns.splice(randomIdx, 1);
+    }
+
+    const allOptions = [correctAnswer, ...wrongAnswers].sort(() => Math.random() - 0.5);
+    const correctIndex = allOptions.indexOf(correctAnswer);
+
+    articleCaseQuizzes.push({
+      id: articleCaseQuizzes.length + 1,
+      noun: noun.noun,
+      nounZh: noun.nounZh,
+      gender: noun.gender,
+      caseType,
+      question,
+      correctAnswer,
+      options: allOptions,
+      correctIndex
+    });
+  });
+});
+
 const verbList = ["kommen", "sein", "heißen", "arbeiten", "wohnen"] as const;
 
 // 发音函数
@@ -445,9 +532,12 @@ export default function SelectQuestionPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizHistory, setQuizHistory] = useState<QuizRecord[]>([]);
+  // 题目选择功能
+  const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
+  const [showQuestionSelector, setShowQuestionSelector] = useState(false);
 
   // 对话模式相关状态
-  const [quizMode, setQuizMode] = useState<"sentence" | "dialog" | "vocab" | "time" | "pronoun" | "pronoun3rd" | "verb">("sentence");
+  const [quizMode, setQuizMode] = useState<"sentence" | "dialog" | "vocab" | "time" | "pronoun" | "pronoun3rd" | "verb" | "articleCase">("sentence");
   const [currentDialogQuiz, setCurrentDialogQuiz] = useState<DialogQuiz | null>(null);
   const [dialogWrongBook, setDialogWrongBook] = useState<DialogQuiz[]>([]);
   const [vocabWrongBook, setVocabWrongBook] = useState<Sentence[]>([]);
@@ -473,6 +563,11 @@ export default function SelectQuestionPage() {
   const [verbWrongBook, setVerbWrongBook] = useState<Sentence[]>([]);
   const [seinWrongBook, setSeinWrongBook] = useState<Sentence[]>([]);
   const [currentVerbQuiz, setCurrentVerbQuiz] = useState<{ question: Sentence; options: Sentence[] } | null>(null);
+  // 定冠词格数练习相关状态
+  const [articleCaseQuizType, setArticleCaseQuizType] = useState<"all" | "m" | "n" | "f" | "pl">("all");
+  const [articleCaseSubType, setArticleCaseSubType] = useState<"all" | "nominativ" | "akkusativ">("all");
+  const [articleCaseWrongBook, setArticleCaseWrongBook] = useState<ArticleCaseQuiz[]>([]);
+  const [currentArticleCaseQuiz, setCurrentArticleCaseQuiz] = useState<ArticleCaseQuiz | null>(null);
 
   // 从 localStorage 加载错题本
   useEffect(() => {
@@ -652,6 +747,27 @@ export default function SelectQuestionPage() {
     }
   }, [pronoun3rdWrongBook]);
 
+  // 从 localStorage 加载定冠词格数错题本
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("articleCaseWrongBook");
+      if (saved) {
+        try {
+          setArticleCaseWrongBook(JSON.parse(saved));
+        } catch (e) {
+          console.error("加载定冠词格数错题本失败:", e);
+        }
+      }
+    }
+  }, []);
+
+  // 保存定冠词格数错题本到 localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("articleCaseWrongBook", JSON.stringify(articleCaseWrongBook));
+    }
+  }, [articleCaseWrongBook]);
+
   // 清空人称代词错题本
   const clearPronounWrongBook = () => {
     if (confirm("确定要清空人称代词错题本吗？")) {
@@ -665,6 +781,14 @@ export default function SelectQuestionPage() {
     if (confirm("确定要清空人称代词（第3人称）错题本吗？")) {
       setPronoun3rdWrongBook([]);
       localStorage.removeItem("pronoun3rdWrongBook");
+    }
+  };
+
+  // 清空定冠词格数错题本
+  const clearArticleCaseWrongBook = () => {
+    if (confirm("确定要清空定冠词和名词格数错题本吗？")) {
+      setArticleCaseWrongBook([]);
+      localStorage.removeItem("articleCaseWrongBook");
     }
   };
 
@@ -735,6 +859,12 @@ export default function SelectQuestionPage() {
           } else {
             generatePronoun3rdQuiz();
           }
+        } else if (quizMode === "articleCase" && currentArticleCaseQuiz) {
+          if (currentQuestionCount >= quizCount) {
+            setQuizFinished(true);
+          } else {
+            generateArticleCaseQuiz();
+          }
         } else if (quizMode === "verb" && currentVerbQuiz) {
           if (currentQuestionCount >= quizCount) {
             setQuizFinished(true);
@@ -756,9 +886,19 @@ export default function SelectQuestionPage() {
 
   // 生成题目
   const generateQuiz = () => {
-    const available = filteredSentences;
+    // 如果用户选择了题目，则只从选择的题目中抽取；否则使用所有筛选后的题目
+    const available = selectedQuestions.length > 0
+      ? filteredSentences.filter(s => selectedQuestions.includes(s.id))
+      : filteredSentences;
+
     if (available.length < 4) {
       alert("该分类至少需要4个句子");
+      return;
+    }
+
+    // 如果选择的题目数量不足4个，给出提示
+    if (selectedQuestions.length > 0 && available.length < 4) {
+      alert(`已选题目不足4道，当前已选${available.length}道，请至少选择4道题目`);
       return;
     }
 
@@ -949,6 +1089,37 @@ export default function SelectQuestionPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成定冠词格数题目
+  const generateArticleCaseQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
+    // 根据子类型筛选
+    let available = articleCaseQuizzes;
+    if (articleCaseQuizType !== "all") {
+      available = available.filter(q => q.gender === articleCaseQuizType);
+    }
+    if (articleCaseSubType !== "all") {
+      available = available.filter(q => q.caseType === articleCaseSubType);
+    }
+
+    // 如果筛选后数据不足，随机返回
+    if (available.length < 4) {
+      available = articleCaseQuizzes;
+    }
+
+    const idx = Math.floor(Math.random() * available.length);
+    const quiz = available[idx];
+
+    setCurrentArticleCaseQuiz(quiz);
+    setSelectedIndex(null);
+    setQuizResult(null);
+    setQuizStarted(true);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 生成动词变位题目
   const generateVerbQuiz = () => {
     if (currentQuestionCount >= quizCount) {
@@ -1082,6 +1253,8 @@ export default function SelectQuestionPage() {
       generatePronounQuiz();
     } else if (quizMode === "pronoun3rd") {
       generatePronoun3rdQuiz();
+    } else if (quizMode === "articleCase") {
+      generateArticleCaseQuiz();
     } else if (quizMode === "verb") {
       generateVerbQuiz();
     } else {
@@ -1230,6 +1403,28 @@ export default function SelectQuestionPage() {
     }
   };
 
+  // 定冠词格数模式 - 选择答案
+  const handleArticleCaseSelect = (index: number) => {
+    if (quizResult !== null || !currentArticleCaseQuiz) return;
+    setSelectedIndex(index);
+    const isCorrect = index === currentArticleCaseQuiz.correctIndex;
+    setQuizResult(isCorrect ? "correct" : "wrong");
+    playSound(isCorrect ? "correct" : "wrong");
+
+    if (!isCorrect) {
+      setArticleCaseWrongBook(prev => {
+        if (prev.some(q => q.id === currentArticleCaseQuiz.id)) return prev;
+        return [...prev, currentArticleCaseQuiz];
+      });
+    } else {
+      setCorrectCount(prev => prev + 1);
+    }
+
+    if (currentQuestionCount >= quizCount) {
+      setTimeout(() => setQuizFinished(true), 500);
+    }
+  };
+
   // 动词变位模式 - 选择答案
   const handleVerbSelect = (index: number) => {
     if (quizResult !== null || !currentVerbQuiz) return;
@@ -1309,19 +1504,19 @@ export default function SelectQuestionPage() {
             基础句子
           </button>
           <button
-            onClick={() => { setQuizMode("vocab"); setQuizStarted(false); setShowWrongBook(false); }}
+            onClick={() => { setQuizMode("vocab"); setQuizStarted(false); setShowWrongBook(false); setSelectedQuestions([]); }}
             className={`px-4 py-2 rounded-full text-sm ${quizMode === "vocab" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
           >
             疑问词
           </button>
           <button
-            onClick={() => { setQuizMode("time"); setQuizStarted(false); setShowWrongBook(false); }}
+            onClick={() => { setQuizMode("time"); setQuizStarted(false); setShowWrongBook(false); setSelectedQuestions([]); }}
             className={`px-4 py-2 rounded-full text-sm ${quizMode === "time" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
           >
             时刻
           </button>
           <button
-            onClick={() => { setQuizMode("dialog"); setQuizStarted(false); setShowWrongBook(false); }}
+            onClick={() => { setQuizMode("dialog"); setQuizStarted(false); setShowWrongBook(false); setSelectedQuestions([]); }}
             className={`px-4 py-2 rounded-full text-sm ${quizMode === "dialog" ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
           >
             对话练习
@@ -1337,6 +1532,7 @@ export default function SelectQuestionPage() {
                 setQuizMode(e.target.value as "pronoun" | "pronoun3rd" | "verb");
                 setQuizStarted(false);
                 setShowWrongBook(false);
+                setSelectedQuestions([]);
               }
             }}
             className="px-4 py-2 rounded-full text-sm bg-white border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -1345,6 +1541,7 @@ export default function SelectQuestionPage() {
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
             <option value="pronoun3rd">语法10: 人称代词（第3人称）</option>
             <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
+            <option value="articleCase">语法11: 定冠词和名词（第一格/第四格）</option>
           </select>
         </div>
 
@@ -1455,6 +1652,32 @@ export default function SelectQuestionPage() {
           </div>
         )}
 
+        {/* 定冠词格数模式：词性和格选择 */}
+        {quizMode === "articleCase" && (
+          <div className="flex justify-center gap-2 mb-4 flex-wrap">
+            <select
+              value={articleCaseQuizType}
+              onChange={(e) => { setArticleCaseQuizType(e.target.value as "all" | "m" | "n" | "f" | "pl"); setQuizStarted(false); }}
+              className="px-4 py-2 rounded-full text-sm bg-white border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500"
+            >
+              <option value="all">全部词性</option>
+              <option value="m">阳性</option>
+              <option value="n">中性</option>
+              <option value="f">阴性</option>
+              <option value="pl">复数</option>
+            </select>
+            <select
+              value={articleCaseSubType}
+              onChange={(e) => { setArticleCaseSubType(e.target.value as "all" | "nominativ" | "akkusativ"); setQuizStarted(false); }}
+              className="px-4 py-2 rounded-full text-sm bg-white border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500"
+            >
+              <option value="all">全部格</option>
+              <option value="nominativ">第一格</option>
+              <option value="akkusativ">第四格</option>
+            </select>
+          </div>
+        )}
+
         {/* 动词变位模式：动词选择 */}
         {quizMode === "verb" && (
           <div className="flex justify-center gap-2 mb-4 flex-wrap">
@@ -1494,7 +1717,7 @@ export default function SelectQuestionPage() {
             {categories.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => { setCategory(cat.id); setQuizStarted(false); }}
+                onClick={() => { setCategory(cat.id); setQuizStarted(false); setSelectedQuestions([]); }}
                 className={`px-3 py-1 rounded-full text-xs ${category === cat.id ? "bg-pink-500 text-white" : "bg-white text-gray-600"}`}
               >
                 {cat.name}
@@ -1504,7 +1727,7 @@ export default function SelectQuestionPage() {
         )}
 
         {/* 答题数量选择 */}
-        {!quizStarted && !quizFinished && (
+        {!quizStarted && !quizFinished && quizMode === "sentence" && (
           <div className="flex justify-center gap-2 mb-4">
             <span className="text-sm text-gray-600 self-center">答题数量:</span>
             {[5, 10, 15, 20].map(count => (
@@ -1516,6 +1739,66 @@ export default function SelectQuestionPage() {
                 {count}题
               </button>
             ))}
+          </div>
+        )}
+
+        {/* 题目选择功能 - 仅在句子模式下显示 */}
+        {!quizStarted && !quizFinished && quizMode === "sentence" && (
+          <div className="mb-4">
+            <button
+              onClick={() => setShowQuestionSelector(!showQuestionSelector)}
+              className={`px-4 py-2 rounded-full text-sm ${showQuestionSelector ? "bg-pink-500 text-white" : "bg-white text-gray-700 border"}`}
+            >
+              {showQuestionSelector ? "隐藏题目列表" : `选择题目${selectedQuestions.length > 0 ? ` (已选${selectedQuestions.length}题)` : ""}`}
+            </button>
+
+            {/* 题目选择列表 */}
+            {showQuestionSelector && (
+              <div className="mt-4 bg-white rounded-2xl shadow-lg p-4 max-h-80 overflow-y-auto">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm text-gray-600">
+                    当前分类: {categories.find(c => c.id === category)?.name || "全部"} ({filteredSentences.length}题)
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedQuestions(filteredSentences.map(s => s.id))}
+                      className="text-xs text-pink-500 hover:text-pink-700"
+                    >
+                      全选
+                    </button>
+                    <button
+                      onClick={() => setSelectedQuestions([])}
+                      className="text-xs text-gray-500 hover:text-gray-700"
+                    >
+                      清空
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {filteredSentences.map(sentence => (
+                    <label
+                      key={sentence.id}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedQuestions.includes(sentence.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedQuestions([...selectedQuestions, sentence.id]);
+                          } else {
+                            setSelectedQuestions(selectedQuestions.filter(id => id !== sentence.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-pink-500 rounded"
+                      />
+                      <span className="text-sm">{sentence.german}</span>
+                      <span className="text-xs text-gray-400">- {sentence.chinese}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1540,7 +1823,7 @@ export default function SelectQuestionPage() {
             onClick={() => setShowWrongBook(true)}
             className={`px-6 py-2 rounded-full ${showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border"}`}
           >
-            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : quizMode === "time" ? timeWrongBook.length : quizMode === "pronoun" ? pronounWrongBook.length : quizMode === "pronoun3rd" ? pronoun3rdWrongBook.length : quizMode === "verb" ? verbWrongBook.length : wrongBook.length})
+            📚 错题本 ({quizMode === "dialog" ? dialogWrongBook.length : quizMode === "vocab" ? vocabWrongBook.length : quizMode === "time" ? timeWrongBook.length : quizMode === "pronoun" ? pronounWrongBook.length : quizMode === "pronoun3rd" ? pronoun3rdWrongBook.length : quizMode === "articleCase" ? articleCaseWrongBook.length : quizMode === "verb" ? verbWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -1549,7 +1832,7 @@ export default function SelectQuestionPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : quizMode === "time" ? "时刻错题本" : quizMode === "pronoun" ? "人称代词错题本" : quizMode === "pronoun3rd" ? "人称代词（第3人称）错题本" : quizMode === "verb" ? `动词${verbType}变位错题本` : "错题本"}
+                {quizMode === "dialog" ? "对话错题本" : quizMode === "vocab" ? "疑问词错题本" : quizMode === "time" ? "时刻错题本" : quizMode === "pronoun" ? "人称代词错题本" : quizMode === "pronoun3rd" ? "人称代词（第3人称）错题本" : quizMode === "articleCase" ? "定冠词和名词格数错题本" : quizMode === "verb" ? `动词${verbType}变位错题本` : "错题本"}
               </h2>
               {quizMode === "dialog" ? (
                 dialogWrongBook.length > 0 && (
@@ -1570,6 +1853,10 @@ export default function SelectQuestionPage() {
               ) : quizMode === "pronoun3rd" ? (
                 pronoun3rdWrongBook.length > 0 && (
                   <button onClick={clearPronoun3rdWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
+                )
+              ) : quizMode === "articleCase" ? (
+                articleCaseWrongBook.length > 0 && (
+                  <button onClick={clearArticleCaseWrongBook} className="text-sm text-red-500 hover:text-red-700">清空</button>
                 )
               ) : quizMode === "verb" ? (
                 verbWrongBook.length > 0 && (
@@ -1655,6 +1942,22 @@ export default function SelectQuestionPage() {
                         <p className="text-gray-600">{s.chinese}</p>
                       </div>
                       <button onClick={() => speak(s.german)} className="p-2 bg-amber-100 rounded-full">🔊</button>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : quizMode === "articleCase" ? (
+              articleCaseWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题</p>
+              ) : (
+                <div className="space-y-3">
+                  {articleCaseWrongBook.map(q => (
+                    <div key={q.id} className="bg-red-50 p-4 rounded-xl flex justify-between items-center">
+                      <div>
+                        <p className="text-gray-600">{q.question}</p>
+                        <p className="font-bold text-gray-800">{q.correctAnswer}</p>
+                      </div>
+                      <button onClick={() => speak(q.correctAnswer)} className="p-2 bg-amber-100 rounded-full">🔊</button>
                     </div>
                   ))}
                 </div>
@@ -1760,6 +2063,38 @@ export default function SelectQuestionPage() {
                 开始答题 ({quizCount}题)
               </button>
               <p className="text-gray-400 text-sm mt-4">共 {personalPronouns3rd.length} 个人称代词</p>
+            </div>
+          ) : quizMode === "articleCase" ? (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <div className="text-6xl mb-4">📝</div>
+              <h2 className="text-xl font-bold mb-4">德语定冠词和名词格数练习</h2>
+              <p className="text-gray-600 mb-6">
+                看中文名词，选择正确的定冠词和名词形式<br />
+                <span className="text-sm">
+                  {articleCaseQuizType === "all" ? "全部词性" : genderLabels[articleCaseQuizType]} +
+                  {articleCaseSubType === "all" ? " 全部格" : caseLabels[articleCaseSubType]}
+                </span>
+              </p>
+              <button
+                onClick={startQuiz}
+                className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600"
+              >
+                开始答题 ({quizCount}题)
+              </button>
+              <p className="text-gray-400 text-sm mt-4">
+                共 {
+                  (() => {
+                    let count = articleCaseQuizzes.length;
+                    if (articleCaseQuizType !== "all") {
+                      count = articleCaseQuizzes.filter(q => q.gender === articleCaseQuizType).length;
+                    }
+                    if (articleCaseSubType !== "all") {
+                      count = articleCaseQuizzes.filter(q => q.caseType === articleCaseSubType).length;
+                    }
+                    return count;
+                  })()
+                } 道题目
+              </p>
             </div>
           ) : quizMode === "verb" ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
@@ -1979,7 +2314,7 @@ export default function SelectQuestionPage() {
             </div>
 
             <div className="space-y-3">
-              {currentTimeSpecialQuiz.options.map((option, idx) => {
+              {currentTimeSpecialQuiz.options?.map((option, idx) => {
                 const isSelected = selectedIndex === idx;
                 const showResult = quizResult !== null;
                 const isCorrect = idx === currentTimeSpecialQuiz.correctIndex;
@@ -2026,7 +2361,7 @@ export default function SelectQuestionPage() {
                 {quizResult !== "correct" && (
                   <div className="mt-2 text-sm text-gray-600">
                     正确答案：
-                    <p className="text-green-600">{currentTimeSpecialQuiz.options[currentTimeSpecialQuiz.correctIndex]}</p>
+                    <p className="text-green-600">{currentTimeSpecialQuiz.options?.[currentTimeSpecialQuiz.correctIndex ?? 0]}</p>
                   </div>
                 )}
                 <button
@@ -2242,6 +2577,84 @@ export default function SelectQuestionPage() {
                       setQuizFinished(true);
                     } else {
                       generatePronoun3rdQuiz();
+                    }
+                  }}
+                  className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
+                >
+                  {currentQuestionCount >= quizCount ? "查看结果 →" : "下一题 →"}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : quizMode === "articleCase" && currentArticleCaseQuiz ? (
+          /* 定冠词格数答题界面 */
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="text-center mb-6">
+              <p className="text-sm text-gray-500 mb-2">
+                请选择正确的定冠词+名词形式
+              </p>
+              <p className="text-2xl font-bold text-gray-800">
+                {currentArticleCaseQuiz.question}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {currentArticleCaseQuiz.options.map((option, idx) => {
+                const isSelected = selectedIndex === idx;
+                const showResult = quizResult !== null;
+                const isCorrect = idx === currentArticleCaseQuiz.correctIndex;
+
+                let btnClass = "w-full py-4 rounded-xl text-lg font-medium transition ";
+                if (showResult) {
+                  if (isCorrect) btnClass += "bg-green-500 text-white";
+                  else if (isSelected) btnClass += "bg-red-500 text-white";
+                  else btnClass += "bg-gray-100 text-gray-400";
+                } else {
+                  btnClass += isSelected ? "bg-pink-500 text-white" : "bg-pink-50 text-pink-700 border-2 border-pink-200 hover:bg-pink-100";
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleArticleCaseSelect(idx)}
+                    disabled={showResult}
+                    className={btnClass}
+                  >
+                    <div className="flex justify-between items-center px-4">
+                      <span>{option}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); speak(option); }}
+                          className="p-1 hover:bg-white/20 rounded"
+                        >
+                          🔊
+                        </button>
+                        {showResult && isCorrect && <span>✓</span>}
+                        {showResult && isSelected && !isCorrect && <span>✗</span>}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {quizResult && (
+              <div className="mt-6 text-center">
+                <p className={`text-xl font-bold ${quizResult === "correct" ? "text-green-500" : "text-red-500"}`}>
+                  {quizResult === "correct" ? "🎉 正确!" : "❌ 错误"}
+                </p>
+                {quizResult !== "correct" && (
+                  <div className="mt-2 text-sm text-gray-600">
+                    正确答案：
+                    <p className="text-green-600">{currentArticleCaseQuiz.options[currentArticleCaseQuiz.correctIndex]}</p>
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    if (currentQuestionCount >= quizCount) {
+                      setQuizFinished(true);
+                    } else {
+                      generateArticleCaseQuiz();
                     }
                   }}
                   className="mt-4 px-8 py-3 bg-pink-500 text-white rounded-full"
