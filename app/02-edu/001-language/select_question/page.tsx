@@ -56,6 +56,16 @@ const sentences: Sentence[] = [
   { id: 20, german: "die Hausfrau", chinese: "家庭主妇", category: "profession" },
   { id: 21, german: "der Schüler", chinese: "学生", category: "profession" },
   { id: 22, german: "der Student", chinese: "大学生", category: "profession" },
+
+  // 天气
+  { id: 23, german: "das Wetter", chinese: "天气", category: "weather" },
+  { id: 24, german: "der Wind", chinese: "风", category: "weather" },
+  { id: 25, german: "der Regen", chinese: "雨", category: "weather" },
+  { id: 26, german: "der Schnee", chinese: "雪", category: "weather" },
+  { id: 27, german: "die Luft", chinese: "空气", category: "weather" },
+  { id: 28, german: "die Sonne", chinese: "太阳", category: "weather" },
+  { id: 29, german: "der Stern", chinese: "星星", category: "weather" },
+  { id: 30, german: "der Mond", chinese: "月亮", category: "weather" },
 ];
 
 const categories = [
@@ -68,6 +78,7 @@ const categories = [
   { id: "sorry", name: "道歉" },
   { id: "question", name: "疑问" },
   { id: "profession", name: "职业 & 身份" },
+  { id: "weather", name: "天气" },
 ];
 
 // 对话选择题数据：题干是A的问题，选项是B的回答
