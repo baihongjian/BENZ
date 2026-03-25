@@ -66,6 +66,16 @@ const sentences: Sentence[] = [
   { id: 28, german: "die Sonne", chinese: "太阳", category: "weather" },
   { id: 29, german: "der Stern", chinese: "星星", category: "weather" },
   { id: 30, german: "der Mond", chinese: "月亮", category: "weather" },
+
+  // 自然 & 地理
+  { id: 31, german: "der Berg", chinese: "山", category: "nature" },
+  { id: 32, german: "das Feld", chinese: "田野", category: "nature" },
+  { id: 33, german: "der Wald", chinese: "森林", category: "nature" },
+  { id: 34, german: "das Meer", chinese: "海", category: "nature" },
+  { id: 35, german: "der See", chinese: "湖", category: "nature" },
+  { id: 36, german: "der Fluss", chinese: "河流", category: "nature" },
+  { id: 37, german: "der Himmel", chinese: "天空", category: "nature" },
+  { id: 38, german: "die Natur", chinese: "自然", category: "nature" },
 ];
 
 const categories = [
@@ -79,6 +89,7 @@ const categories = [
   { id: "question", name: "疑问" },
   { id: "profession", name: "职业 & 身份" },
   { id: "weather", name: "天气" },
+  { id: "nature", name: "自然 & 地理" },
 ];
 
 // 对话选择题数据：题干是A的问题，选项是B的回答
@@ -538,6 +549,8 @@ export default function SelectQuestionPage() {
   const [showWrongBook, setShowWrongBook] = useState(false);
   const [quizType, setQuizType] = useState<"german" | "chinese">("german");
   const [vocabQuizType, setVocabQuizType] = useState<"german" | "chinese">("german");
+  // 选项数量设置：true=显示所有选项，false=随机4个选项
+  const [showAllOptions, setShowAllOptions] = useState(false);
   const [quizCount, setQuizCount] = useState<5 | 10 | 15 | 20>(10);
   const [currentQuestionCount, setCurrentQuestionCount] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
@@ -902,13 +915,21 @@ export default function SelectQuestionPage() {
       ? filteredSentences.filter(s => selectedQuestions.includes(s.id))
       : filteredSentences;
 
-    if (available.length < 4) {
+    console.log("=== GenerateQuiz Debug ===");
+    console.log("showAllOptions:", showAllOptions);
+    console.log("category:", category);
+    console.log("filteredSentences.length:", filteredSentences.length);
+    console.log("selectedQuestions.length:", selectedQuestions.length);
+    console.log("available.length:", available.length);
+
+    // 如果选择了显示全部选项，不需要4个句子的限制
+    if (!showAllOptions && available.length < 4) {
       alert("该分类至少需要4个句子");
       return;
     }
 
     // 如果选择的题目数量不足4个，给出提示
-    if (selectedQuestions.length > 0 && available.length < 4) {
+    if (!showAllOptions && selectedQuestions.length > 0 && available.length < 4) {
       alert(`已选题目不足4道，当前已选${available.length}道，请至少选择4道题目`);
       return;
     }
@@ -921,17 +942,26 @@ export default function SelectQuestionPage() {
 
     const questionIndex = Math.floor(Math.random() * available.length);
     const question = available[questionIndex];
+    console.log("question:", question.german);
 
-    // 生成错误选项
-    const wrong: Sentence[] = [];
-    const others = available.filter(s => s.id !== question.id);
-    while (wrong.length < 3 && others.length > 0) {
-      const idx = Math.floor(Math.random() * others.length);
-      wrong.push(others[idx]);
-      others.splice(idx, 1);
+    let options: Sentence[];
+
+    if (showAllOptions) {
+      // 显示全部选项：保持固定顺序（按id排序）
+      options = [...available].sort((a, b) => a.id - b.id);
+      console.log("showAllOptions=true, options.length:", options.length);
+    } else {
+      // 随机4个选项
+      const wrong: Sentence[] = [];
+      const others = available.filter(s => s.id !== question.id);
+      while (wrong.length < 3 && others.length > 0) {
+        const idx = Math.floor(Math.random() * others.length);
+        wrong.push(others[idx]);
+        others.splice(idx, 1);
+      }
+      options = [question, ...wrong].sort(() => Math.random() - 0.5);
+      console.log("showAllOptions=false, options.length:", options.length);
     }
-
-    const options = [question, ...wrong].sort(() => Math.random() - 0.5);
     setCurrentQuiz({ question, options });
     setSelectedIndex(null);
     setQuizResult(null);
@@ -1574,6 +1604,24 @@ export default function SelectQuestionPage() {
           </div>
         )}
 
+        {/* 显示全部选项设置 */}
+        {quizMode === "sentence" && !quizStarted && !quizFinished && (
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => {
+                setShowAllOptions(!showAllOptions);
+                setQuizStarted(false);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-bold ${showAllOptions ? "bg-green-500 text-white" : "bg-white text-gray-600 border-2 border-green-500"}`}
+            >
+              {showAllOptions ? "✓ 显示全部选项" : "○ 显示全部选项"}
+            </button>
+            <span className="text-xs text-gray-500 self-center">
+              {showAllOptions ? "显示该分类所有词汇作为选项" : "随机显示4个选项"}
+            </span>
+          </div>
+        )}
+
         {/* 疑问词模式：题型选择 */}
         {quizMode === "vocab" && (
           <div className="flex justify-center gap-2 mb-4">
@@ -2144,14 +2192,28 @@ export default function SelectQuestionPage() {
               <p className="text-gray-600 mb-6">
                 {quizType === "german" ? "看中文，选择正确的德语翻译" : "看德语，选择正确的中文翻译"}
               </p>
+              {/* 调试信息 */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-left text-xs">
+                <p><strong>调试信息:</strong></p>
+                <p>当前分类: {category} ({categories.find(c => c.id === category)?.name})</p>
+                <p>分类下句子数: {filteredSentences.length}</p>
+                <p>显示全部选项: {showAllOptions ? "是" : "否"}</p>
+                <p>已选题目数: {selectedQuestions.length}</p>
+              </div>
               <button
-                onClick={startQuiz}
-                disabled={filteredSentences.length < 4}
+                onClick={() => {
+                  console.log("Debug - showAllOptions:", showAllOptions);
+                  console.log("Debug - category:", category);
+                  console.log("Debug - filteredSentences:", filteredSentences.length);
+                  console.log("Debug - selectedQuestions:", selectedQuestions);
+                  startQuiz();
+                }}
+                disabled={!showAllOptions && filteredSentences.length < 4}
                 className="px-8 py-3 bg-pink-500 text-white rounded-full font-medium hover:bg-pink-600 disabled:bg-gray-300"
               >
                 开始答题 ({quizCount}题)
               </button>
-              {filteredSentences.length < 4 && (
+              {!showAllOptions && filteredSentences.length < 4 && (
                 <p className="text-red-500 text-sm mt-2">该分类至少需要4个句子</p>
               )}
             </div>
@@ -2826,7 +2888,7 @@ export default function SelectQuestionPage() {
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className={currentQuiz.options.length > 4 ? "grid grid-cols-2 gap-3" : "space-y-3"}>
               {currentQuiz.options.map((option, idx) => {
                 const isSelected = selectedIndex === idx;
                 const showResult = quizResult !== null;
