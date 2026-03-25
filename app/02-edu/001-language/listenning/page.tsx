@@ -78,7 +78,7 @@ const playSound = (type: "correct" | "wrong") => {
   }
 };
 
-type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "profession" | "weather";
+type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "profession" | "weather" | "nature";
 
 export default function ListenningPage() {
   const [quizType, setQuizType] = useState<QuizType>("phoneNumber");
@@ -191,6 +191,18 @@ export default function ListenningPage() {
     { german: "die Sonne", chinese: "太阳" },
     { german: "der Stern", chinese: "星星" },
     { german: "der Mond", chinese: "月亮" },
+  ];
+
+  // 地理和自然听力数据
+  const natureWords = [
+    { german: "der Berg", chinese: "山" },
+    { german: "das Feld", chinese: "田野" },
+    { german: "der Wald", chinese: "森林" },
+    { german: "das Meer", chinese: "海" },
+    { german: "der See", chinese: "湖" },
+    { german: "der Fluss", chinese: "河流" },
+    { german: "der Himmel", chinese: "天空" },
+    { german: "die Natur", chinese: "自然" },
   ];
 
   // 人称代词听力数据
@@ -308,6 +320,13 @@ export default function ListenningPage() {
     answerChinese: string;
   } | null>(null);
 
+  const [natureData, setNatureData] = useState<{
+    question: string;
+    questionChinese: string;
+    answer: string;
+    answerChinese: string;
+  } | null>(null);
+
   // 监听题目数据变化，自动播放音频
   useEffect(() => {
     if (!quizStarted) return;
@@ -330,6 +349,8 @@ export default function ListenningPage() {
       currentKey = `profession-${professionData.question}`;
     } else if (quizType === "weather" && weatherData) {
       currentKey = `weather-${weatherData.question}`;
+    } else if (quizType === "nature" && natureData) {
+      currentKey = `nature-${natureData.question}`;
     }
 
     // 如果key变化了，说明是新题目，自动播放
@@ -340,7 +361,7 @@ export default function ListenningPage() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [quizStarted, verbData, pronounData, pronoun3rdData, questionWordData, timeData, articleData, professionData, weatherData, quizType]);
+  }, [quizStarted, verbData, pronounData, pronoun3rdData, questionWordData, timeData, articleData, professionData, weatherData, natureData, quizType]);
 
   // 生成电话号码题目
   const generatePhoneQuiz = () => {
@@ -595,6 +616,28 @@ export default function ListenningPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成地理和自然听力题目
+  const generateNatureQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
+    const shuffled = [...natureWords].sort(() => Math.random() - 0.5);
+    const selected = shuffled[0];
+
+    setNatureData({
+      question: selected.german,
+      questionChinese: selected.chinese,
+      answer: selected.german,
+      answerChinese: selected.chinese
+    });
+    setQuizResult(null);
+    setQuizStarted(true);
+    setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 生成人称代词听力题目
   const generatePronounQuiz = () => {
     if (currentQuestionCount >= quizCount) {
@@ -681,6 +724,7 @@ export default function ListenningPage() {
     else if (quizType === "article") generateArticleQuiz();
     else if (quizType === "profession") generateProfessionQuiz();
     else if (quizType === "weather") generateWeatherQuiz();
+    else if (quizType === "nature") generateNatureQuiz();
   };
 
   // 播放当前题目
@@ -708,6 +752,8 @@ export default function ListenningPage() {
       text = professionData.question;
     } else if (quizType === "weather" && weatherData) {
       text = weatherData.question;
+    } else if (quizType === "nature" && natureData) {
+      text = natureData.question;
     }
 
     if (text) {
@@ -715,7 +761,7 @@ export default function ListenningPage() {
       speak(text);
       setTimeout(() => setIsPlayingAudio(false), 2500);
     }
-  }, [quizType, phoneNumberData, weekdayData, monthData, questionWordData, pronounData, pronoun3rdData, verbData, timeData, articleData, professionData, weatherData]);
+  }, [quizType, phoneNumberData, weekdayData, monthData, questionWordData, pronounData, pronoun3rdData, verbData, timeData, articleData, professionData, weatherData, natureData]);
 
   // 更新 playCurrentQuestion 的 ref
   useEffect(() => {
@@ -873,6 +919,21 @@ export default function ListenningPage() {
     }
   };
 
+  // 选择地理和自然答案
+  const selectNatureAnswer = (selected: string) => {
+    if (quizResult !== null || !natureData) return;
+    const isCorrect = selected === natureData.answer;
+    if (isCorrect) {
+      setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
+      playSound("correct");
+    } else {
+      setQuizResult("wrong");
+      playSound("wrong");
+      setWrongBook(prev => prev.includes(natureData.question) ? prev : [...prev, natureData.question]);
+    }
+  };
+
   // 选择人称代词答案
   const selectPronounAnswer = (selected: string) => {
     if (quizResult !== null || !pronounData) return;
@@ -995,12 +1056,20 @@ export default function ListenningPage() {
           >
             ☁️ 天气和自然
           </button>
+          <button
+            onClick={() => { setQuizType("nature"); setQuizStarted(false); }}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              quizType === "nature" ? "bg-green-500 text-white" : "bg-white text-gray-600"
+            }`}
+          >
+            🏔️ 地理和自然
+          </button>
         </div>
 
         {/* 语法分类 */}
         <div className="flex justify-center mb-4">
           <select
-            value={quizType === "phoneNumber" || quizType === "weekday" || quizType === "month" || quizType === "questionWord" || quizType === "time" || quizType === "profession" || quizType === "weather" ? "" : quizType}
+            value={quizType === "phoneNumber" || quizType === "weekday" || quizType === "month" || quizType === "questionWord" || quizType === "time" || quizType === "profession" || quizType === "weather" || quizType === "nature" ? "" : quizType}
             onChange={(e) => { setQuizType(e.target.value as "pronoun" | "pronoun3rd" | "verb" | "article"); setQuizStarted(false); }}
             className="px-4 py-2 rounded-full text-sm font-medium border-2 border-purple-200 bg-white text-gray-700 focus:outline-none focus:border-purple-400"
           >
@@ -1085,10 +1154,10 @@ export default function ListenningPage() {
           /* 开始答题 */
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="text-6xl mb-6">
-              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : quizType === "pronoun" ? "👤" : quizType === "pronoun3rd" ? "👥" : quizType === "verb" ? "🔄" : quizType === "time" ? "⏰" : quizType === "article" ? "📝" : quizType === "profession" ? "💼" : quizType === "weather" ? "☁️" : "❓"}
+              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : quizType === "pronoun" ? "👤" : quizType === "pronoun3rd" ? "👥" : quizType === "verb" ? "🔄" : quizType === "time" ? "⏰" : quizType === "article" ? "📝" : quizType === "profession" ? "💼" : quizType === "weather" ? "☁️" : quizType === "nature" ? "🏔️" : "❓"}
             </div>
             <h2 className="text-xl font-bold text-gray-800 mb-4">
-              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "pronoun3rd" ? "人称代词（第3人称）听力" : quizType === "verb" ? `动词${verbType}变位听力` : quizType === "time" ? "时间表达听力" : quizType === "article" ? "定冠词和名词（第1格和第4格）" : quizType === "profession" ? "职业和身份听力" : quizType === "weather" ? "天气和自然听力" : "疑问词听力"}
+              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "pronoun3rd" ? "人称代词（第3人称）听力" : quizType === "verb" ? `动词${verbType}变位听力` : quizType === "time" ? "时间表达听力" : quizType === "article" ? "定冠词和名词（第1格和第4格）" : quizType === "profession" ? "职业和身份听力" : quizType === "weather" ? "天气和自然听力" : quizType === "nature" ? "地理和自然听力" : "疑问词听力"}
             </h2>
             <p className="text-gray-600 mb-6">
               {quizType === "phoneNumber" ? "听德语读出的电话号码，输入正确的数字" :
@@ -1101,6 +1170,7 @@ export default function ListenningPage() {
                quizType === "article" ? "听定冠词和名词，选择正确的德语" :
                quizType === "profession" ? "听职业和身份，选择正确的中文含义" :
                quizType === "weather" ? "听天气和自然，选择正确的中文含义" :
+               quizType === "nature" ? "听地理和自然，选择正确的中文含义" :
                "听德语疑问词，选择正确的中文含义"}
             </p>
             <button
@@ -1600,6 +1670,60 @@ export default function ListenningPage() {
               </>
             )}
 
+            {/* 地理和自然题型 */}
+            {quizType === "nature" && natureData && (
+              <>
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400">听地理和自然，选择正确的中文含义</span>
+                </div>
+
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowText(!showText)}
+                    className={`px-3 py-1 rounded-full text-sm ${showText ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {showText ? "🙈 隐藏" : "👁️ 显示"}
+                  </button>
+                </div>
+
+                {showText && (
+                  <div className="bg-green-50 rounded-xl p-6 mb-6 text-center">
+                    <p className="text-xl font-medium">{natureData.question}</p>
+                    <p className="text-lg text-gray-500 mt-2">{natureData.questionChinese}</p>
+                  </div>
+                )}
+
+                <div className="text-center mb-6">
+                  <button
+                    onClick={playCurrentQuestion}
+                    disabled={isPlayingAudio}
+                    className={`px-8 py-4 rounded-full ${isPlayingAudio ? "bg-green-100 text-green-600" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🎧 播放德语"}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {natureWords.map((word) => {
+                    const isSelected = quizResult !== null;
+                    const isCorrect = word.german === natureData.answer;
+                    let btnClass = "py-4 rounded-xl text-lg font-medium transition ";
+                    if (isSelected) {
+                      if (isCorrect) btnClass += "bg-green-500 text-white";
+                      else btnClass += "bg-gray-100 text-gray-400";
+                    } else {
+                      btnClass += "bg-green-50 text-green-700 border-2 border-green-200 hover:bg-green-100";
+                    }
+                    return (
+                      <button key={word.german} onClick={() => selectNatureAnswer(word.german)} disabled={quizResult !== null} className={btnClass}>
+                        {word.chinese}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
             {/* 人称代词题型 */}
             {quizType === "pronoun" && pronounData && (
               <>
@@ -1791,6 +1915,9 @@ export default function ListenningPage() {
                 )}
                 {quizType === "weather" && weatherData && (
                   <p className="text-gray-600">正确答案：{weatherData.answer} ({weatherData.answerChinese})</p>
+                )}
+                {quizType === "nature" && natureData && (
+                  <p className="text-gray-600">正确答案：{natureData.answer} ({natureData.answerChinese})</p>
                 )}
                 {quizType === "pronoun" && pronounData && (
                   <p className="text-gray-600">正确答案：{pronounData.answer} ({pronounData.answerChinese})</p>
