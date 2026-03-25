@@ -76,6 +76,16 @@ const sentences: Sentence[] = [
   { id: 36, german: "der Fluss", chinese: "河流", category: "nature" },
   { id: 37, german: "der Himmel", chinese: "天空", category: "nature" },
   { id: 38, german: "die Natur", chinese: "自然", category: "nature" },
+
+  // 动植物
+  { id: 39, german: "die Pflanze", chinese: "植物", category: "animal_plant" },
+  { id: 40, german: "der Baum", chinese: "树", category: "animal_plant" },
+  { id: 41, german: "die Blume", chinese: "花", category: "animal_plant" },
+  { id: 42, german: "das Tier", chinese: "动物", category: "animal_plant" },
+  { id: 43, german: "der Hund", chinese: "狗", category: "animal_plant" },
+  { id: 44, german: "die Katze", chinese: "猫", category: "animal_plant" },
+  { id: 45, german: "der Vogel", chinese: "鸟", category: "animal_plant" },
+  { id: 46, german: "das Pferd", chinese: "马", category: "animal_plant" },
 ];
 
 const categories = [
@@ -90,6 +100,7 @@ const categories = [
   { id: "profession", name: "职业 & 身份" },
   { id: "weather", name: "天气" },
   { id: "nature", name: "自然 & 地理" },
+  { id: "animal_plant", name: "动植物" },
 ];
 
 // 对话选择题数据：题干是A的问题，选项是B的回答
