@@ -96,6 +96,16 @@ const sentences: Sentence[] = [
   { id: 52, german: "die Stadt", chinese: "城市", category: "public" },
   { id: 53, german: "die Straße", chinese: "街道", category: "public" },
   { id: 54, german: "der Platz", chinese: "广场", category: "public" },
+
+  // 商业 / 生活娱乐
+  { id: 55, german: "die Bäckerei", chinese: "面包店", category: "business" },
+  { id: 56, german: "das Geschäft", chinese: "商店", category: "business" },
+  { id: 57, german: "das Kaufhaus", chinese: "百货商场", category: "business" },
+  { id: 58, german: "das Kino", chinese: "电影院", category: "business" },
+  { id: 59, german: "der Markt", chinese: "市场", category: "business" },
+  { id: 60, german: "der Park", chinese: "公园", category: "business" },
+  { id: 61, german: "das Hotel", chinese: "酒店", category: "business" },
+  { id: 62, german: "das Schloss", chinese: "城堡", category: "business" },
 ];
 
 const categories = [
@@ -112,6 +122,7 @@ const categories = [
   { id: "nature", name: "自然 & 地理" },
   { id: "animal_plant", name: "动植物" },
   { id: "public", name: "公共机构" },
+  { id: "business", name: "商业 / 生活娱乐" },
 ];
 
 // 对话选择题数据：题干是A的问题，选项是B的回答
