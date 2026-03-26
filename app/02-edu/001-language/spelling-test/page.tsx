@@ -111,6 +111,18 @@ const animalPlantData = [
   { id: 8, german: "das Pferd", chinese: "马" },
 ];
 
+// 德语公共机构数据
+const publicInstitutionData = [
+  { id: 1, german: "die Kirche", chinese: "教堂" },
+  { id: 2, german: "das Krankenhaus", chinese: "医院" },
+  { id: 3, german: "die Polizei", chinese: "警察局" },
+  { id: 4, german: "die Post", chinese: "邮局" },
+  { id: 5, german: "das Rathaus", chinese: "市政厅" },
+  { id: 6, german: "die Stadt", chinese: "城市" },
+  { id: 7, german: "die Straße", chinese: "街道" },
+  { id: 8, german: "der Platz", chinese: "广场" },
+];
+
 // 定冠词和名词数据（第1格和第4格）
 const definiteArticlesData = [
   {
@@ -277,7 +289,7 @@ const playSound = (type: "correct" | "wrong") => {
 };
 
 export default function SpellingTestPage() {
-  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant">("number");
+  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant" | "publicInstitution">("number");
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -346,6 +358,11 @@ export default function SpellingTestPage() {
   const [animalPlantQuiz, setAnimalPlantQuiz] = useState<typeof animalPlantData[0] | null>(null);
   const [animalPlantWrongBook, setAnimalPlantWrongBook] = useState<typeof animalPlantData>([]);
 
+  // 公共机构相关
+  const [publicInstitutionIndex, setPublicInstitutionIndex] = useState(0);
+  const [publicInstitutionQuiz, setPublicInstitutionQuiz] = useState<typeof publicInstitutionData[0] | null>(null);
+  const [publicInstitutionWrongBook, setPublicInstitutionWrongBook] = useState<typeof publicInstitutionData>([]);
+
   // 用于控制Enter键的延迟，防止同时触发提交和下一题
   const [canPressEnter, setCanPressEnter] = useState(true);
 
@@ -371,6 +388,8 @@ export default function SpellingTestPage() {
   const currentNature = natureData[natureIndex];
   // 当前动植物
   const currentAnimalPlant = animalPlantData[animalPlantIndex];
+  // 当前公共机构
+  const currentPublicInstitution = publicInstitutionData[publicInstitutionIndex];
 
   // 开始答题
   const startQuiz = () => {
@@ -420,6 +439,9 @@ export default function SpellingTestPage() {
     } else if (contentType === "animalPlant") {
       const randomIndex = Math.floor(Math.random() * animalPlantData.length);
       setAnimalPlantQuiz(animalPlantData[randomIndex]);
+    } else if (contentType === "publicInstitution") {
+      const randomIndex = Math.floor(Math.random() * publicInstitutionData.length);
+      setPublicInstitutionQuiz(publicInstitutionData[randomIndex]);
     } else {
       const randomIndex = Math.floor(Math.random() * germanNumbers.length);
       setQuizNumber(germanNumbers[randomIndex]);
@@ -519,6 +541,14 @@ export default function SpellingTestPage() {
       if (!isCorrect) {
         setAnimalPlantWrongBook(prev => prev.some(a => a.id === animalPlantQuiz.id) ? prev : [...prev, animalPlantQuiz]);
       }
+    } else if (contentType === "publicInstitution" && publicInstitutionQuiz) {
+      // 公共机构答案
+      const userAns = userInput.trim().toLowerCase();
+      const correctAns = publicInstitutionQuiz.german.toLowerCase();
+      isCorrect = userAns === correctAns;
+      if (!isCorrect) {
+        setPublicInstitutionWrongBook(prev => prev.some(p => p.id === publicInstitutionQuiz.id) ? prev : [...prev, publicInstitutionQuiz]);
+      }
     } else if (quizNumber) {
       isCorrect = userInput.trim().toLowerCase() === quizNumber.german.toLowerCase();
       if (!isCorrect) {
@@ -570,10 +600,10 @@ export default function SpellingTestPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold">
-            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "pronoun3rd" ? "👥 人称代词（第3人称）拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : contentType === "time" ? "⏰ 德语时间拼写" : contentType === "article" ? "📝 定冠词和名词拼写" : contentType === "occupation" ? "👔 职业和身份拼写" : contentType === "weather" ? "🌤️ 天气拼写" : contentType === "nature" ? "🌲 自然拼写" : contentType === "animalPlant" ? "🐾 动植物拼写" : "🔢 德语数字拼写"}
+            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "pronoun3rd" ? "👥 人称代词（第3人称）拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : contentType === "time" ? "⏰ 德语时间拼写" : contentType === "article" ? "📝 定冠词和名词拼写" : contentType === "occupation" ? "👔 职业和身份拼写" : contentType === "weather" ? "🌤️ 天气拼写" : contentType === "nature" ? "🌲 自然拼写" : contentType === "animalPlant" ? "🐾 动植物拼写" : contentType === "publicInstitution" ? "🏛️ 公共机构拼写" : "🔢 德语数字拼写"}
           </h1>
           <p className="mt-1 opacity-90">
-            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : contentType === "time" ? "德语时间表达听写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）听写练习" : contentType === "occupation" ? "职业和身份单词听写练习" : contentType === "weather" ? "天气单词听写练习" : contentType === "nature" ? "自然单词听写练习" : contentType === "animalPlant" ? "动植物单词听写练习" : "0-9 数字单词听写练习"}
+            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : contentType === "time" ? "德语时间表达听写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）听写练习" : contentType === "occupation" ? "职业和身份单词听写练习" : contentType === "weather" ? "天气单词听写练习" : contentType === "nature" ? "自然单词听写练习" : contentType === "animalPlant" ? "动植物单词听写练习" : contentType === "publicInstitution" ? "公共机构单词听写练习" : "0-9 数字单词听写练习"}
           </p>
         </div>
       </header>
@@ -623,13 +653,19 @@ export default function SpellingTestPage() {
           >
             🐾 动植物
           </button>
+          <button
+            onClick={() => { setContentType("publicInstitution"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${contentType === "publicInstitution" ? "bg-indigo-500 text-white" : "bg-white text-gray-600"}`}
+          >
+            🏛️ 公共机构
+          </button>
         </div>
 
         {/* 语法分类 */}
         <div className="flex justify-center mb-4">
           <select
-            value={contentType === "number" || contentType === "questionWord" || contentType === "time" || contentType === "article" || contentType === "occupation" || contentType === "weather" || contentType === "nature" || contentType === "animalPlant" ? "" : contentType}
-            onChange={(e) => { setContentType(e.target.value as "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            value={contentType === "number" || contentType === "questionWord" || contentType === "time" || contentType === "article" || contentType === "occupation" || contentType === "weather" || contentType === "nature" || contentType === "animalPlant" || contentType === "publicInstitution" ? "" : contentType}
+            onChange={(e) => { setContentType(e.target.value as "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant" | "publicInstitution"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
             className="px-4 py-2 rounded-full text-sm font-medium border-2 border-purple-200 bg-white text-gray-700 focus:outline-none focus:border-purple-400"
           >
             <option value="">选择语法类型</option>
@@ -639,6 +675,7 @@ export default function SpellingTestPage() {
             <option value="weather">🌤️ 天气</option>
             <option value="nature">🌲 自然</option>
             <option value="animalPlant">🐾 动植物</option>
+            <option value="publicInstitution">🏛️ 公共机构</option>
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
             <option value="pronoun3rd">语法10: 人称代词（第3人称）</option>
             <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
@@ -700,7 +737,7 @@ export default function SpellingTestPage() {
               showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border border-gray-300"
             }`}
           >
-            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "pronoun3rd" ? pronoun3rdWrongBook.length : contentType === "verb" ? verbWrongBook.length : contentType === "time" ? timeWrongBook.length : contentType === "article" ? articleWrongBook.length : contentType === "occupation" ? occupationWrongBook.length : contentType === "weather" ? weatherWrongBook.length : contentType === "nature" ? natureWrongBook.length : contentType === "animalPlant" ? animalPlantWrongBook.length : wrongBook.length})
+            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "pronoun3rd" ? pronoun3rdWrongBook.length : contentType === "verb" ? verbWrongBook.length : contentType === "time" ? timeWrongBook.length : contentType === "article" ? articleWrongBook.length : contentType === "occupation" ? occupationWrongBook.length : contentType === "weather" ? weatherWrongBook.length : contentType === "nature" ? natureWrongBook.length : contentType === "animalPlant" ? animalPlantWrongBook.length : contentType === "publicInstitution" ? publicInstitutionWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -878,6 +915,25 @@ export default function SpellingTestPage() {
                     <div key={word.id} className="bg-red-50 rounded-xl p-4 text-center">
                       <div className="text-2xl font-bold text-gray-800">{word.german}</div>
                       <div className="text-lg text-amber-600">{word.chinese}</div>
+                      <button
+                        onClick={() => speak(word.german)}
+                        className="mt-2 p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : contentType === "publicInstitution" ? (
+              publicInstitutionWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题，继续加油！</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {publicInstitutionWrongBook.map((word) => (
+                    <div key={word.id} className="bg-red-50 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-gray-800">{word.german}</div>
+                      <div className="text-lg text-indigo-600">{word.chinese}</div>
                       <button
                         onClick={() => speak(word.german)}
                         className="mt-2 p-2 bg-amber-100 rounded-full hover:bg-amber-200"
@@ -1523,6 +1579,64 @@ export default function SpellingTestPage() {
                 </div>
               </div>
             </>
+          ) : contentType === "publicInstitution" ? (
+            /* 公共机构学习 */
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
+                <div className="text-5xl font-bold text-indigo-600 mb-4">
+                  {currentPublicInstitution.german}
+                </div>
+                <div className="text-3xl font-bold text-indigo-600 mb-2">
+                  {currentPublicInstitution.chinese}
+                </div>
+                <button
+                  onClick={() => speak(currentPublicInstitution.german)}
+                  className="px-6 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition flex items-center gap-2 mx-auto"
+                >
+                  <span>🔊</span> 播放发音
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setPublicInstitutionIndex(i => Math.max(0, i - 1))}
+                  disabled={publicInstitutionIndex === 0}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  ← 上一位
+                </button>
+                <span className="px-4 py-2 text-gray-600">
+                  {publicInstitutionIndex + 1} / {publicInstitutionData.length}
+                </span>
+                <button
+                  onClick={() => setPublicInstitutionIndex(i => Math.min(publicInstitutionData.length - 1, i + 1))}
+                  disabled={publicInstitutionIndex === publicInstitutionData.length - 1}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  下一位 →
+                </button>
+              </div>
+
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">公共机构总表</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {publicInstitutionData.map((word) => (
+                    <div key={word.id} className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl font-bold text-indigo-600">{word.german}</span>
+                        <span className="text-lg text-indigo-600">{word.chinese}</span>
+                      </div>
+                      <button
+                        onClick={() => speak(word.german)}
+                        className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           ) : (
             /* 数字学习 */
             <>
@@ -1642,10 +1756,10 @@ export default function SpellingTestPage() {
             {!quizStarted ? (
               <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
                 <div className="text-6xl mb-6">
-                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "pronoun3rd" ? "👥" : contentType === "verb" ? "🔄" : contentType === "time" ? "⏰" : contentType === "article" ? "📝" : contentType === "occupation" ? "👔" : contentType === "weather" ? "🌤️" : contentType === "nature" ? "🌲" : contentType === "animalPlant" ? "🐾" : "🔢"}
+                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "pronoun3rd" ? "👥" : contentType === "verb" ? "🔄" : contentType === "time" ? "⏰" : contentType === "article" ? "📝" : contentType === "occupation" ? "👔" : contentType === "weather" ? "🌤️" : contentType === "nature" ? "🌲" : contentType === "animalPlant" ? "🐾" : contentType === "publicInstitution" ? "🏛️" : "🔢"}
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "pronoun3rd" ? "人称代词（第3人称）听写" : contentType === "verb" ? `动词${verbType}变位听写` : contentType === "time" ? "德语时间听写" : contentType === "article" ? "定冠词和名词听写" : contentType === "occupation" ? "职业和身份听写" : contentType === "weather" ? "天气听写" : contentType === "nature" ? "自然听写" : contentType === "animalPlant" ? "动植物听写" : "德语数字听写"}
+                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "pronoun3rd" ? "人称代词（第3人称）听写" : contentType === "verb" ? `动词${verbType}变位听写` : contentType === "time" ? "德语时间听写" : contentType === "article" ? "定冠词和名词听写" : contentType === "occupation" ? "职业和身份听写" : contentType === "weather" ? "天气听写" : contentType === "nature" ? "自然听写" : contentType === "animalPlant" ? "动植物听写" : contentType === "publicInstitution" ? "公共机构听写" : "德语数字听写"}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {contentType === "questionWord"
@@ -1668,7 +1782,9 @@ export default function SpellingTestPage() {
                                     ? "听中文，写出德语自然词汇"
                                     : contentType === "animalPlant"
                                       ? "听中文，写出德语动植物词汇"
-                                      : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
+                                      : contentType === "publicInstitution"
+                                        ? "听中文，写出德语公共机构词汇"
+                                        : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
                 </p>
                 <button
                   onClick={startQuiz}
@@ -1731,7 +1847,7 @@ export default function SpellingTestPage() {
                                   ? "请写出这个中文对应的德语职业词汇"
                                   : quizType === "digitToWord" ? "请写出这个数字的德语" : "请写出这个德语对应的数字"}
                   </p>
-                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "pronoun3rd" ? "text-teal-600" : contentType === "verb" ? "text-orange-600" : contentType === "time" ? "text-amber-600" : contentType === "article" ? "text-teal-600" : contentType === "occupation" ? "text-emerald-600" : contentType === "weather" ? "text-sky-600" : contentType === "nature" ? "text-green-600" : contentType === "animalPlant" ? "text-amber-600" : "text-indigo-600"}`}>
+                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "pronoun3rd" ? "text-teal-600" : contentType === "verb" ? "text-orange-600" : contentType === "time" ? "text-amber-600" : contentType === "article" ? "text-teal-600" : contentType === "occupation" ? "text-emerald-600" : contentType === "weather" ? "text-sky-600" : contentType === "nature" ? "text-green-600" : contentType === "animalPlant" ? "text-amber-600" : contentType === "publicInstitution" ? "text-indigo-600" : "text-indigo-600"}`}>
                     {contentType === "questionWord"
                       ? questionWordQuiz?.chinese
                       : contentType === "pronoun"
@@ -1752,10 +1868,12 @@ export default function SpellingTestPage() {
                                       ? natureQuiz?.chinese
                                       : contentType === "animalPlant"
                                         ? animalPlantQuiz?.chinese
-                                        : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
+                                        : contentType === "publicInstitution"
+                                          ? publicInstitutionQuiz?.chinese
+                                          : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
                   </div>
                   <button
-                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : contentType === "time" ? timeQuiz?.answers[0] || "" : contentType === "article" ? (articleCaseType === "nominative" ? articleQuiz?.nominative || "" : articleQuiz?.accusative || "") : contentType === "occupation" ? occupationQuiz?.german || "" : contentType === "weather" ? weatherQuiz?.german || "" : contentType === "nature" ? natureQuiz?.german || "" : contentType === "animalPlant" ? animalPlantQuiz?.german || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
+                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : contentType === "time" ? timeQuiz?.answers[0] || "" : contentType === "article" ? (articleCaseType === "nominative" ? articleQuiz?.nominative || "" : articleQuiz?.accusative || "") : contentType === "occupation" ? occupationQuiz?.german || "" : contentType === "weather" ? weatherQuiz?.german || "" : contentType === "nature" ? natureQuiz?.german || "" : contentType === "animalPlant" ? animalPlantQuiz?.german || "" : contentType === "publicInstitution" ? publicInstitutionQuiz?.german || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
                     className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200"
                   >
                     🔊 播放
@@ -1856,6 +1974,11 @@ export default function SpellingTestPage() {
                           <p className="text-2xl font-bold text-amber-600 mb-2">{animalPlantQuiz?.german}</p>
                           <p className="text-lg text-amber-600">({animalPlantQuiz?.chinese})</p>
                         </div>
+                      ) : contentType === "publicInstitution" ? (
+                        <div className="text-left">
+                          <p className="text-2xl font-bold text-indigo-600 mb-2">{publicInstitutionQuiz?.german}</p>
+                          <p className="text-lg text-indigo-600">({publicInstitutionQuiz?.chinese})</p>
+                        </div>
                       ) : (
                         <>
                           <p className="text-2xl font-bold text-indigo-600">
@@ -1888,7 +2011,7 @@ export default function SpellingTestPage() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm">
-        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : contentType === "time" ? "德语时间表达拼写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）拼写练习" : contentType === "occupation" ? "职业和身份拼写练习" : contentType === "weather" ? "天气拼写练习" : contentType === "nature" ? "自然拼写练习" : contentType === "animalPlant" ? "动植物拼写练习" : "德语数字 0-9 拼写练习"}
+        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : contentType === "time" ? "德语时间表达拼写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）拼写练习" : contentType === "occupation" ? "职业和身份拼写练习" : contentType === "weather" ? "天气拼写练习" : contentType === "nature" ? "自然拼写练习" : contentType === "animalPlant" ? "动植物拼写练习" : contentType === "publicInstitution" ? "公共机构拼写练习" : "德语数字 0-9 拼写练习"}
       </footer>
     </div>
   );
