@@ -142,6 +142,8 @@ export default function SentencePracticePage() {
   const [selectedDialogue, setSelectedDialogue] = useState<DialogueScenario | null>(null);
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hideAText, setHideAText] = useState(false);
+  const [hideBText, setHideBText] = useState(false);
 
   // 答题相关状态
   const [quizType, setQuizType] = useState<"german" | "chinese">("german");
@@ -553,7 +555,7 @@ export default function SentencePracticePage() {
                 </div>
 
                 {/* 播放所有对话按钮 */}
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                   <button
                     onClick={playAllDialogues}
                     disabled={isPlaying}
@@ -564,48 +566,77 @@ export default function SentencePracticePage() {
                   </button>
                 </div>
 
+                {/* 隐藏/显示文字按钮 */}
+                <div className="flex justify-center gap-4 mb-4">
+                  <button
+                    onClick={() => setHideAText(!hideAText)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                      hideAText ? "bg-gray-200 text-gray-600" : "bg-blue-500 text-white"
+                    }`}
+                  >
+                    {hideAText ? "👁️ 显示 A" : "🙈 隐藏 A"}
+                  </button>
+                  <button
+                    onClick={() => setHideBText(!hideBText)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                      hideBText ? "bg-gray-200 text-gray-600" : "bg-green-500 text-white"
+                    }`}
+                  >
+                    {hideBText ? "👁️ 显示 B" : "🙈 隐藏 B"}
+                  </button>
+                </div>
+
                 {/* 对话列表 */}
                 <div className="space-y-4">
-                  {selectedDialogue.dialogues.map((dialogue, index) => (
-                    <div
-                      key={dialogue.id}
-                      className={`p-4 rounded-xl ${
-                        dialogue.speaker === "A"
-                          ? "bg-blue-50 ml-8"
-                          : "bg-green-50 mr-8"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${
-                              dialogue.speaker === "A"
-                                ? "bg-blue-500 text-white"
-                                : "bg-green-500 text-white"
-                            }`}>
-                              {dialogue.speaker}
-                            </span>
-                            <button
-                              onClick={() => playDialogue(dialogue)}
-                              disabled={isPlaying && currentDialogueIndex === index}
-                              className="p-1 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 disabled:opacity-50"
-                            >
-                              🔊
-                            </button>
-                          </div>
-                          <div className="text-lg font-bold text-gray-800 mb-1">
-                            {dialogue.german}
-                          </div>
-                          <div className="text-sm text-purple-600 mb-1">
-                            {dialogue.pronunciation}
-                          </div>
-                          <div className="text-gray-600">
-                            {dialogue.chinese}
+                  {selectedDialogue.dialogues.map((dialogue, index) => {
+                    const isA = dialogue.speaker === "A";
+                    const shouldHideText = isA ? hideAText : hideBText;
+                    return (
+                      <div
+                        key={dialogue.id}
+                        className={`p-4 rounded-xl ${
+                          isA ? "bg-blue-50 ml-8" : "bg-green-50 mr-8"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                isA ? "bg-blue-500 text-white" : "bg-green-500 text-white"
+                              }`}>
+                                {dialogue.speaker}
+                              </span>
+                              <button
+                                onClick={() => playDialogue(dialogue)}
+                                disabled={isPlaying && currentDialogueIndex === index}
+                                className="p-1 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 disabled:opacity-50"
+                              >
+                                🔊
+                              </button>
+                            </div>
+                            {!shouldHideText && (
+                              <>
+                                <div className="text-lg font-bold text-gray-800 mb-1">
+                                  {dialogue.german}
+                                </div>
+                                <div className="text-sm text-purple-600 mb-1">
+                                  {dialogue.pronunciation}
+                                </div>
+                                <div className="text-gray-600">
+                                  {dialogue.chinese}
+                                </div>
+                              </>
+                            )}
+                            {shouldHideText && (
+                              <div className="text-gray-400 text-sm italic">
+                                （点击 🔊 播放听力）
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* 导航 */}
