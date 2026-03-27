@@ -164,11 +164,29 @@ export default function SentencePracticePage() {
       }
       // 左箭头上一句
       if (e.key === "ArrowLeft") {
-        setCurrentDialogueIndex(i => Math.max(0, i - 1));
+        setCurrentDialogueIndex(i => {
+          const newIndex = Math.max(0, i - 1);
+          setTimeout(() => {
+            const element = document.getElementById(`dialogue-${newIndex}`);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 100);
+          return newIndex;
+        });
       }
       // 右箭头下一句
       if (e.key === "ArrowRight") {
-        setCurrentDialogueIndex(i => Math.min(selectedDialogue.dialogues.length - 1, i + 1));
+        setCurrentDialogueIndex(i => {
+          const newIndex = Math.min(selectedDialogue.dialogues.length - 1, i + 1);
+          setTimeout(() => {
+            const element = document.getElementById(`dialogue-${newIndex}`);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 100);
+          return newIndex;
+        });
       }
     };
 
@@ -286,85 +304,106 @@ export default function SentencePracticePage() {
   };
 
   // 播放对话
-  const playDialogue = async (dialogue: Dialogue) => {
-    if (typeof window === "undefined") return;
-
-    setIsPlaying(true);
-    const speaker = dialogue.speaker;
-
-    try {
-      // A使用男声(de-DE-ConradNeural)，B使用女声(de-DE-KatjaNeural)
-      const voiceName = speaker === "A" ? "de-DE-ConradNeural" : "de-DE-KatjaNeural";
-      console.log('TTS Request:', { text: dialogue.german, voice: voiceName });
-
-      const response = await fetch('http://localhost:8000/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: dialogue.german, lang: 'de', voice: voiceName })
-      });
-
-      const data = await response.json();
-      console.log('TTS Response:', data);
-
-      if (data.audio) {
-        const audio = new Audio(data.audio);
-        audio.onended = () => setIsPlaying(false);
-        await audio.play();
+  const playDialogue = async (dialogue: Dialogue): Promise<void> => {
+    return new Promise((resolve) => {
+      if (typeof window === "undefined") {
+        resolve();
         return;
-      } else if (data.error) {
-        console.error('TTS Error:', data.error);
       }
-    } catch (error) {
-      console.error('TTS Request Failed:', error);
-    }
 
-    // 回退到浏览器语音 - 通过调整pitch来区分男女声
-    const utterance = new SpeechSynthesisUtterance(dialogue.german);
-    utterance.lang = "de-DE";
-    utterance.rate = 0.85;
-    // A使用低一点的音调(男声)，B使用高一点的音调(女声)
-    utterance.pitch = speaker === "A" ? 0.8 : 1.2;
+      setIsPlaying(true);
+      const speaker = dialogue.speaker;
 
-    const loadVoices = () => {
-      const voices = speechSynthesis.getVoices();
-      // 尝试找德语男声或女声
-      const germanVoices = voices.filter(v => v.lang.includes("de"));
-      // A: 找男声(通常name包含Male或lower pitch)，B: 找女声
-      const targetVoice = germanVoices.find(v => {
-        if (speaker === "A") {
-          // 尝试找男声
-          return v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('conrad');
-        } else {
-          // 尝试找女声
-          return v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('katja');
+      const playAudio = () => {
+        const voiceName = speaker === "A" ? "de-DE-ConradNeural" : "de-DE-KatjaNeural";
+        console.log('TTS Request:', { text: dialogue.german, voice: voiceName });
+
+        fetch('http://localhost:8000/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: dialogue.german, lang: 'de', voice: voiceName })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('TTS Response:', data);
+
+          if (data.audio) {
+            const audio = new Audio(data.audio);
+            audio.onended = () => {
+              setIsPlaying(false);
+              resolve();
+            };
+            audio.play().catch(() => {
+              setIsPlaying(false);
+              resolve();
+            });
+            return;
+          } else if (data.error) {
+            console.error('TTS Error:', data.error);
+          }
+          // Fall through to browser TTS
+          playBrowserTTS();
+        })
+        .catch(() => {
+          playBrowserTTS();
+        });
+      };
+
+      const playBrowserTTS = () => {
+        const utterance = new SpeechSynthesisUtterance(dialogue.german);
+        utterance.lang = "de-DE";
+        utterance.rate = 0.85;
+        utterance.pitch = speaker === "A" ? 0.8 : 1.2;
+
+        const loadVoices = () => {
+          const voices = speechSynthesis.getVoices();
+          const germanVoices = voices.filter(v => v.lang.includes("de"));
+          const targetVoice = germanVoices.find(v => {
+            if (speaker === "A") {
+              return v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('conrad');
+            } else {
+              return v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('katja');
+            }
+          });
+          if (targetVoice) utterance.voice = targetVoice;
+        };
+
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+          speechSynthesis.onvoiceschanged = loadVoices;
         }
-      });
-      if (targetVoice) utterance.voice = targetVoice;
-    };
 
-    loadVoices();
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = loadVoices;
-    }
+        utterance.onend = () => {
+          setIsPlaying(false);
+          resolve();
+        };
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          resolve();
+        };
+        speechSynthesis.speak(utterance);
+      };
 
-    utterance.onend = () => setIsPlaying(false);
-    speechSynthesis.speak(utterance);
+      playAudio();
+    });
   };
 
-  // 播放所有对话
+  // 播放所有对话（顺序播放）
   const playAllDialogues = async () => {
     if (!selectedDialogue) return;
+
     for (let i = 0; i < selectedDialogue.dialogues.length; i++) {
       setCurrentDialogueIndex(i);
-      await new Promise<void>((resolve) => {
-        // 等待当前对话播放完成
-        const checkPlaying = setInterval(() => {
-          if (!isPlaying) {
-            clearInterval(checkPlaying);
-            resolve();
-          }
-        }, 100);
-      });
+
+      // 自动滚动到当前句子
+      setTimeout(() => {
+        const element = document.getElementById(`dialogue-${i}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+
+      // 播放当前句子，等待播放完成
       await playDialogue(selectedDialogue.dialogues[i]);
       // 每句之间稍微停顿
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -630,6 +669,7 @@ export default function SentencePracticePage() {
                     const isCurrent = currentDialogueIndex === index;
                     return (
                       <div
+                        id={`dialogue-${index}`}
                         key={dialogue.id}
                         className={`p-4 rounded-xl ${
                           isA ? "bg-blue-50 ml-8" : "bg-green-50 mr-8"
