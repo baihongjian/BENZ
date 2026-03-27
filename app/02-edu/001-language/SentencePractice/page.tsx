@@ -145,6 +145,37 @@ export default function SentencePracticePage() {
   const [hideAText, setHideAText] = useState(false);
   const [hideBText, setHideBText] = useState(false);
 
+  // 键盘快捷键
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 如果处于对话模式
+      if (mode !== "dialogue" || !selectedDialogue) return;
+
+      // 忽略输入框中的按键
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      // 空格键播放当前句子
+      if (e.key === " ") {
+        e.preventDefault();
+        const currentDialogue = selectedDialogue.dialogues[currentDialogueIndex];
+        if (currentDialogue) {
+          playDialogue(currentDialogue);
+        }
+      }
+      // 左箭头上一句
+      if (e.key === "ArrowLeft") {
+        setCurrentDialogueIndex(i => Math.max(0, i - 1));
+      }
+      // 右箭头下一句
+      if (e.key === "ArrowRight") {
+        setCurrentDialogueIndex(i => Math.min(selectedDialogue.dialogues.length - 1, i + 1));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mode, selectedDialogue, currentDialogueIndex]);
+
   // 答题相关状态
   const [quizType, setQuizType] = useState<"german" | "chinese">("german");
   const [quizSentence, setQuizSentence] = useState<Sentence | null>(null);
@@ -567,7 +598,7 @@ export default function SentencePracticePage() {
                 </div>
 
                 {/* 隐藏/显示文字按钮 */}
-                <div className="flex justify-center gap-4 mb-4">
+                <div className="flex justify-center gap-4 mb-2">
                   <button
                     onClick={() => setHideAText(!hideAText)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition ${
@@ -586,33 +617,44 @@ export default function SentencePracticePage() {
                   </button>
                 </div>
 
+                {/* 快捷键提示 */}
+                <div className="text-center text-xs text-gray-400 mb-4">
+                  快捷键：空格=播放当前 | ←→=切换句子
+                </div>
+
                 {/* 对话列表 */}
                 <div className="space-y-4">
                   {selectedDialogue.dialogues.map((dialogue, index) => {
                     const isA = dialogue.speaker === "A";
                     const shouldHideText = isA ? hideAText : hideBText;
+                    const isCurrent = currentDialogueIndex === index;
                     return (
                       <div
                         key={dialogue.id}
                         className={`p-4 rounded-xl ${
                           isA ? "bg-blue-50 ml-8" : "bg-green-50 mr-8"
-                        }`}
+                        } ${isCurrent ? "ring-4 ring-amber-400 ring-opacity-50" : ""}`}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              <span className={`px-3 py-1 rounded text-sm font-bold ${
                                 isA ? "bg-blue-500 text-white" : "bg-green-500 text-white"
                               }`}>
                                 {dialogue.speaker}
                               </span>
                               <button
-                                onClick={() => playDialogue(dialogue)}
+                                onClick={() => { setCurrentDialogueIndex(index); playDialogue(dialogue); }}
                                 disabled={isPlaying && currentDialogueIndex === index}
-                                className="p-1 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 disabled:opacity-50"
+                                className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 disabled:opacity-50 font-medium text-lg"
                               >
-                                🔊
+                                🔊 播放
                               </button>
+                              {isCurrent && (
+                                <span className="px-2 py-1 bg-amber-500 text-white text-xs rounded-full">
+                                  当前
+                                </span>
+                              )}
                             </div>
                             {!shouldHideText && (
                               <>
@@ -632,6 +674,12 @@ export default function SentencePracticePage() {
                                 （点击 🔊 播放听力）
                               </div>
                             )}
+                          </div>
+                          {/* 右侧编号 */}
+                          <div className={`text-2xl font-bold ${
+                            isCurrent ? "text-amber-500" : "text-gray-300"
+                          }`}>
+                            {index + 1}
                           </div>
                         </div>
                       </div>
