@@ -12,6 +12,34 @@ interface Sentence {
   category: string;
 }
 
+// 对话数据
+interface Dialogue {
+  id: number;
+  speaker: "A" | "B";
+  german: string;
+  chinese: string;
+  pronunciation: string;
+}
+
+interface DialogueScenario {
+  id: string;
+  title: string;
+  dialogues: Dialogue[];
+}
+
+const dialogueScenarios: DialogueScenario[] = [
+  {
+    id: "introduce",
+    title: "自我介绍",
+    dialogues: [
+      { id: 1, speaker: "A", german: "Hallo, ich heiße Franz. Wie heißt du?", chinese: "你好，我叫Franz。你叫什么名字？", pronunciation: "哈罗， 伊希 哈伊泽 弗兰茨。维 哈伊斯特 杜？" },
+      { id: 2, speaker: "B", german: "Hallo, Franz! Ich heiße Akari.", chinese: "你好，Franz！我叫Akari。", pronunciation: "哈罗，弗兰茨！伊希 哈伊泽 阿卡里。" },
+      { id: 3, speaker: "A", german: "Akari, woher kommst du?", chinese: "Akari，你来自哪里？", pronunciation: "阿卡里，沃黑尔 科姆斯特 杜？" },
+      { id: 4, speaker: "B", german: "Ich komme aus Japan. Ich bin Japanerin.", chinese: "我来自日本。我是日本人。", pronunciation: "伊希 科梅 奥斯 雅潘。伊希 宾 雅潘erin。" },
+    ],
+  },
+];
+
 const sentences: Sentence[] = [
   // 基本问候
   { id: 1, german: "Guten Morgen!", chinese: "早上好！", pronunciation: "古腾 莫根", category: "greeting" },
@@ -104,11 +132,16 @@ const sentenceCategories = [
 ];
 
 export default function SentencePracticePage() {
-  const [mode, setMode] = useState<"learn" | "quiz">("learn");
+  const [mode, setMode] = useState<"learn" | "quiz" | "dialogue">("learn");
   const [category, setCategory] = useState("all");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
+
+  // 对话模式相关状态
+  const [selectedDialogue, setSelectedDialogue] = useState<DialogueScenario | null>(null);
+  const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // 答题相关状态
   const [quizType, setQuizType] = useState<"german" | "chinese">("german");
@@ -219,6 +252,92 @@ export default function SentencePracticePage() {
     generateQuiz();
   };
 
+  // 播放对话
+  const playDialogue = async (dialogue: Dialogue) => {
+    if (typeof window === "undefined") return;
+
+    setIsPlaying(true);
+    const speaker = dialogue.speaker;
+
+    try {
+      // A使用男声(de-DE-ConradNeural)，B使用女声(de-DE-KatjaNeural)
+      const voiceName = speaker === "A" ? "de-DE-ConradNeural" : "de-DE-KatjaNeural";
+      console.log('TTS Request:', { text: dialogue.german, voice: voiceName });
+
+      const response = await fetch('http://localhost:8000/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: dialogue.german, lang: 'de', voice: voiceName })
+      });
+
+      const data = await response.json();
+      console.log('TTS Response:', data);
+
+      if (data.audio) {
+        const audio = new Audio(data.audio);
+        audio.onended = () => setIsPlaying(false);
+        await audio.play();
+        return;
+      } else if (data.error) {
+        console.error('TTS Error:', data.error);
+      }
+    } catch (error) {
+      console.error('TTS Request Failed:', error);
+    }
+
+    // 回退到浏览器语音 - 通过调整pitch来区分男女声
+    const utterance = new SpeechSynthesisUtterance(dialogue.german);
+    utterance.lang = "de-DE";
+    utterance.rate = 0.85;
+    // A使用低一点的音调(男声)，B使用高一点的音调(女声)
+    utterance.pitch = speaker === "A" ? 0.8 : 1.2;
+
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices();
+      // 尝试找德语男声或女声
+      const germanVoices = voices.filter(v => v.lang.includes("de"));
+      // A: 找男声(通常name包含Male或lower pitch)，B: 找女声
+      const targetVoice = germanVoices.find(v => {
+        if (speaker === "A") {
+          // 尝试找男声
+          return v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('conrad');
+        } else {
+          // 尝试找女声
+          return v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('katja');
+        }
+      });
+      if (targetVoice) utterance.voice = targetVoice;
+    };
+
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    utterance.onend = () => setIsPlaying(false);
+    speechSynthesis.speak(utterance);
+  };
+
+  // 播放所有对话
+  const playAllDialogues = async () => {
+    if (!selectedDialogue) return;
+    for (let i = 0; i < selectedDialogue.dialogues.length; i++) {
+      setCurrentDialogueIndex(i);
+      await new Promise<void>((resolve) => {
+        // 等待当前对话播放完成
+        const checkPlaying = setInterval(() => {
+          if (!isPlaying) {
+            clearInterval(checkPlaying);
+            resolve();
+          }
+        }, 100);
+      });
+      await playDialogue(selectedDialogue.dialogues[i]);
+      // 每句之间稍微停顿
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  };
+
   // 当前句子
   const currentSentence = filteredSentences[currentIndex];
 
@@ -260,6 +379,14 @@ export default function SentencePracticePage() {
             }`}
           >
             📝 答题模式
+          </button>
+          <button
+            onClick={() => { setMode("dialogue"); setShowWrongBook(false); setSelectedDialogue(null); }}
+            className={`px-6 py-2 rounded-full font-medium transition ${
+              mode === "dialogue" ? "bg-purple-500 text-white" : "bg-white text-gray-700 border border-gray-300"
+            }`}
+          >
+            💬 对话练习
           </button>
           <button
             onClick={() => { setShowWrongBook(!showWrongBook); }}
@@ -388,6 +515,121 @@ export default function SentencePracticePage() {
                 下一句 →
               </button>
             </div>
+          </>
+        ) : mode === "dialogue" ? (
+          /* 对话练习模式 */
+          <>
+            {!selectedDialogue ? (
+              /* 选择对话场景 */
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">选择对话场景</h2>
+                <div className="space-y-3">
+                  {dialogueScenarios.map(scenario => (
+                    <button
+                      key={scenario.id}
+                      onClick={() => { setSelectedDialogue(scenario); setCurrentDialogueIndex(0); }}
+                      className="w-full py-4 px-6 bg-purple-50 text-purple-700 rounded-xl font-medium hover:bg-purple-100 transition text-left flex items-center gap-3"
+                    >
+                      <span className="text-2xl">💬</span>
+                      <div>
+                        <div className="font-bold">{scenario.title}</div>
+                        <div className="text-sm text-purple-500">{scenario.dialogues.length} 句对话</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              /* 对话内容显示 */
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">{selectedDialogue.title}</h2>
+                  <button
+                    onClick={() => setSelectedDialogue(null)}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                  >
+                    ← 返回
+                  </button>
+                </div>
+
+                {/* 播放所有对话按钮 */}
+                <div className="text-center mb-6">
+                  <button
+                    onClick={playAllDialogues}
+                    disabled={isPlaying}
+                    className="px-8 py-3 bg-purple-500 text-white rounded-full font-medium hover:bg-purple-600 disabled:bg-gray-300 flex items-center gap-2 mx-auto"
+                  >
+                    <span>🔊</span>
+                    {isPlaying ? "播放中..." : "播放全部对话"}
+                  </button>
+                </div>
+
+                {/* 对话列表 */}
+                <div className="space-y-4">
+                  {selectedDialogue.dialogues.map((dialogue, index) => (
+                    <div
+                      key={dialogue.id}
+                      className={`p-4 rounded-xl ${
+                        dialogue.speaker === "A"
+                          ? "bg-blue-50 ml-8"
+                          : "bg-green-50 mr-8"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              dialogue.speaker === "A"
+                                ? "bg-blue-500 text-white"
+                                : "bg-green-500 text-white"
+                            }`}>
+                              {dialogue.speaker}
+                            </span>
+                            <button
+                              onClick={() => playDialogue(dialogue)}
+                              disabled={isPlaying && currentDialogueIndex === index}
+                              className="p-1 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 disabled:opacity-50"
+                            >
+                              🔊
+                            </button>
+                          </div>
+                          <div className="text-lg font-bold text-gray-800 mb-1">
+                            {dialogue.german}
+                          </div>
+                          <div className="text-sm text-purple-600 mb-1">
+                            {dialogue.pronunciation}
+                          </div>
+                          <div className="text-gray-600">
+                            {dialogue.chinese}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 导航 */}
+                <div className="flex justify-center gap-4 mt-6">
+                  <button
+                    onClick={() => setCurrentDialogueIndex(i => Math.max(0, i - 1))}
+                    disabled={currentDialogueIndex === 0}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                  >
+                    ← 上一句
+                  </button>
+                  <span className="px-4 py-2 text-gray-600">
+                    {currentDialogueIndex + 1} / {selectedDialogue.dialogues.length}
+                  </span>
+                  <button
+                    onClick={() => setCurrentDialogueIndex(i => Math.min(selectedDialogue.dialogues.length - 1, i + 1))}
+                    disabled={currentDialogueIndex === selectedDialogue.dialogues.length - 1}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                  >
+                    下一句 →
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           /* 答题模式 */

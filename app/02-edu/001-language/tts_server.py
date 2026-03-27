@@ -33,13 +33,22 @@ async def tts_handler(request):
         data = await request.json()
         text = data.get("text", "Guten Tag")
         lang = data.get("lang", "de")
+        custom_voice = data.get("voice", None)  # 支持自定义音色
 
-        # 根据语言选择语音
+        print(f"Received TTS request: text='{text}', lang='{lang}', voice='{custom_voice}'")
+
+        # 根据语言和自定义音色选择语音
         voice = VOICE
-        if lang == "en":
+        if custom_voice:
+            # 使用自定义音色
+            voice = custom_voice
+            print(f"Using custom voice: {voice}")
+        elif lang == "en":
             voice = "en-US-AriaNeural"
         elif lang == "zh":
             voice = "zh-CN-XiaoxiaoNeural"
+
+        print(f"Generating TTS with voice: {voice}")
 
         # 生成唯一文件名
         import time
@@ -47,8 +56,19 @@ async def tts_handler(request):
         output_file = os.path.join(TEMP_DIR, f"tts_{timestamp}.mp3")
 
         # 生成语音
+        print(f"Calling edge_tts.Communicate with text: '{text}' and voice: '{voice}'")
         communicate = edge_tts.Communicate(text, voice)
+
+        # 保存文件
+        print(f"Saving to file: {output_file}")
         await communicate.save(output_file)
+
+        # 检查文件是否存在
+        if not os.path.exists(output_file):
+            raise Exception("Failed to generate audio file")
+
+        file_size = os.path.getsize(output_file)
+        print(f"Audio file generated, size: {file_size} bytes")
 
         # 读取并转换为 base64
         with open(output_file, "rb") as f:
