@@ -78,7 +78,7 @@ const playSound = (type: "correct" | "wrong") => {
   }
 };
 
-type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "profession" | "weather" | "nature" | "animal" | "institution" | "business";
+type QuizType = "phoneNumber" | "weekday" | "month" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "profession" | "weather" | "nature" | "animal" | "institution" | "business" | "transport";
 
 export default function ListenningPage() {
   const [quizType, setQuizType] = useState<QuizType>("phoneNumber");
@@ -241,6 +241,18 @@ export default function ListenningPage() {
     { german: "das Schloss", chinese: "城堡" },
   ];
 
+  // 轨道交通听力数据
+  const transportWords = [
+    { german: "die Bahn", chinese: "火车/铁路" },
+    { german: "der Zug", chinese: "火车" },
+    { german: "der Bahnhof", chinese: "火车站" },
+    { german: "die Haltestelle", chinese: "站点" },
+    { german: "der Fahrplan", chinese: "时刻表" },
+    { german: "die Abfahrt", chinese: "出发" },
+    { german: "die Ankunft", chinese: "到达" },
+    { german: "die Fahrkarte", chinese: "车票" },
+  ];
+
   // 人称代词听力数据
   const personalPronouns = [
     { german: "ich", chinese: "我" },
@@ -384,6 +396,13 @@ export default function ListenningPage() {
     answerChinese: string;
   } | null>(null);
 
+  const [transportData, setTransportData] = useState<{
+    question: string;
+    questionChinese: string;
+    answer: string;
+    answerChinese: string;
+  } | null>(null);
+
   // 监听题目数据变化，自动播放音频
   useEffect(() => {
     if (!quizStarted) return;
@@ -414,6 +433,8 @@ export default function ListenningPage() {
       currentKey = `institution-${institutionData.question}`;
     } else if (quizType === "business" && businessData) {
       currentKey = `business-${businessData.question}`;
+    } else if (quizType === "transport" && transportData) {
+      currentKey = `transport-${transportData.question}`;
     }
 
     // 如果key变化了，说明是新题目，自动播放
@@ -424,7 +445,7 @@ export default function ListenningPage() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [quizStarted, verbData, pronounData, pronoun3rdData, questionWordData, timeData, articleData, professionData, weatherData, natureData, animalData, institutionData, businessData, quizType]);
+  }, [quizStarted, verbData, pronounData, pronoun3rdData, questionWordData, timeData, articleData, professionData, weatherData, natureData, animalData, institutionData, businessData, transportData, quizType]);
 
   // 生成电话号码题目
   const generatePhoneQuiz = () => {
@@ -767,6 +788,28 @@ export default function ListenningPage() {
     setCurrentQuestionCount(prev => prev + 1);
   };
 
+  // 生成轨道交通听力题目
+  const generateTransportQuiz = () => {
+    if (currentQuestionCount >= quizCount) {
+      setQuizFinished(true);
+      return;
+    }
+
+    const shuffled = [...transportWords].sort(() => Math.random() - 0.5);
+    const selected = shuffled[0];
+
+    setTransportData({
+      question: selected.german,
+      questionChinese: selected.chinese,
+      answer: selected.german,
+      answerChinese: selected.chinese
+    });
+    setQuizResult(null);
+    setQuizStarted(true);
+    setShowText(false);
+    setCurrentQuestionCount(prev => prev + 1);
+  };
+
   // 生成人称代词听力题目
   const generatePronounQuiz = () => {
     if (currentQuestionCount >= quizCount) {
@@ -857,6 +900,7 @@ export default function ListenningPage() {
     else if (quizType === "animal") generateAnimalQuiz();
     else if (quizType === "institution") generateInstitutionQuiz();
     else if (quizType === "business") generateBusinessQuiz();
+    else if (quizType === "transport") generateTransportQuiz();
   };
 
   // 播放当前题目
@@ -892,6 +936,8 @@ export default function ListenningPage() {
       text = institutionData.question;
     } else if (quizType === "business" && businessData) {
       text = businessData.question;
+    } else if (quizType === "transport" && transportData) {
+      text = transportData.question;
     }
 
     if (text) {
@@ -899,7 +945,7 @@ export default function ListenningPage() {
       speak(text);
       setTimeout(() => setIsPlayingAudio(false), 2500);
     }
-  }, [quizType, phoneNumberData, weekdayData, monthData, questionWordData, pronounData, pronoun3rdData, verbData, timeData, articleData, professionData, weatherData, natureData, animalData, institutionData, businessData]);
+  }, [quizType, phoneNumberData, weekdayData, monthData, questionWordData, pronounData, pronoun3rdData, verbData, timeData, articleData, professionData, weatherData, natureData, animalData, institutionData, businessData, transportData]);
 
   // 更新 playCurrentQuestion 的 ref
   useEffect(() => {
@@ -1117,6 +1163,21 @@ export default function ListenningPage() {
     }
   };
 
+  // 选择轨道交通答案
+  const selectTransportAnswer = (selected: string) => {
+    if (quizResult !== null || !transportData) return;
+    const isCorrect = selected === transportData.answer;
+    if (isCorrect) {
+      setQuizResult("correct");
+      setCorrectCount(prev => prev + 1);
+      playSound("correct");
+    } else {
+      setQuizResult("wrong");
+      playSound("wrong");
+      setWrongBook(prev => prev.includes(transportData.question) ? prev : [...prev, transportData.question]);
+    }
+  };
+
   // 选择人称代词答案
   const selectPronounAnswer = (selected: string) => {
     if (quizResult !== null || !pronounData) return;
@@ -1271,6 +1332,14 @@ export default function ListenningPage() {
           >
             🏪 商业/生活娱乐
           </button>
+          <button
+            onClick={() => { setQuizType("transport"); setQuizStarted(false); }}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              quizType === "transport" ? "bg-blue-500 text-white" : "bg-white text-gray-600"
+            }`}
+          >
+            🚇 轨道交通
+          </button>
         </div>
 
         {/* 语法分类 */}
@@ -1361,10 +1430,10 @@ export default function ListenningPage() {
           /* 开始答题 */
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="text-6xl mb-6">
-              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : quizType === "pronoun" ? "👤" : quizType === "pronoun3rd" ? "👥" : quizType === "verb" ? "🔄" : quizType === "time" ? "⏰" : quizType === "article" ? "📝" : quizType === "profession" ? "💼" : quizType === "weather" ? "☁️" : quizType === "nature" ? "🏔️" : quizType === "animal" ? "🐾" : quizType === "institution" ? "🏛️" : quizType === "business" ? "🏪" : "❓"}
+              {quizType === "phoneNumber" ? "📞" : quizType === "weekday" ? "📅" : quizType === "month" ? "🗓️" : quizType === "pronoun" ? "👤" : quizType === "pronoun3rd" ? "👥" : quizType === "verb" ? "🔄" : quizType === "time" ? "⏰" : quizType === "article" ? "📝" : quizType === "profession" ? "💼" : quizType === "weather" ? "☁️" : quizType === "nature" ? "🏔️" : quizType === "animal" ? "🐾" : quizType === "institution" ? "🏛️" : quizType === "business" ? "🏪" : quizType === "transport" ? "🚇" : "❓"}
             </div>
             <h2 className="text-xl font-bold text-gray-800 mb-4">
-              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "pronoun3rd" ? "人称代词（第3人称）听力" : quizType === "verb" ? `动词${verbType}变位听力` : quizType === "time" ? "时间表达听力" : quizType === "article" ? "定冠词和名词（第1格和第4格）" : quizType === "profession" ? "职业和身份听力" : quizType === "weather" ? "天气和自然听力" : quizType === "nature" ? "地理和自然听力" : quizType === "animal" ? "动植物听力" : quizType === "institution" ? "公共机构听力" : quizType === "business" ? "商业/生活娱乐听力" : "疑问词听力"}
+              {quizType === "phoneNumber" ? "电话号码听力" : quizType === "weekday" ? "星期逻辑推理" : quizType === "month" ? "月份逻辑推理" : quizType === "pronoun" ? "人称代词听力" : quizType === "pronoun3rd" ? "人称代词（第3人称）听力" : quizType === "verb" ? `动词${verbType}变位听力` : quizType === "time" ? "时间表达听力" : quizType === "article" ? "定冠词和名词（第1格和第4格）" : quizType === "profession" ? "职业和身份听力" : quizType === "weather" ? "天气和自然听力" : quizType === "nature" ? "地理和自然听力" : quizType === "animal" ? "动植物听力" : quizType === "institution" ? "公共机构听力" : quizType === "business" ? "商业/生活娱乐听力" : quizType === "transport" ? "轨道交通听力" : "疑问词听力"}
             </h2>
             <p className="text-gray-600 mb-6">
               {quizType === "phoneNumber" ? "听德语读出的电话号码，输入正确的数字" :
@@ -1381,6 +1450,7 @@ export default function ListenningPage() {
                quizType === "animal" ? "听动植物，选择正确的中文含义" :
                quizType === "institution" ? "听公共机构，选择正确的中文含义" :
                quizType === "business" ? "听商业/生活娱乐，选择正确的中文含义" :
+               quizType === "transport" ? "听轨道交通，选择正确的中文含义" :
                "听德语疑问词，选择正确的中文含义"}
             </p>
             <button
@@ -2096,6 +2166,60 @@ export default function ListenningPage() {
               </>
             )}
 
+            {/* 轨道交通题型 */}
+            {quizType === "transport" && transportData && (
+              <>
+                <div className="text-center mb-4">
+                  <span className="text-sm text-gray-400">听轨道交通，选择正确的中文含义</span>
+                </div>
+
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setShowText(!showText)}
+                    className={`px-3 py-1 rounded-full text-sm ${showText ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-600"}`}
+                  >
+                    {showText ? "🙈 隐藏" : "👁️ 显示"}
+                  </button>
+                </div>
+
+                {showText && (
+                  <div className="bg-blue-50 rounded-xl p-6 mb-6 text-center">
+                    <p className="text-xl font-medium">{transportData.question}</p>
+                    <p className="text-lg text-gray-500 mt-2">{transportData.questionChinese}</p>
+                  </div>
+                )}
+
+                <div className="text-center mb-6">
+                  <button
+                    onClick={playCurrentQuestion}
+                    disabled={isPlayingAudio}
+                    className={`px-8 py-4 rounded-full ${isPlayingAudio ? "bg-green-100 text-green-600" : "bg-blue-100 text-blue-700 hover:bg-blue-200"}`}
+                  >
+                    {isPlayingAudio ? "🔊 播放中..." : "🎧 播放德语"}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {transportWords.map((word) => {
+                    const isSelected = quizResult !== null;
+                    const isCorrect = word.german === transportData.answer;
+                    let btnClass = "py-4 rounded-xl text-lg font-medium transition ";
+                    if (isSelected) {
+                      if (isCorrect) btnClass += "bg-green-500 text-white";
+                      else btnClass += "bg-gray-100 text-gray-400";
+                    } else {
+                      btnClass += "bg-blue-50 text-blue-700 border-2 border-blue-200 hover:bg-blue-100";
+                    }
+                    return (
+                      <button key={word.german} onClick={() => selectTransportAnswer(word.german)} disabled={quizResult !== null} className={btnClass}>
+                        {word.chinese}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
             {/* 人称代词题型 */}
             {quizType === "pronoun" && pronounData && (
               <>
@@ -2299,6 +2423,9 @@ export default function ListenningPage() {
                 )}
                 {quizType === "business" && businessData && (
                   <p className="text-gray-600">正确答案：{businessData.answer} ({businessData.answerChinese})</p>
+                )}
+                {quizType === "transport" && transportData && (
+                  <p className="text-gray-600">正确答案：{transportData.answer} ({transportData.answerChinese})</p>
                 )}
                 {quizType === "pronoun" && pronounData && (
                   <p className="text-gray-600">正确答案：{pronounData.answer} ({pronounData.answerChinese})</p>
