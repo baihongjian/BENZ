@@ -126,6 +126,16 @@ const sentences: Sentence[] = [
   { id: 76, german: "die Autobahn", chinese: "高速公路", category: "daily_transport" },
   { id: 77, german: "das Flugzeug", chinese: "飞机", category: "daily_transport" },
   { id: 78, german: "das Schiff", chinese: "船", category: "daily_transport" },
+
+  // 抽象概念（1）
+  { id: 79, german: "die Frage", chinese: "问题", category: "abstract1" },
+  { id: 80, german: "der Geburtstag", chinese: "生日", category: "abstract1" },
+  { id: 81, german: "das Geld", chinese: "钱", category: "abstract1" },
+  { id: 82, german: "die Liebe", chinese: "爱情", category: "abstract1" },
+  { id: 83, german: "der Freund", chinese: "朋友", category: "abstract1" },
+  { id: 84, german: "der Name", chinese: "名字", category: "abstract1" },
+  { id: 85, german: "der Schmerz", chinese: "疼痛", category: "abstract1" },
+  { id: 86, german: "die Sprache", chinese: "语言", category: "abstract1" },
 ];
 
 const categories = [
@@ -145,6 +155,7 @@ const categories = [
   { id: "business", name: "商业 / 生活娱乐" },
   { id: "transport", name: "轨道交通" },
   { id: "daily_transport", name: "日常交通" },
+  { id: "abstract1", name: "抽象概念（1）" },
 ];
 
 // 对话选择题数据：题干是A的问题，选项是B的回答
