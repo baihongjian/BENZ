@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 // 德语数字数据
@@ -145,6 +145,18 @@ const railTransportData = [
   { id: 6, german: "die Abfahrt", chinese: "出发" },
   { id: 7, german: "die Ankunft", chinese: "到达" },
   { id: 8, german: "die Fahrkarte", chinese: "车票" },
+];
+
+// 德语日常交通数据
+const dailyTransportData = [
+  { id: 1, german: "das Auto", chinese: "汽车" },
+  { id: 2, german: "der Wagen", chinese: "车辆" },
+  { id: 3, german: "das Taxi", chinese: "出租车" },
+  { id: 4, german: "der Bus", chinese: "公交车" },
+  { id: 5, german: "das Fahrrad", chinese: "自行车" },
+  { id: 6, german: "die Autobahn", chinese: "高速公路" },
+  { id: 7, german: "das Flugzeug", chinese: "飞机" },
+  { id: 8, german: "das Schiff", chinese: "船" },
 ];
 
 // 定冠词和名词数据（第1格和第4格）
@@ -313,7 +325,7 @@ const playSound = (type: "correct" | "wrong") => {
 };
 
 export default function SpellingTestPage() {
-  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant" | "publicInstitution" | "businessEntertainment" | "railTransport">("number");
+  const [contentType, setContentType] = useState<"number" | "questionWord" | "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant" | "publicInstitution" | "businessEntertainment" | "railTransport" | "dailyTransport">("number");
   const [mode, setMode] = useState<"learn" | "quiz">("learn");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -397,8 +409,26 @@ export default function SpellingTestPage() {
   const [railTransportQuiz, setRailTransportQuiz] = useState<typeof railTransportData[0] | null>(null);
   const [railTransportWrongBook, setRailTransportWrongBook] = useState<typeof railTransportData>([]);
 
+  // 日常交通相关
+  const [dailyTransportIndex, setDailyTransportIndex] = useState(0);
+  const [dailyTransportQuiz, setDailyTransportQuiz] = useState<typeof dailyTransportData[0] | null>(null);
+  const [dailyTransportWrongBook, setDailyTransportWrongBook] = useState<typeof dailyTransportData>([]);
+
   // 用于控制Enter键的延迟，防止同时触发提交和下一题
   const [canPressEnter, setCanPressEnter] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // 空格键获取输入焦点
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && document.activeElement !== inputRef.current) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // 当前数字
   const currentNumber = germanNumbers[currentIndex];
@@ -428,6 +458,8 @@ export default function SpellingTestPage() {
   const currentBusinessEntertainment = businessEntertainmentData[businessEntertainmentIndex];
   // 当前轨道交通
   const currentRailTransport = railTransportData[railTransportIndex];
+  // 当前日常交通
+  const currentDailyTransport = dailyTransportData[dailyTransportIndex];
 
   // 开始答题
   const startQuiz = () => {
@@ -486,6 +518,9 @@ export default function SpellingTestPage() {
     } else if (contentType === "railTransport") {
       const randomIndex = Math.floor(Math.random() * railTransportData.length);
       setRailTransportQuiz(railTransportData[randomIndex]);
+    } else if (contentType === "dailyTransport") {
+      const randomIndex = Math.floor(Math.random() * dailyTransportData.length);
+      setDailyTransportQuiz(dailyTransportData[randomIndex]);
     } else {
       const randomIndex = Math.floor(Math.random() * germanNumbers.length);
       setQuizNumber(germanNumbers[randomIndex]);
@@ -609,6 +644,14 @@ export default function SpellingTestPage() {
       if (!isCorrect) {
         setRailTransportWrongBook(prev => prev.some(r => r.id === railTransportQuiz.id) ? prev : [...prev, railTransportQuiz]);
       }
+    } else if (contentType === "dailyTransport" && dailyTransportQuiz) {
+      // 日常交通答案
+      const userAns = userInput.trim().toLowerCase();
+      const correctAns = dailyTransportQuiz.german.toLowerCase();
+      isCorrect = userAns === correctAns;
+      if (!isCorrect) {
+        setDailyTransportWrongBook(prev => prev.some(d => d.id === dailyTransportQuiz.id) ? prev : [...prev, dailyTransportQuiz]);
+      }
     } else if (quizNumber) {
       isCorrect = userInput.trim().toLowerCase() === quizNumber.german.toLowerCase();
       if (!isCorrect) {
@@ -660,10 +703,10 @@ export default function SpellingTestPage() {
             </Link>
           </div>
           <h1 className="text-2xl font-bold">
-            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "pronoun3rd" ? "👥 人称代词（第3人称）拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : contentType === "time" ? "⏰ 德语时间拼写" : contentType === "article" ? "📝 定冠词和名词拼写" : contentType === "occupation" ? "👔 职业和身份拼写" : contentType === "weather" ? "🌤️ 天气拼写" : contentType === "nature" ? "🌲 自然拼写" : contentType === "animalPlant" ? "🐾 动植物拼写" : contentType === "publicInstitution" ? "🏛️ 公共机构拼写" : contentType === "businessEntertainment" ? "🏪 商业/生活娱乐拼写" : contentType === "railTransport" ? "🚇 轨道交通拼写" : "🔢 德语数字拼写"}
+            {contentType === "questionWord" ? "❓ 德语疑问词拼写" : contentType === "pronoun" ? "👤 人称代词拼写" : contentType === "pronoun3rd" ? "👥 人称代词（第3人称）拼写" : contentType === "verb" ? `🔄 动词${verbType}变位拼写` : contentType === "time" ? "⏰ 德语时间拼写" : contentType === "article" ? "📝 定冠词和名词拼写" : contentType === "occupation" ? "👔 职业和身份拼写" : contentType === "weather" ? "🌤️ 天气拼写" : contentType === "nature" ? "🌲 自然拼写" : contentType === "animalPlant" ? "🐾 动植物拼写" : contentType === "publicInstitution" ? "🏛️ 公共机构拼写" : contentType === "businessEntertainment" ? "🏪 商业/生活娱乐拼写" : contentType === "railTransport" ? "🚇 轨道交通拼写" : contentType === "dailyTransport" ? "🚗 日常交通拼写" : "🔢 德语数字拼写"}
           </h1>
           <p className="mt-1 opacity-90">
-            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : contentType === "time" ? "德语时间表达听写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）听写练习" : contentType === "occupation" ? "职业和身份单词听写练习" : contentType === "weather" ? "天气单词听写练习" : contentType === "nature" ? "自然单词听写练习" : contentType === "animalPlant" ? "动植物单词听写练习" : contentType === "publicInstitution" ? "公共机构单词听写练习" : contentType === "businessEntertainment" ? "商业/生活娱乐单词听写练习" : contentType === "railTransport" ? "轨道交通单词听写练习" : "0-9 数字单词听写练习"}
+            {contentType === "questionWord" ? "疑问词单词听写练习" : contentType === "pronoun" ? "人称代词单词听写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）单词听写练习" : contentType === "verb" ? `动词${verbType}变位听写练习` : contentType === "time" ? "德语时间表达听写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）听写练习" : contentType === "occupation" ? "职业和身份单词听写练习" : contentType === "weather" ? "天气单词听写练习" : contentType === "nature" ? "自然单词听写练习" : contentType === "animalPlant" ? "动植物单词听写练习" : contentType === "publicInstitution" ? "公共机构单词听写练习" : contentType === "businessEntertainment" ? "商业/生活娱乐单词听写练习" : contentType === "railTransport" ? "轨道交通单词听写练习" : contentType === "dailyTransport" ? "日常交通单词听写练习" : "0-9 数字单词听写练习"}
           </p>
         </div>
       </header>
@@ -731,13 +774,19 @@ export default function SpellingTestPage() {
           >
             🚇 轨道交通
           </button>
+          <button
+            onClick={() => { setContentType("dailyTransport"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            className={`px-4 py-2 rounded-full text-sm ${contentType === "dailyTransport" ? "bg-orange-500 text-white" : "bg-white text-gray-600"}`}
+          >
+            🚗 日常交通
+          </button>
         </div>
 
         {/* 语法分类 */}
         <div className="flex justify-center mb-4">
           <select
-            value={contentType === "number" || contentType === "questionWord" || contentType === "time" || contentType === "article" || contentType === "occupation" || contentType === "weather" || contentType === "nature" || contentType === "animalPlant" || contentType === "publicInstitution" || contentType === "businessEntertainment" || contentType === "railTransport" ? "" : contentType}
-            onChange={(e) => { setContentType(e.target.value as "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant" | "publicInstitution" | "businessEntertainment" | "railTransport"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
+            value={contentType === "number" || contentType === "questionWord" || contentType === "time" || contentType === "article" || contentType === "occupation" || contentType === "weather" || contentType === "nature" || contentType === "animalPlant" || contentType === "publicInstitution" || contentType === "businessEntertainment" || contentType === "railTransport" || contentType === "dailyTransport" ? "" : contentType}
+            onChange={(e) => { setContentType(e.target.value as "pronoun" | "pronoun3rd" | "verb" | "time" | "article" | "occupation" | "weather" | "nature" | "animalPlant" | "publicInstitution" | "businessEntertainment" | "railTransport" | "dailyTransport"); setMode("learn"); setQuizStarted(false); setShowWrongBook(false); }}
             className="px-4 py-2 rounded-full text-sm font-medium border-2 border-purple-200 bg-white text-gray-700 focus:outline-none focus:border-purple-400"
           >
             <option value="">选择语法类型</option>
@@ -750,6 +799,7 @@ export default function SpellingTestPage() {
             <option value="publicInstitution">🏛️ 公共机构</option>
             <option value="businessEntertainment">🏪 商业/生活娱乐</option>
             <option value="railTransport">🚇 轨道交通</option>
+            <option value="dailyTransport">🚗 日常交通</option>
             <option value="pronoun">语法1: 人称代词（第1人称和第2人称）</option>
             <option value="pronoun3rd">语法10: 人称代词（第3人称）</option>
             <option value="verb">语法2: 动词变位（第1人称和第2人称）</option>
@@ -811,7 +861,7 @@ export default function SpellingTestPage() {
               showWrongBook ? "bg-red-500 text-white" : "bg-white text-gray-700 border border-gray-300"
             }`}
           >
-            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "pronoun3rd" ? pronoun3rdWrongBook.length : contentType === "verb" ? verbWrongBook.length : contentType === "time" ? timeWrongBook.length : contentType === "article" ? articleWrongBook.length : contentType === "occupation" ? occupationWrongBook.length : contentType === "weather" ? weatherWrongBook.length : contentType === "nature" ? natureWrongBook.length : contentType === "animalPlant" ? animalPlantWrongBook.length : contentType === "publicInstitution" ? publicInstitutionWrongBook.length : contentType === "businessEntertainment" ? businessEntertainmentWrongBook.length : contentType === "railTransport" ? railTransportWrongBook.length : wrongBook.length})
+            📚 错题本 ({contentType === "questionWord" ? questionWordWrongBook.length : contentType === "pronoun" ? pronounWrongBook.length : contentType === "pronoun3rd" ? pronoun3rdWrongBook.length : contentType === "verb" ? verbWrongBook.length : contentType === "time" ? timeWrongBook.length : contentType === "article" ? articleWrongBook.length : contentType === "occupation" ? occupationWrongBook.length : contentType === "weather" ? weatherWrongBook.length : contentType === "nature" ? natureWrongBook.length : contentType === "animalPlant" ? animalPlantWrongBook.length : contentType === "publicInstitution" ? publicInstitutionWrongBook.length : contentType === "businessEntertainment" ? businessEntertainmentWrongBook.length : contentType === "railTransport" ? railTransportWrongBook.length : contentType === "dailyTransport" ? dailyTransportWrongBook.length : wrongBook.length})
           </button>
         </div>
 
@@ -1046,6 +1096,25 @@ export default function SpellingTestPage() {
                     <div key={word.id} className="bg-red-50 rounded-xl p-4 text-center">
                       <div className="text-2xl font-bold text-gray-800">{word.german}</div>
                       <div className="text-lg text-cyan-600">{word.chinese}</div>
+                      <button
+                        onClick={() => speak(word.german)}
+                        className="mt-2 p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : contentType === "dailyTransport" ? (
+              dailyTransportWrongBook.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">暂无错题，继续加油！</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {dailyTransportWrongBook.map((word) => (
+                    <div key={word.id} className="bg-red-50 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-gray-800">{word.german}</div>
+                      <div className="text-lg text-orange-600">{word.chinese}</div>
                       <button
                         onClick={() => speak(word.german)}
                         className="mt-2 p-2 bg-amber-100 rounded-full hover:bg-amber-200"
@@ -1865,6 +1934,64 @@ export default function SpellingTestPage() {
                 </div>
               </div>
             </>
+          ) : contentType === "dailyTransport" ? (
+            /* 日常交通学习 */
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center mb-6">
+                <div className="text-5xl font-bold text-orange-600 mb-4">
+                  {currentDailyTransport.german}
+                </div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">
+                  {currentDailyTransport.chinese}
+                </div>
+                <button
+                  onClick={() => speak(currentDailyTransport.german)}
+                  className="px-6 py-3 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition flex items-center gap-2 mx-auto"
+                >
+                  <span>🔊</span> 播放发音
+                </button>
+              </div>
+
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setDailyTransportIndex(i => Math.max(0, i - 1))}
+                  disabled={dailyTransportIndex === 0}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  ← 上一位
+                </button>
+                <span className="px-4 py-2 text-gray-600">
+                  {dailyTransportIndex + 1} / {dailyTransportData.length}
+                </span>
+                <button
+                  onClick={() => setDailyTransportIndex(i => Math.min(dailyTransportData.length - 1, i + 1))}
+                  disabled={dailyTransportIndex === dailyTransportData.length - 1}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-full disabled:opacity-50"
+                >
+                  下一位 →
+                </button>
+              </div>
+
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">日常交通总表</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {dailyTransportData.map((word) => (
+                    <div key={word.id} className="bg-gray-50 rounded-xl p-3 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl font-bold text-orange-600">{word.german}</span>
+                        <span className="text-lg text-orange-600">{word.chinese}</span>
+                      </div>
+                      <button
+                        onClick={() => speak(word.german)}
+                        className="p-2 bg-amber-100 rounded-full hover:bg-amber-200"
+                      >
+                        🔊
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           ) : (
             /* 数字学习 */
             <>
@@ -1984,10 +2111,10 @@ export default function SpellingTestPage() {
             {!quizStarted ? (
               <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
                 <div className="text-6xl mb-6">
-                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "pronoun3rd" ? "👥" : contentType === "verb" ? "🔄" : contentType === "time" ? "⏰" : contentType === "article" ? "📝" : contentType === "occupation" ? "👔" : contentType === "weather" ? "🌤️" : contentType === "nature" ? "🌲" : contentType === "animalPlant" ? "🐾" : contentType === "publicInstitution" ? "🏛️" : contentType === "businessEntertainment" ? "🏪" : contentType === "railTransport" ? "🚇" : "🔢"}
+                  {contentType === "questionWord" ? "❓" : contentType === "pronoun" ? "👤" : contentType === "pronoun3rd" ? "👥" : contentType === "verb" ? "🔄" : contentType === "time" ? "⏰" : contentType === "article" ? "📝" : contentType === "occupation" ? "👔" : contentType === "weather" ? "🌤️" : contentType === "nature" ? "🌲" : contentType === "animalPlant" ? "🐾" : contentType === "publicInstitution" ? "🏛️" : contentType === "businessEntertainment" ? "🏪" : contentType === "railTransport" ? "🚇" : contentType === "dailyTransport" ? "🚗" : "🔢"}
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "pronoun3rd" ? "人称代词（第3人称）听写" : contentType === "verb" ? `动词${verbType}变位听写` : contentType === "time" ? "德语时间听写" : contentType === "article" ? "定冠词和名词听写" : contentType === "occupation" ? "职业和身份听写" : contentType === "weather" ? "天气听写" : contentType === "nature" ? "自然听写" : contentType === "animalPlant" ? "动植物听写" : contentType === "publicInstitution" ? "公共机构听写" : contentType === "businessEntertainment" ? "商业/生活娱乐听写" : contentType === "railTransport" ? "轨道交通听写" : "德语数字听写"}
+                  {contentType === "questionWord" ? "德语疑问词听写" : contentType === "pronoun" ? "人称代词听写" : contentType === "pronoun3rd" ? "人称代词（第3人称）听写" : contentType === "verb" ? `动词${verbType}变位听写` : contentType === "time" ? "德语时间听写" : contentType === "article" ? "定冠词和名词听写" : contentType === "occupation" ? "职业和身份听写" : contentType === "weather" ? "天气听写" : contentType === "nature" ? "自然听写" : contentType === "animalPlant" ? "动植物听写" : contentType === "publicInstitution" ? "公共机构听写" : contentType === "businessEntertainment" ? "商业/生活娱乐听写" : contentType === "railTransport" ? "轨道交通听写" : contentType === "dailyTransport" ? "日常交通听写" : "德语数字听写"}
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {contentType === "questionWord"
@@ -2016,7 +2143,9 @@ export default function SpellingTestPage() {
                                           ? "听中文，写出德语商业/生活娱乐词汇"
                                           : contentType === "railTransport"
                                             ? "听中文，写出德语轨道交通词汇"
-                                            : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
+                                            : contentType === "dailyTransport"
+                                              ? "听中文，写出德语日常交通词汇"
+                                              : quizType === "digitToWord" ? "听数字，写出德语单词" : "听德语单词，写出数字"}
                 </p>
                 <button
                   onClick={startQuiz}
@@ -2081,9 +2210,11 @@ export default function SpellingTestPage() {
                                     ? "请写出这个中文对应的德语商业/生活娱乐词汇"
                                     : contentType === "railTransport"
                                       ? "请写出这个中文对应的德语轨道交通词汇"
-                                      : quizType === "digitToWord" ? "请写出这个数字的德语" : "请写出这个德语对应的数字"}
+                                      : contentType === "dailyTransport"
+                                        ? "请写出这个中文对应的德语日常交通词汇"
+                                        : quizType === "digitToWord" ? "请写出这个数字的德语" : "请写出这个德语对应的数字"}
                   </p>
-                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "pronoun3rd" ? "text-teal-600" : contentType === "verb" ? "text-orange-600" : contentType === "time" ? "text-amber-600" : contentType === "article" ? "text-teal-600" : contentType === "occupation" ? "text-emerald-600" : contentType === "weather" ? "text-sky-600" : contentType === "nature" ? "text-green-600" : contentType === "animalPlant" ? "text-amber-600" : contentType === "publicInstitution" ? "text-indigo-600" : contentType === "businessEntertainment" ? "text-rose-600" : contentType === "railTransport" ? "text-cyan-600" : "text-indigo-600"}`}>
+                  <div className={`text-6xl font-bold mb-4 ${contentType === "questionWord" ? "text-pink-600" : contentType === "pronoun" ? "text-purple-600" : contentType === "pronoun3rd" ? "text-teal-600" : contentType === "verb" ? "text-orange-600" : contentType === "time" ? "text-amber-600" : contentType === "article" ? "text-teal-600" : contentType === "occupation" ? "text-emerald-600" : contentType === "weather" ? "text-sky-600" : contentType === "nature" ? "text-green-600" : contentType === "animalPlant" ? "text-amber-600" : contentType === "publicInstitution" ? "text-indigo-600" : contentType === "businessEntertainment" ? "text-rose-600" : contentType === "railTransport" ? "text-cyan-600" : contentType === "dailyTransport" ? "text-orange-600" : "text-indigo-600"}`}>
                     {contentType === "questionWord"
                       ? questionWordQuiz?.chinese
                       : contentType === "pronoun"
@@ -2110,10 +2241,12 @@ export default function SpellingTestPage() {
                                             ? businessEntertainmentQuiz?.chinese
                                             : contentType === "railTransport"
                                               ? railTransportQuiz?.chinese
-                                              : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
+                                              : contentType === "dailyTransport"
+                                                ? dailyTransportQuiz?.chinese
+                                                : quizType === "digitToWord" ? quizNumber?.digit : quizNumber?.german}
                   </div>
                   <button
-                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : contentType === "time" ? timeQuiz?.answers[0] || "" : contentType === "article" ? (articleCaseType === "nominative" ? articleQuiz?.nominative || "" : articleQuiz?.accusative || "") : contentType === "occupation" ? occupationQuiz?.german || "" : contentType === "weather" ? weatherQuiz?.german || "" : contentType === "nature" ? natureQuiz?.german || "" : contentType === "animalPlant" ? animalPlantQuiz?.german || "" : contentType === "publicInstitution" ? publicInstitutionQuiz?.german || "" : contentType === "businessEntertainment" ? businessEntertainmentQuiz?.german || "" : contentType === "railTransport" ? railTransportQuiz?.german || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
+                    onClick={() => speak(contentType === "questionWord" ? questionWordQuiz?.german || "" : contentType === "pronoun" ? pronounQuiz?.german || "" : contentType === "pronoun3rd" ? pronoun3rdQuiz?.german || "" : contentType === "verb" ? verbQuiz?.verb || "" : contentType === "time" ? timeQuiz?.answers[0] || "" : contentType === "article" ? (articleCaseType === "nominative" ? articleQuiz?.nominative || "" : articleQuiz?.accusative || "") : contentType === "occupation" ? occupationQuiz?.german || "" : contentType === "weather" ? weatherQuiz?.german || "" : contentType === "nature" ? natureQuiz?.german || "" : contentType === "animalPlant" ? animalPlantQuiz?.german || "" : contentType === "publicInstitution" ? publicInstitutionQuiz?.german || "" : contentType === "businessEntertainment" ? businessEntertainmentQuiz?.german || "" : contentType === "railTransport" ? railTransportQuiz?.german || "" : contentType === "dailyTransport" ? dailyTransportQuiz?.german || "" : quizType === "digitToWord" ? quizNumber?.digit || "" : quizNumber?.german || "")}
                     className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200"
                   >
                     🔊 播放
@@ -2124,10 +2257,11 @@ export default function SpellingTestPage() {
                 {!quizResult && (
                   <div className="mb-6">
                     <input
+                      ref={inputRef}
                       type="text"
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
-                      placeholder="请输入答案..."
+                      placeholder="请输入答案... (按空格键获取焦点)"
                       className="w-full px-4 py-3 text-xl text-center border-2 border-gray-300 rounded-xl focus:border-indigo-500 focus:outline-none"
                       onKeyDown={(e) => e.key === "Enter" && submitAnswer()}
                     />
@@ -2229,6 +2363,11 @@ export default function SpellingTestPage() {
                           <p className="text-2xl font-bold text-cyan-600 mb-2">{railTransportQuiz?.german}</p>
                           <p className="text-lg text-cyan-600">({railTransportQuiz?.chinese})</p>
                         </div>
+                      ) : contentType === "dailyTransport" ? (
+                        <div className="text-left">
+                          <p className="text-2xl font-bold text-orange-600 mb-2">{dailyTransportQuiz?.german}</p>
+                          <p className="text-lg text-orange-600">({dailyTransportQuiz?.chinese})</p>
+                        </div>
                       ) : (
                         <>
                           <p className="text-2xl font-bold text-indigo-600">
@@ -2261,7 +2400,7 @@ export default function SpellingTestPage() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm">
-        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : contentType === "time" ? "德语时间表达拼写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）拼写练习" : contentType === "occupation" ? "职业和身份拼写练习" : contentType === "weather" ? "天气拼写练习" : contentType === "nature" ? "自然拼写练习" : contentType === "animalPlant" ? "动植物拼写练习" : contentType === "publicInstitution" ? "公共机构拼写练习" : contentType === "businessEntertainment" ? "商业/生活娱乐拼写练习" : contentType === "railTransport" ? "轨道交通拼写练习" : "德语数字 0-9 拼写练习"}
+        {contentType === "questionWord" ? "德语疑问词拼写练习" : contentType === "pronoun" ? "人称代词拼写练习" : contentType === "pronoun3rd" ? "人称代词（第3人称）拼写练习" : contentType === "verb" ? `动词${verbType}变位拼写练习` : contentType === "time" ? "德语时间表达拼写练习" : contentType === "article" ? "定冠词和名词（第1格和第4格）拼写练习" : contentType === "occupation" ? "职业和身份拼写练习" : contentType === "weather" ? "天气拼写练习" : contentType === "nature" ? "自然拼写练习" : contentType === "animalPlant" ? "动植物拼写练习" : contentType === "publicInstitution" ? "公共机构拼写练习" : contentType === "businessEntertainment" ? "商业/生活娱乐拼写练习" : contentType === "railTransport" ? "轨道交通拼写练习" : contentType === "dailyTransport" ? "日常交通拼写练习" : "德语数字 0-9 拼写练习"}
       </footer>
     </div>
   );

@@ -116,6 +116,16 @@ const sentences: Sentence[] = [
   { id: 68, german: "die Abfahrt", chinese: "出发", category: "transport" },
   { id: 69, german: "die Ankunft", chinese: "到达", category: "transport" },
   { id: 70, german: "die Fahrkarte", chinese: "车票", category: "transport" },
+
+  // 日常交通
+  { id: 71, german: "das Auto", chinese: "汽车", category: "daily_transport" },
+  { id: 72, german: "der Wagen", chinese: "车辆", category: "daily_transport" },
+  { id: 73, german: "das Taxi", chinese: "出租车", category: "daily_transport" },
+  { id: 74, german: "der Bus", chinese: "公交车", category: "daily_transport" },
+  { id: 75, german: "das Fahrrad", chinese: "自行车", category: "daily_transport" },
+  { id: 76, german: "die Autobahn", chinese: "高速公路", category: "daily_transport" },
+  { id: 77, german: "das Flugzeug", chinese: "飞机", category: "daily_transport" },
+  { id: 78, german: "das Schiff", chinese: "船", category: "daily_transport" },
 ];
 
 const categories = [
@@ -134,6 +144,7 @@ const categories = [
   { id: "public", name: "公共机构" },
   { id: "business", name: "商业 / 生活娱乐" },
   { id: "transport", name: "轨道交通" },
+  { id: "daily_transport", name: "日常交通" },
 ];
 
 // 对话选择题数据：题干是A的问题，选项是B的回答
