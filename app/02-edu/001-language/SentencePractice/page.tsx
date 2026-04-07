@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 // 简单德语句子数据
@@ -10,6 +10,14 @@ interface Sentence {
   chinese: string;
   pronunciation: string;
   category: string;
+}
+
+// 基本短语（英语对照）
+interface BasicPhrase {
+  id: number;
+  english: string;
+  german: string;
+  chinese: string;
 }
 
 // 对话数据
@@ -36,6 +44,27 @@ const dialogueScenarios: DialogueScenario[] = [
       { id: 2, speaker: "B", german: "Hallo, Franz! Ich heiße Akari.", chinese: "你好，Franz！我叫Akari。", pronunciation: "哈罗，弗兰茨！伊希 哈伊泽 阿卡里。" },
       { id: 3, speaker: "A", german: "Akari, woher kommst du?", chinese: "Akari，你来自哪里？", pronunciation: "阿卡里，沃黑尔 科姆斯特 杜？" },
       { id: 4, speaker: "B", german: "Ich komme aus Japan. Ich bin Japanerin.", chinese: "我来自日本。我是日本人。", pronunciation: "伊希 科梅 奥斯 雅潘。伊希 宾 雅潘erin。" },
+    ],
+  },
+  {
+    id: "wohnen",
+    title: "居住地点",
+    dialogues: [
+      { id: 1, speaker: "A", german: "Woher kommst du, Franz?", chinese: "Franz，你来自哪里？", pronunciation: "沃黑尔 科姆斯特 杜，弗兰茨？" },
+      { id: 2, speaker: "B", german: "Ich komme aus Hannover, aus Deutschland. Aber jetzt arbeite ich hier in Köln.", chinese: "我来自德国汉诺威。但现在我在科隆工作。", pronunciation: "伊希 科梅 奥斯 汉诺威，奥斯 德奇兰德。阿尔 现在特 阿尔贝伊特 伊希 黑尔 因 科隆。" },
+      { id: 3, speaker: "A", german: "Und wo wohnst du, Akari?", chinese: "Akari，你住在哪里？", pronunciation: "温特 沃 沃斯特斯特 杜，阿卡里？" },
+      { id: 4, speaker: "B", german: "Ich wohne in München.", chinese: "我住在慕尼黑。", pronunciation: "伊希 沃内 因 慕尼希。" },
+    ],
+  },
+  {
+    id: "name",
+    title: "姓名登记",
+    dialogues: [
+      { id: 1, speaker: "A", german: "Der Nächste, bitte!", chinese: "下一位，请！", pronunciation: "德尔 奈希斯特， 比特！" },
+      { id: 2, speaker: "A", german: "Guten Tag! Wie ist Ihr Name, bitte?", chinese: "您好！请问您的名字？", pronunciation: "古腾 塔克！维 伊斯特 伊尔 纳梅， 比特？" },
+      { id: 3, speaker: "B", german: "Guten Tag! Mein Name ist Akari Sudo.", chinese: "您好！我的名字是Akari Sudo。", pronunciation: "古腾 塔克！迈因 纳梅 伊斯特 阿卡里 苏杜。" },
+      { id: 4, speaker: "A", german: "Gerne! Also, A-K-A-R-I, S-U-D-O", chinese: "好的！也就是A-K-A-R-I, S-U-D-O", pronunciation: "格尔内！阿尔佐， A-K-A-R-I, S-U-D-O" },
+      { id: 5, speaker: "B", german: "Super! Danke schön!", chinese: "太棒了！非常感谢！", pronunciation: "苏佩尔！丹克 舍恩！" },
     ],
   },
 ];
@@ -131,10 +160,31 @@ const sentenceCategories = [
   { id: "phrase", name: "常用短句" },
 ];
 
+// 基本短语（英语-德语对照）
+const basicPhrases: BasicPhrase[] = [
+  { id: 1, english: "Hello.", german: "Hallo.", chinese: "你好。" },
+  { id: 2, english: "Thank you.", german: "Danke schön.", chinese: "谢谢。" },
+  { id: 3, english: "You're welcome.", german: "Bitte schön.", chinese: "不客气。" },
+  { id: 4, english: "Sure.", german: "Natürlich.", chinese: "当然。" },
+  { id: 5, english: "Exactly.", german: "Genau.", chinese: "没错。" },
+  { id: 6, english: "I can speak a little English.", german: "Ich kann ein bisschen Englisch sprechen.", chinese: "我可以讲一点英语。" },
+  { id: 7, english: "Can you say that again?", german: "Wie bitte?", chinese: "您能再说一遍吗？" },
+  { id: 8, english: "Can you speak more slowly?", german: "Bitte sprechen Sie langsamer.", chinese: "请说慢一点。" },
+  { id: 9, english: "Did you say something?", german: "Haben Sie etwas gesagt?", chinese: "您说了什么吗？" },
+  { id: 10, english: "I'm sorry.", german: "Es tut mir leid.", chinese: "对不起。" },
+  { id: 11, english: "I don't know.", german: "Ich weiß nicht.", chinese: "我不知道。" },
+  { id: 12, english: "I'm a stranger here.", german: "Ich bin fremd hier.", chinese: "我是这里的陌生人。" },
+  { id: 13, english: "Take care.", german: "Pass auf dich auf.", chinese: "保重。" },
+  { id: 14, english: "Goodbye.", german: "Auf Wiedersehen.", chinese: "再见。" },
+  { id: 15, english: "Have fun.", german: "Viel Spaß!", chinese: "玩得开心！" },
+  { id: 16, english: "Have a nice trip.", german: "Gute Reise!", chinese: "旅途愉快！" },
+];
+
 export default function SentencePracticePage() {
-  const [mode, setMode] = useState<"learn" | "quiz" | "dialogue">("learn");
+  const [mode, setMode] = useState<"learn" | "quiz" | "dialogue" | "phrase">("learn");
   const [category, setCategory] = useState("all");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const phraseListRef = useRef<HTMLDivElement>(null);
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -210,15 +260,17 @@ export default function SentencePracticePage() {
     : sentences.filter(s => s.category === category);
 
   // 发音函数 - 使用 Edge TTS
-  const speak = async (text: string) => {
+  const speak = async (text: string, voiceType: "male" | "female" = "male") => {
     if (typeof window === "undefined") return;
+
+    const voiceName = voiceType === "male" ? "de-DE-ConradNeural" : "de-DE-KatjaNeural";
 
     try {
       // 尝试使用 Edge TTS 服务器
       const response = await fetch('http://localhost:8000/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, lang: 'de' })
+        body: JSON.stringify({ text, lang: 'de', voice: voiceName })
       });
 
       const data = await response.json();
@@ -459,6 +511,14 @@ export default function SentencePracticePage() {
             }`}
           >
             💬 对话练习
+          </button>
+          <button
+            onClick={() => { setMode("phrase"); setCurrentIndex(0); }}
+            className={`px-6 py-2 rounded-full font-medium transition ${
+              mode === "phrase" ? "bg-amber-500 text-white" : "bg-white text-gray-700 border border-gray-300"
+            }`}
+          >
+            📝 基本フレーズ
           </button>
           <button
             onClick={() => { setShowWrongBook(!showWrongBook); }}
@@ -875,6 +935,96 @@ export default function SentencePracticePage() {
                 )}
               </div>
             )}
+          </>
+        )}
+
+        {/* 基本フレーズ模式 */}
+        {mode === "phrase" && (
+          <>
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-800">基本フレーズ</h2>
+                <div className="text-sm text-gray-400">
+                  {currentIndex + 1} / {basicPhrases.length}
+                </div>
+              </div>
+
+              {/* 自动朗读按钮 */}
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={async () => {
+                    setIsPlaying(true);
+                    for (let i = 0; i < basicPhrases.length; i++) {
+                      setCurrentIndex(i);
+                      // 滚动到当前朗读的位置
+                      setTimeout(() => {
+                        const element = document.getElementById(`phrase-${i}`);
+                        if (element) {
+                          element.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }
+                      }, 50);
+                      // 先读男声
+                      await speak(basicPhrases[i].german, "male");
+                      await new Promise(resolve => setTimeout(resolve, 1000));
+                      // 再读女声
+                      await speak(basicPhrases[i].german, "female");
+                      await new Promise(resolve => setTimeout(resolve, 3000));
+                    }
+                    setIsPlaying(false);
+                  }}
+                  disabled={isPlaying}
+                  className="px-6 py-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 disabled:opacity-50"
+                >
+                  {isPlaying ? "🔊 朗读中..." : "🔊 朗读全部"}
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center mb-4">
+                  <button
+                    onClick={() => setShowChinese(!showChinese)}
+                    className={`px-3 py-1 rounded-full text-sm ${showChinese ? "bg-green-500 text-white" : "bg-gray-200"}`}
+                  >
+                    {showChinese ? "🙈 隐藏中文" : "👁️ 显示中文"}
+                  </button>
+                </div>
+
+                {basicPhrases.map((phrase, index) => (
+                  <div
+                    key={phrase.id}
+                    id={`phrase-${index}`}
+                    className={`p-4 rounded-xl ${
+                      index === currentIndex ? "bg-amber-50 border-2 border-amber-300" : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center text-xs font-bold">
+                        {phrase.id}
+                      </span>
+                      <span className="text-gray-500 text-sm">{phrase.english}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-lg font-bold text-gray-800">{phrase.german}</span>
+                      <button
+                        onClick={() => speak(phrase.german, "male")}
+                        className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
+                      >
+                        🔊 男声
+                      </button>
+                      <button
+                        onClick={() => speak(phrase.german, "female")}
+                        className="px-2 py-1 bg-pink-100 text-pink-700 rounded text-sm hover:bg-pink-200"
+                      >
+                        🔊 女声
+                      </button>
+                    </div>
+                    {showChinese && (
+                      <div className="text-green-600 text-sm">{phrase.chinese}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </>
         )}
       </main>
