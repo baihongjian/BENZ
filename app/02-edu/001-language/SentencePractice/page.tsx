@@ -224,6 +224,72 @@ const basicPhrases3: BasicPhrase[] = [
   { id: 20, english: "Thank you very much! Come again.", german: "Vielen Dank! Kommen Sie wieder.", chinese: "非常感谢！欢迎再来。" },
 ];
 
+// IT工程师工作德语
+const basicPhrases4: BasicPhrase[] = [
+  // 👋 基础沟通
+  { id: 1, english: "Everything clear with you?", german: "Alles klar bei dir?", chinese: "你那边都好吧？" },
+  { id: 2, english: "Yes, everything clear.", german: "Ja, alles klar.", chinese: "是的，都好。" },
+  { id: 3, english: "Hi everyone, are you ready?", german: "Hi zusammen, seid ihr bereit?", chinese: "大家好，都准备好了吗？" },
+  { id: 4, english: "Yes, okay.", german: "Ja, passt.", chinese: "好的，准备好了。" },
+  // 📅 Standup / 工作汇报
+  { id: 5, english: "What are you working on?", german: "Woran arbeitest du gerade?", chinese: "你现在在做什么？" },
+  { id: 6, english: "I'm working on it.", german: "Ich arbeite daran.", chinese: "我在做这个。" },
+  { id: 7, english: "Are you finished?", german: "Bist du fertig damit?", chinese: "你做完了吗？" },
+  { id: 8, english: "I'm finished.", german: "Ich bin fertig.", chinese: "我做完了。" },
+  { id: 9, english: "How far are you?", german: "Wie weit bist du?", chinese: "你进展到哪里了？" },
+  { id: 10, english: "I'm almost done.", german: "Ich bin fast fertig.", chinese: "我快做完了。" },
+  { id: 11, english: "Are there any problems?", german: "Gibt es Probleme?", chinese: "有什么问题吗？" },
+  { id: 12, english: "I have a problem.", german: "Ich habe ein Problem.", chinese: "我有一个问题。" },
+  { id: 13, english: "Why isn't it progressing?", german: "Warum geht es nicht weiter?", chinese: "为什么没有进展？" },
+  { id: 14, english: "I'm blocked.", german: "Ich komme hier nicht weiter. ", chinese: "我这里推进不下去了。" },
+  // 🐞 Bug / 问题
+  { id: 15, english: "Does it work?", german: "Funktioniert das?", chinese: "这个能用吗？" },
+  { id: 16, english: "No, that doesn't work.", german: "Nein, das funktioniert nicht.", chinese: "不能用。" },
+  { id: 17, english: "What happened?", german: "Was ist passiert?", chinese: "发生了什么？" },
+  { id: 18, english: "It's broken.", german: "Das ist kaputt.", chinese: "坏了。" },
+  { id: 19, english: "Is there an error?", german: "Gibt es einen Fehler?", chinese: "有错误吗？" },
+  { id: 20, english: "Yes, there's a bug.", german: "Ja, da ist ein Bug.", chinese: "是的，有个bug。" },
+  { id: 21, english: "Can you reproduce the problem?", german: "Kannst du das Problem nachstellen?", chinese: "你能复现这个问题吗？" },
+  { id: 22, english: "I can reproduce it.", german: "Ich kann das reproduzieren.", chinese: "我能复现。" },
+  { id: 23, english: "Really?", german: "Wirklich?", chinese: "真的吗？" },
+  { id: 24, english: "No, I can't reproduce it.", german: "Nein, ich kann das nicht reproduzieren.", chinese: "不能，我复现不了。" },
+  // 🔧 技术讨论
+  { id: 25, english: "Does that make sense?", german: "Macht das Sinn für dich?", chinese: "这样合理吗？" },
+  { id: 26, english: "Yes, that makes sense.", german: "Ja, verstehe ich.", chinese: "合理。" },
+  { id: 27, english: "Is that okay?", german: "Ist das so okay?", chinese: "这样可以吗？" },
+  { id: 28, english: "Yes, that's okay.", german: "Ja, das passt so.", chinese: "可以。" },
+  { id: 29, english: "What do you think about it?", german: "Was hältst du davon?", chinese: "你觉得怎么样？" },
+  { id: 30, english: "Good idea.", german: "Gute Idee.", chinese: "好主意。" },
+  // 继续更多
+  { id: 31, english: "And this solution?", german: "Und diese Lösung?", chinese: "这个解决方案呢？" },
+  { id: 32, english: "Not a good idea.", german: "Keine gute Idee.", chinese: "不是好主意。" },
+  { id: 33, english: "How would you do it?", german: "Wie würdest du das machen?", chinese: "你会怎么做？" },
+  { id: 34, english: "I would do it this way.", german: "Ich würde das so machen.", chinese: "我会这样做。" },
+  // 🤝 协作 / 求助
+  { id: 35, english: "Can you solve it alone?", german: "Kannst du das alleine lösen?", chinese: "你能自己解决吗？" },
+  { id: 36, english: "No, can you help me?", german: "Nein, kannst du mir helfen?", chinese: "不能，你能帮我吗？" },
+  { id: 37, english: "Can you check it?", german: "Kannst du das prüfen?", chinese: "你能检查一下吗？" },
+  { id: 38, english: "Can you take a quick look?", german: "Kannst du kurz schauen?", chinese: "你能看一下吗？" },
+  { id: 39, english: "Who does this?", german: "Wer macht das?", chinese: "谁来做这个？" },
+  { id: 40, english: "I'll take it.", german: "Ich übernehme das.", chinese: "我来负责。" },
+  { id: 41, english: "Can you take care of it?", german: "Kannst du dich darum kümmern?", chinese: "你能处理一下吗？" },
+  { id: 42, english: "Yes, I'll take care of it.", german: "Ja, ich kümmere mich darum.", chinese: "好的，我来处理。" },
+  { id: 43, english: "Can you check it?", german: "Kannst du das checken?", chinese: "你能确认一下吗？" },
+  { id: 44, english: "Yes, I'll look at it.", german: "Ja, ich schaue mir das an.", chinese: "好的，我看一下。" },
+  // 💬 确认 / 澄清
+  { id: 45, english: "We're changing the logic here.", german: "Wir ändern die Logik hier.", chinese: "我们改一下这里的逻辑。" },
+  { id: 46, english: "Do you mean it this way?", german: "Meinst du das so?", chinese: "你是这个意思吗？" },
+  { id: 47, english: "Did you understand?", german: "Hast du es verstanden?", chinese: "你理解了吗？" },
+  { id: 48, english: "Did I understand correctly?", german: "Habe ich das richtig verstanden?", chinese: "我理解得对吗？" },
+  { id: 49, english: "Is anything unclear?", german: "Ist etwas unklar?", chinese: "有什么不清楚的吗？" },
+  { id: 50, english: "Can you explain that?", german: "Kannst du das erklären?", chinese: "你能解释一下吗？" },
+  // 🚀 收尾 / 结束
+  { id: 51, english: "When will you give me feedback?", german: "Wann gibst du mir Feedback?", chinese: "什么时候给我反馈？" },
+  { id: 52, english: "I'll get back to you later.", german: "Ich melde mich später.", chinese: "我稍后联系你。" },
+  { id: 53, english: "Thanks for your help.", german: "Danke für deine Hilfe.", chinese: "谢谢你的帮助���" },
+  { id: 54, english: "No Problem!", german: "Kein Problem!!", chinese: "没问题！" },
+];
+
 export default function SentencePracticePage() {
   const [mode, setMode] = useState<"learn" | "quiz" | "dialogue" | "phrase">("learn");
   const [category, setCategory] = useState("all");
@@ -232,7 +298,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : basicPhrases3;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : basicPhrases4;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -308,17 +374,22 @@ export default function SentencePracticePage() {
     : sentences.filter(s => s.category === category);
 
   // 发音函数 - 使用 Edge TTS
-  const speak = async (text: string, voiceType: "male" | "female" = "male") => {
+  const speak = async (text: string, voiceType: "male" | "female" = "male", lang: string = "de") => {
     if (typeof window === "undefined") return;
 
-    const voiceName = voiceType === "male" ? "de-DE-ConradNeural" : "de-DE-KatjaNeural";
+    let voiceName: string;
+    if (lang === "zh") {
+      voiceName = "zh-CN-XiaoxiaoNeural";
+    } else {
+      voiceName = voiceType === "male" ? "de-DE-ConradNeural" : "de-DE-KatjaNeural";
+    }
 
     try {
       // 尝试使用 Edge TTS 服务器
       const response = await fetch('http://localhost:8000/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, lang: 'de', voice: voiceName })
+        body: JSON.stringify({ text, lang, voice: voiceName })
       });
 
       const data = await response.json();
@@ -1023,6 +1094,14 @@ export default function SentencePracticePage() {
                 >
                   购物用语
                 </button>
+                <button
+                  onClick={() => { setPhraseSet(4); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 4 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  IT德语
+                </button>
               </div>
 
               {/* 自动朗读按钮 */}
@@ -1092,6 +1171,12 @@ export default function SentencePracticePage() {
                         className="px-2 py-1 bg-pink-100 text-pink-700 rounded text-sm hover:bg-pink-200"
                       >
                         🔊 女声
+                      </button>
+                      <button
+                        onClick={() => speak(phrase.chinese, "female", "zh")}
+                        className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-sm hover:bg-yellow-200"
+                      >
+                        🔊 中文
                       </button>
                     </div>
                     {showChinese && (
