@@ -180,11 +180,59 @@ const basicPhrases: BasicPhrase[] = [
   { id: 16, english: "Have a nice trip.", german: "Gute Reise!", chinese: "旅途愉快！" },
 ];
 
+// 基本短语2（英语-德语对照）
+const basicPhrases2: BasicPhrase[] = [
+  { id: 1, english: "Hello.", german: "Hallo.", chinese: "你好。" },
+  { id: 2, english: "May I help you?", german: "Kann ich Ihnen helfen?", chinese: "我可以帮您吗？" },
+  { id: 3, english: "Have a nice day.", german: "Schönen Tag noch!", chinese: "祝您愉快！" },
+  { id: 4, english: "Goodbye.", german: "Tschüss!", chinese: "再见！" },
+  { id: 5, english: "Thank you very much.", german: "Vielen Dank!", chinese: "非常感谢！" },
+  { id: 6, english: "You're welcome.", german: "Gerne!", chinese: "不客气！" },
+  { id: 7, english: "Certainly.", german: "Natürlich!", chinese: "当然！" },
+  { id: 8, english: "Excuse me.", german: "Entschuldigung!", chinese: "打扰一下！" },
+  { id: 9, english: "I'm very sorry.", german: "Es tut mir sehr leid.", chinese: "我很抱歉。" },
+  { id: 10, english: "Please wait a moment.", german: "Einen Moment bitte!", chinese: "请稍等！" },
+  { id: 11, english: "Thank you for waiting.", german: "Danke fürs Warten!", chinese: "谢谢您等我！" },
+  { id: 12, english: "Here you are.", german: "Bitte!", chinese: "给您！" },
+  { id: 13, english: "Could you speak more slowly?", german: "Können Sie langsamer sprechen?", chinese: "您能说慢一点吗？" },
+  { id: 14, english: "May I have your name?", german: "Wie heißen Sie?", chinese: "请问您叫什么？" },
+  { id: 15, english: "May I see it?", german: "Kann ich das mal sehen?", chinese: "我可以看一下吗？" },
+  { id: 16, english: "Is there something wrong?", german: "Alles okay?", chinese: "一切都好吗？" },
+];
+
+// 购物短语（英语-德语-中文对照）
+const basicPhrases3: BasicPhrase[] = [
+  { id: 1, english: "Good day! May I help you?", german: "Guten Tag! Kann ich Ihnen helfen?", chinese: "您好！有什么可以帮助您的吗？" },
+  { id: 2, english: "What are you looking for?", german: "Wonach suchen Sie?", chinese: "您在找什么？" },
+  { id: 3, english: "Do you need help?", german: "Brauchen Sie Hilfe?", chinese: "需要帮忙吗？" },
+  { id: 4, english: "Are you being helped?", german: "Werden Sie schon bedient?", chinese: "已经有人为您服务了吗？" },
+  { id: 5, english: "One moment, please.", german: "Einen Moment, bitte.", chinese: "请稍等。" },
+  { id: 6, english: "Feel free to look around.", german: "Schauen Sie sich gerne um.", chinese: "请随意参观。" },
+  { id: 7, english: "Please let me know.", german: "Sagen Sie mir bitte Bescheid.", chinese: "请告诉我。" },
+  { id: 8, english: "Would you like to try it on?", german: "Möchten Sie es anprobieren?", chinese: "您想试穿吗？" },
+  { id: 9, english: "Do you like it?", german: "Gefällt es Ihnen gut?", chinese: "您喜欢吗？" },
+  { id: 10, english: "It fits you well.", german: "Das passt gut zu Ihnen.", chinese: "很适合您。" },
+  { id: 11, english: "We have other sizes.", german: "Wir haben andere Größen.", chinese: "我们有其他尺码。" },
+  { id: 12, english: "Unfortunately sold out.", german: "Leider ausverkauft.", chinese: "很遗憾，已售罄。" },
+  { id: 13, english: "No more in stock.", german: "Nicht mehr auf Lager.", chinese: "没有库存了。" },
+  { id: 14, english: "This is not for sale.", german: "Das ist nicht zum Verkauf.", chinese: "这个不卖。" },
+  { id: 15, english: "Please line up here.", german: "Bitte hier anstellen.", chinese: "请在这里排队。" },
+  { id: 16, english: "Would you like a bag?", german: "Möchten Sie eine Tüte?", chinese: "您需要袋子吗？" },
+  { id: 17, english: "Cash or card?", german: "Bar oder mit Karte?", chinese: "现金还是刷卡？" },
+  { id: 18, english: "Here is your receipt.", german: "Hier ist Ihr Kassenbon.", chinese: "这是您的收据。" },
+  { id: 19, english: "Photography is not allowed.", german: "Fotografieren ist nicht erlaubt.", chinese: "禁止拍照。" },
+  { id: 20, english: "Thank you very much! Come again.", german: "Vielen Dank! Kommen Sie wieder.", chinese: "非常感谢！欢迎再来。" },
+];
+
 export default function SentencePracticePage() {
   const [mode, setMode] = useState<"learn" | "quiz" | "dialogue" | "phrase">("learn");
   const [category, setCategory] = useState("all");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [phraseSet, setPhraseSet] = useState(1);
   const phraseListRef = useRef<HTMLDivElement>(null);
+
+  // 选择当前短语集
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : basicPhrases3;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -943,10 +991,38 @@ export default function SentencePracticePage() {
           <>
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">基本フレーズ</h2>
+                <h2 className="text-xl font-bold text-gray-800">基本フレーズ 第{phraseSet}组</h2>
                 <div className="text-sm text-gray-400">
-                  {currentIndex + 1} / {basicPhrases.length}
+                  {currentIndex + 1} / {currentPhrases.length}
                 </div>
+              </div>
+
+              {/* 切换短语集 */}
+              <div className="flex justify-center gap-2 mb-4">
+                <button
+                  onClick={() => { setPhraseSet(1); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 1 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  基本フレーズ1
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(2); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 2 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  基本フレーズ2
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(3); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 3 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  购物用语
+                </button>
               </div>
 
               {/* 自动朗读按钮 */}
@@ -954,20 +1030,20 @@ export default function SentencePracticePage() {
                 <button
                   onClick={async () => {
                     setIsPlaying(true);
-                    for (let i = 0; i < basicPhrases.length; i++) {
+                    for (let i = 0; i < currentPhrases.length; i++) {
                       setCurrentIndex(i);
                       // 滚动到当前朗读的位置
                       setTimeout(() => {
-                        const element = document.getElementById(`phrase-${i}`);
+                        const element = document.getElementById(`phrase-${phraseSet}-${i}`);
                         if (element) {
                           element.scrollIntoView({ behavior: "smooth", block: "center" });
                         }
                       }, 50);
                       // 先读男声
-                      await speak(basicPhrases[i].german, "male");
+                      await speak(currentPhrases[i].german, "male");
                       await new Promise(resolve => setTimeout(resolve, 1000));
                       // 再读女声
-                      await speak(basicPhrases[i].german, "female");
+                      await speak(currentPhrases[i].german, "female");
                       await new Promise(resolve => setTimeout(resolve, 3000));
                     }
                     setIsPlaying(false);
@@ -989,10 +1065,10 @@ export default function SentencePracticePage() {
                   </button>
                 </div>
 
-                {basicPhrases.map((phrase, index) => (
+                {currentPhrases.map((phrase, index) => (
                   <div
                     key={phrase.id}
-                    id={`phrase-${index}`}
+                    id={`phrase-${phraseSet}-${index}`}
                     className={`p-4 rounded-xl ${
                       index === currentIndex ? "bg-amber-50 border-2 border-amber-300" : "bg-gray-50"
                     }`}
