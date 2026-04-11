@@ -232,8 +232,8 @@ const basicPhrases4: BasicPhrase[] = [
   { id: 3, english: "Hi everyone, are you ready?", german: "Hi zusammen, seid ihr bereit?", chinese: "大家好，都准备好了吗？" },
   { id: 4, english: "Yes, okay.", german: "Ja, passt.", chinese: "好的，准备好了。" },
   // 📅 Standup / 工作汇报
-  { id: 5, english: "What are you working on?", german: "Woran arbeitest du gerade?", chinese: "你现在在做什么？" },
-  { id: 6, english: "I'm working on it.", german: "Ich arbeite daran.", chinese: "我在做这个。" },
+  { id: 5, english: "What are you working on?", german: "Was machst du gerade?", chinese: "你现在在做什么？" },
+  { id: 6, english: "I'm working on it.", german: "Ich mache das gerade.", chinese: "我现在在做这个。" },
   { id: 7, english: "Are you finished?", german: "Bist du fertig damit?", chinese: "你做完了吗？" },
   { id: 8, english: "I'm finished.", german: "Ich bin fertig.", chinese: "我做完了。" },
   { id: 9, english: "How far are you?", german: "Wie weit bist du?", chinese: "你进展到哪里了？" },
@@ -290,6 +290,101 @@ const basicPhrases4: BasicPhrase[] = [
   { id: 54, english: "No Problem!", german: "Kein Problem!!", chinese: "没问题！" },
 ];
 
+// IT工程师德语礼貌体 (Sie形式)
+const basicPhrases5: BasicPhrase[] = [
+  // 👋 基础沟通
+  { id: 1, english: "Everything clear with you?", german: "Alles klar bei Ihnen?", chinese: "您那边都好吧？" },
+  { id: 2, english: "Yes, everything clear.", german: "Ja, alles klar.", chinese: "是的，都好。" },
+  { id: 3, english: "Hello everyone, are you ready?", german: "Hallo zusammen, sind Sie bereit?", chinese: "大家好，都准备好了吗？" },
+  { id: 4, english: "Yes, okay.", german: "Ja, es passt.", chinese: "好的，准备好了。" },
+  // 📅 Standup / 工作汇报
+  { id: 5, english: "What are you working on?", german: "Was machen Sie gerade?", chinese: "您现在在做什么？" },
+  { id: 6, english: "I'm working on it.", german: "Ich mache das gerade.", chinese: "我现在在做这个。" },
+  { id: 7, english: "Are you finished?", german: "Sind Sie fertig damit?", chinese: "您做完了吗？" },
+  { id: 8, english: "I'm finished.", german: "Ich bin fertig.", chinese: "我做完了。" },
+  { id: 9, english: "How far are you?", german: "Wie weit sind Sie?", chinese: "您进展到哪里了？" },
+  { id: 10, english: "I'm almost done.", german: "Ich bin fast fertig.", chinese: "我快做完了。" },
+  { id: 11, english: "Are there any problems?", german: "Gibt es Probleme?", chinese: "有什么问题吗？" },
+  { id: 12, english: "I have a problem.", german: "Ich habe ein Problem.", chinese: "我有一个问题。" },
+  { id: 13, english: "Why isn't it progressing?", german: "Warum geht es nicht weiter?", chinese: "为什么没有进展？" },
+  { id: 14, english: "I'm blocked.", german: "Ich komme hier nicht weiter.", chinese: "我这里推进不下去了。" },
+  // 🐞 Bug / 问题
+  { id: 15, english: "Does it work?", german: "Funktioniert das?", chinese: "这个能用吗？" },
+  { id: 16, english: "No, that doesn't work.", german: "Nein, das funktioniert nicht.", chinese: "不能用。" },
+  { id: 17, english: "What happened?", german: "Was ist passiert?", chinese: "发生了什么？" },
+  { id: 18, english: "It's broken.", german: "Das ist kaputt.", chinese: "坏了。" },
+  { id: 19, english: "Is there an error?", german: "Gibt es einen Fehler?", chinese: "有错误吗？" },
+  { id: 20, english: "Yes, there's a bug.", german: "Ja, da ist ein Bug.", chinese: "是的，有个bug。" },
+  { id: 21, english: "Can you reproduce the problem?", german: "Können Sie das Problem nachstellen?", chinese: "您能复现这个问题吗？" },
+  { id: 22, english: "I can reproduce it.", german: "Ich kann das reproduzieren.", chinese: "我能复现。" },
+  { id: 23, english: "Really?", german: "Wirklich?", chinese: "真的吗？" },
+  { id: 24, english: "No, I can't reproduce it.", german: "Nein, ich kann das nicht reproduzieren.", chinese: "不能，我复现不了。" },
+  // 🔧 技术讨论
+  { id: 25, english: "Does that make sense?", german: "Macht das Sinn für Sie?", chinese: "这样合理吗？" },
+  { id: 26, english: "Yes, that makes sense.", german: "Ja, das macht Sinn.", chinese: "合理。" },
+  { id: 27, english: "Is that okay?", german: "Ist das so okay?", chinese: "这样可以吗？" },
+  { id: 28, english: "Yes, that's okay.", german: "Ja, das passt so.", chinese: "可以。" },
+  { id: 29, english: "What do you think about it?", german: "Was halten Sie davon?", chinese: "您觉得怎么样？" },
+  { id: 30, english: "Good idea.", german: "Gute Idee.", chinese: "好主意。" },
+  // 继续更多
+  { id: 31, english: "And this solution?", german: "Und diese Lösung?", chinese: "这个解决方案呢？" },
+  { id: 32, english: "Not a good idea.", german: "Keine gute Idee.", chinese: "不是好主意。" },
+  { id: 33, english: "How would you do it?", german: "Wie würden Sie das machen?", chinese: "您会怎么做？" },
+  { id: 34, english: "I would do it this way.", german: "Ich würde das so machen.", chinese: "我会这样做。" },
+  // 🤝 协作 / 求助
+  { id: 35, english: "Can you solve it alone?", german: "Können Sie das alleine lösen?", chinese: "您能自己解决吗？" },
+  { id: 36, english: "No, can you help me?", german: "Nein, können Sie mir helfen?", chinese: "不能，您能帮我吗？" },
+  { id: 37, english: "Can you check it?", german: "Können Sie das prüfen?", chinese: "您能检查一下吗？" },
+  { id: 38, english: "Can you take a quick look?", german: "Können Sie kurz schauen?", chinese: "您能看一下吗？" },
+  { id: 39, english: "Who does this?", german: "Wer macht das?", chinese: "谁来做这个？" },
+  { id: 40, english: "I'll take it.", german: "Ich übernehme das.", chinese: "我来负责。" },
+  { id: 41, english: "Can you take care of it?", german: "Können Sie sich darum kümmern?", chinese: "您能处理一下吗？" },
+  { id: 42, english: "Yes, I'll take care of it.", german: "Ja, ich kümmere mich darum.", chinese: "好的，我来处理。" },
+  { id: 43, english: "Can you check it?", german: "Können Sie das checken?", chinese: "您能确认一下吗？" },
+  { id: 44, english: "Yes, I'll look at it.", german: "Ja, ich schaue mir das an.", chinese: "好的，我看一下。" },
+  // 💬 确认 / 澄清
+  { id: 45, english: "We're changing the logic here.", german: "Wir ändern die Logik hier.", chinese: "我们改一下这里的逻辑。" },
+  { id: 46, english: "Do you mean it this way?", german: "Meinen Sie das so?", chinese: "您是这个意思吗？" },
+  { id: 47, english: "Did you understand?", german: "Haben Sie es verstanden?", chinese: "您理解了吗？" },
+  { id: 48, english: "Did I understand correctly?", german: "Habe ich das richtig verstanden?", chinese: "我理解得对吗？" },
+  { id: 49, english: "Is anything unclear?", german: "Ist etwas unklar?", chinese: "有什么不清楚的吗？" },
+  { id: 50, english: "Can you explain that?", german: "Können Sie das erklären?", chinese: "您能解释一下吗？" },
+  // 🚀 收尾 / 结束
+  { id: 51, english: "When will you give me feedback?", german: "Wann geben Sie mir Feedback?", chinese: "什么时候给我反馈？" },
+  { id: 52, english: "I'll get back to you later.", german: "Ich melde mich später.", chinese: "我稍后联系您。" },
+  { id: 53, english: "Thanks for your help.", german: "Danke für Ihre Hilfe.", chinese: "谢谢您的帮助。" },
+  { id: 54, english: "No Problem!", german: "Kein Problem!", chinese: "没问题！" },
+];
+
+// 第1课语法 (人称动词变位)
+const basicPhrases6: BasicPhrase[] = [
+  // Ich人称
+  { id: 1, english: "My name is Tom.", german: "Ich heiße Tom.", chinese: "我叫Tom。" },
+  { id: 2, english: "I work in Japan.", german: "Ich arbeite in Japan.", chinese: "我在日本工作。" },
+  { id: 3, english: "I am Japanese.", german: "Ich bin Japaner.", chinese: "我是日本人。" },
+  { id: 4, english: "I live in Japan.", german: "Ich wohne in Japan.", chinese: "我住在日本。" },
+  // Du人称
+  { id: 5, english: "Your name is Tom.", german: "Du heißt Tom.", chinese: "你叫Tom。" },
+  { id: 6, english: "You work in Japan.", german: "Du arbeitest in Japan.", chinese: "你在日本工作。" },
+  { id: 7, english: "You are Japanese.", german: "Du bist Japaner.", chinese: "你是日本人。" },
+  { id: 8, english: "You live in Japan.", german: "Du wohnst in Japan.", chinese: "你住在日本。" },
+  // Wir人称
+  { id: 9, english: "We are all named Tom.", german: "Wir heißen alle Tom.", chinese: "我们都叫Tom。" },
+  { id: 10, english: "We work in Japan.", german: "Wir arbeiten in Japan.", chinese: "我们在日本工作。" },
+  { id: 11, english: "We are Japanese.", german: "Wir sind Japaner.", chinese: "我们是日本人。" },
+  { id: 12, english: "We live in Japan.", german: "Wir wohnen in Japan.", chinese: "我们住在日本。" },
+  // Ihr人称
+  { id: 13, english: "You all are named Tom.", german: "Ihr heißt alle Tom.", chinese: "你们都叫Tom。" },
+  { id: 14, english: "You all work in Japan.", german: "Ihr arbeitet in Japan.", chinese: "你们在日本工作。" },
+  { id: 15, english: "You all are Japanese.", german: "Ihr seid Japaner.", chinese: "你们是日本人。" },
+  { id: 16, english: "You all live in Japan.", german: "Ihr wohnt in Japan.", chinese: "你们住在日本。" },
+  // Sie人称
+  { id: 17, english: "You (formal) are named Tom.", german: "Sie heißen alle Tom.", chinese: "您或您们都叫Tom。" },
+  { id: 18, english: "You (formal) work in Japan.", german: "Sie arbeiten in Japan.", chinese: "您或您们在日本工作。" },
+  { id: 19, english: "You (formal) are Japanese.", german: "Sie sind Japaner.", chinese: "您或您们是日本人。" },
+  { id: 20, english: "You (formal) live in Japan.", german: "Sie wohnen in Japan.", chinese: "您或您们住在日本。" },
+];
+
 export default function SentencePracticePage() {
   const [mode, setMode] = useState<"learn" | "quiz" | "dialogue" | "phrase">("learn");
   const [category, setCategory] = useState("all");
@@ -298,7 +393,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : basicPhrases4;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : basicPhrases6;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -1062,7 +1157,9 @@ export default function SentencePracticePage() {
           <>
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">基本フレーズ 第{phraseSet}组</h2>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : "第1课语法"}
+                </h2>
                 <div className="text-sm text-gray-400">
                   {currentIndex + 1} / {currentPhrases.length}
                 </div>
@@ -1101,6 +1198,22 @@ export default function SentencePracticePage() {
                   }`}
                 >
                   IT德语
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(5); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 5 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  IT德语(礼貌体)
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(6); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 6 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  第1课语法
                 </button>
               </div>
 
