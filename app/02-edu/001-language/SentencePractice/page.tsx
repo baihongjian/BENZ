@@ -385,6 +385,105 @@ const basicPhrases6: BasicPhrase[] = [
   { id: 20, english: "You (formal) live in Japan.", german: "Sie wohnen in Japan.", chinese: "您或您们住在日本。" },
 ];
 
+// 第1课语法（2）
+const basicPhrases7: BasicPhrase[] = [
+  { id: 1, english: "What is your name?", german: "Wie heißen Sie?", chinese: "您或您们叫什么？" },
+  { id: 2, english: "My name is Schäfer.", german: "Ich heiße Schäfer.", chinese: "我叫 Schäfer。" },
+  { id: 3, english: "Where are you from?", german: "Woher kommen Sie?", chinese: "您或您们来自哪里？" },
+  { id: 4, english: "I'm from Japan.", german: "Ich komme aus Japan.", chinese: "我来自日本。" },
+  { id: 5, english: "Where do you work?", german: "Wo arbeitest du?", chinese: "你在哪里工作？" },
+  { id: 6, english: "I work in Leipzig.", german: "Ich arbeite in Leipzig.", chinese: "我在莱比锡工作。" },
+  { id: 7, english: "Where do you all live?", german: "Wo wohnt ihr?", chinese: "你们住在哪里？" },
+  { id: 8, english: "We live in Lübeck.", german: "Wir wohnen in Lübeck.", chinese: "我们住在吕贝克。" },
+  { id: 9, english: "I am German.", german: "Ich bin Deutsche.", chinese: "我是德国人。" },
+  { id: 10, english: "And you all?", german: "Und ihr?", chinese: "你们呢？" },
+  { id: 11, english: "We are Japanese.", german: "Wir sind Japaner.", chinese: "我们是日本人。" },
+  { id: 12, english: "Where do you all live?", german: "Wo wohnt ihr?", chinese: "你们住在哪里？" },
+  { id: 13, english: "We live in Hamburg.", german: "Wir wohnen in Hamburg.", chinese: "我们住在汉堡。" },
+  { id: 14, english: "Where do you work?", german: "Wo arbeitest du?", chinese: "你在哪里工作？" },
+  { id: 15, english: "I work in Mannheim.", german: "Ich arbeite in Mannheim.", chinese: "我在曼海姆工作。" },
+  { id: 16, english: "Where are you from?", german: "Woher kommst du?", chinese: "你来自哪里？" },
+  { id: 17, english: "I'm from Vienna.", german: "Ich komme aus Wien.", chinese: "我来自维也纳。" },
+  { id: 18, english: "What is your name?", german: "Wie heißt ihr?", chinese: "你们叫什么？" },
+  { id: 19, english: "We are Schönberg.", german: "Wir heißen Schönberg.", chinese: "我们叫 Schönberg。" },
+  { id: 20, english: "Where do you live?", german: "Wo wohnen Sie?", chinese: "您或您们住在哪里？" },
+  { id: 21, english: "I live in Flensburg.", german: "Ich wohne in Flensburg.", chinese: "我住在弗伦斯堡。" },
+];
+
+// 5级词汇 - 人的状态（形容词）
+const basicPhrases8: BasicPhrase[] = [
+  { id: 1, english: "He is old.", german: "Er ist alt.", chinese: "他老。" },
+  { id: 2, english: "He is young.", german: "Er ist jung.", chinese: "他年轻。" },
+  { id: 3, english: "He is poor.", german: "Er ist arm.", chinese: "他穷。" },
+  { id: 4, english: "He is rich.", german: "Er ist reich.", chinese: "他富。" },
+  { id: 5, english: "I am free.", german: "Ich bin frei.", chinese: "我有空 / 我是自由的。" },
+  { id: 6, english: "She is sad.", german: "Sie ist traurig.", chinese: "她很伤心。" },
+  { id: 7, english: "She is happy.", german: "Sie ist glücklich.", chinese: "她很幸福。" },
+  { id: 8, english: "He is healthy.", german: "Er ist gesund.", chinese: "他很健康。" },
+  { id: 9, english: "He is sick.", german: "Er ist krank.", chinese: "他生病了。" },
+  { id: 10, english: "He is weak.", german: "Er ist schwach.", chinese: "他很虚弱。" },
+  { id: 11, english: "He is strong.", german: "Er ist stark.", chinese: "他很强壮。" },
+  { id: 12, english: "He is quiet.", german: "Er ist leise.", chinese: "他很安静。" },
+  { id: 13, english: "He is loud.", german: "Er ist laut.", chinese: "他很吵。" },
+  { id: 14, english: "I am tired.", german: "Ich bin müde.", chinese: "我很累。" },
+  { id: 15, english: "The dog is dead.", german: "Der Hund ist tot.", chinese: "狗死了。" },
+  { id: 16, english: "The dog is alive.", german: "Der Hund ist lebendig.", chinese: "狗是活的。" },
+  { id: 17, english: "I am full.", german: "Ich bin satt.", chinese: "我吃饱了。" },
+  { id: 18, english: "He is friendly.", german: "Er ist freundlich.", chinese: "他很友好。" },
+  { id: 19, english: "He is nice.", german: "Er ist nett.", chinese: "他人很好。" },
+  { id: 20, english: "He is smart.", german: "Er ist klug.", chinese: "他很聪明。" },
+  { id: 21, english: "He is stupid.", german: "Er ist dumm.", chinese: "他很笨。" },
+  { id: 22, english: "He is lazy.", german: "Er ist faul.", chinese: "他很懒。" },
+  { id: 23, english: "He is diligent.", german: "Er ist fleißig.", chinese: "他很勤奋。" },
+];
+
+// Maus对话1 (Sie形式)
+const basicPhrases9: BasicPhrase[] = [
+  { id: 1, english: "Good day.", german: "Guten Tag.", chinese: "您好。" },
+  { id: 2, english: "Good day.", german: "Guten Tag.", chinese: "您好。" },
+  { id: 3, english: "Good day. How are you?", german: "Guten Tag. Wie geht es Ihnen?", chinese: "您好，您怎么样？" },
+  { id: 4, english: "Hmm, so so.", german: "Hm, es geht so.", chinese: "嗯，还可以。" },
+  { id: 5, english: "Good morning.", german: "Guten Morgen.", chinese: "早上好。" },
+  { id: 6, english: "Good morning. Did you sleep well?", german: "Guten Morgen. Haben Sie gut geschlafen?", chinese: "早上好，您睡得好吗？" },
+  { id: 7, english: "Good evening.", german: "Guten Abend.", chinese: "晚上好。" },
+  { id: 8, english: "Good evening. I have a table reserved.", german: "Guten Abend. Ich habe einen Tisch reserviert.", chinese: "晚上好，我已经订了位子。" },
+  { id: 9, english: "This is a gift for you.", german: "Das ist ein Geschenk für Sie.", chinese: "这是给您的礼物。" },
+  { id: 10, english: "Thank you very much.", german: "Vielen Dank.", chinese: "非常感谢。" },
+  { id: 11, english: "You're welcome.", german: "Gern geschehen.", chinese: "不客气。" },
+  { id: 12, english: "Thank you very much. That is very nice.", german: "Vielen Dank. Das ist sehr schön.", chinese: "非常感谢，真好。" },
+  { id: 13, english: "My name is Maus.", german: "Ich heiße Maus.", chinese: "我叫Maus。" },
+  { id: 14, english: "My name is Elefant.", german: "Ich heiße Elefant.", chinese: "我叫Elefant。" },
+  { id: 15, english: "Nice to meet you.", german: "Es freut mich, Sie kennenzulernen.", chinese: "很高兴认识您。" },
+  { id: 16, english: "I am Swiss.", german: "Ich bin Schweizer.", chinese: "我是瑞士人。" },
+  { id: 17, english: "And you?", german: "Und Sie?", chinese: "您呢？" },
+  { id: 18, english: "I am Japanese.", german: "Ich bin Japanerin.", chinese: "我是日本人。" },
+  { id: 19, english: "Where are you from?", german: "Woher kommen Sie?", chinese: "您来自哪里？" },
+  { id: 20, english: "I am from Japan.", german: "Ich komme aus Japan.", chinese: "我来自日本。" },
+  { id: 21, english: "And you?", german: "Und Sie?", chinese: "您呢？" },
+  { id: 22, english: "I am from Germany.", german: "Ich komme aus Deutschland.", chinese: "我来自德国。" },
+  { id: 23, english: "That is interesting. I like Germany.", german: "Das ist interessant. Ich mag Deutschland.", chinese: "很有意思，我喜欢德国。" },
+  { id: 24, english: "Goodbye. All the best for you.", german: "Auf Wiedersehen. Alles Gute für Sie.", chinese: "再见，祝您一切顺利。" },
+  { id: 25, english: "Thank you. Hope to see you soon.", german: "Vielen Dank. Hoffentlich bis bald.", chinese: "谢谢，希望很快再见。" },
+  { id: 26, english: "I have to go now. See you next time.", german: "Ich muss jetzt leider gehen. Bis zum nächsten Mal.", chinese: "我现在得走了，下次见。" },
+  { id: 27, english: "All right. I wish you a nice day.", german: "Alles klar. Ich wünsche Ihnen einen schönen Tag.", chinese: "好的，祝您愉快的一天。" },
+  { id: 28, english: "I have to go now. Goodbye.", german: "Ich muss jetzt gehen. Auf Wiedersehen.", chinese: "我要走了，再见。" },
+  { id: 29, english: "Goodbye. It was very nice with you.", german: "Auf Wiedersehen. Es war sehr schön mit Ihnen.", chinese: "再见，和您在一起很愉快。" },
+  { id: 30, english: "Hope to see you soon.", german: "Hoffentlich sehen wir uns bald wieder.", chinese: "希望很快再见。" },
+  { id: 31, english: "Yes, all the best for you.", german: "Ja, alles Gute für Sie.", chinese: "好的，祝您一切顺利。" },
+  { id: 32, english: "That looks very delicious.", german: "Das sieht sehr lecker aus.", chinese: "看起来很好吃。" },
+  { id: 33, english: "Yes, really. Enjoy your meal.", german: "Ja, wirklich. Guten Appetit.", chinese: "是的，祝您好胃口。" },
+  { id: 34, english: "Good night. Sleep well.", german: "Gute Nacht. Schlafen Sie gut.", chinese: "晚安，请睡个好觉。" },
+  { id: 35, english: "Thank you, you too. Good night.", german: "Vielen Dank, Ihnen auch. Gute Nacht.", chinese: "谢谢，您也是，晚安。" },
+  { id: 36, english: "I am coming tomorrow at 3pm. Is that okay for you?", german: "Ich komme morgen um 15 Uhr. Ist das für Sie in Ordnung?", chinese: "我明天下午3点来，可以吗？" },
+  { id: 37, english: "Yes, very gladly. I am looking forward to seeing you.", german: "Ja, sehr gern. Ich freue mich auf Sie.", chinese: "好的，非常乐意，我很期待见到您。" },
+  { id: 38, english: "The movie is very sad.", german: "Der Film ist sehr traurig.", chinese: "这部电影很悲伤。" },
+  { id: 39, english: "Yes, that is true. But it is also very funny.", german: "Ja, das stimmt. Aber er ist auch sehr lustig.", chinese: "是的，但也很有趣。" },
+  { id: 40, english: "Today is Monday. The museum is closed.", german: "Heute ist Montag. Das Museum ist geschlossen.", chinese: "今天周一，博物馆关门。" },
+  { id: 41, english: "That is true. Too bad. Would you like to go to the cinema?", german: "Das stimmt. Schade. Möchten Sie ins Kino gehen?", chinese: "是的，可惜。您想去看电影吗？" },
+  { id: 42, english: "Are you tired? Would you like to rest?", german: "Sind Sie müde? Möchten Sie sich ausruhen?", chinese: "您累了吗？要休息一下吗？" },
+  { id: 43, english: "Yes, I am tired. Today was a long day.", german: "Ja, ich bin müde. Heute war ein langer Tag.", chinese: "是的，我很累，今天很漫长。" },
+];
+
 export default function SentencePracticePage() {
   const [mode, setMode] = useState<"learn" | "quiz" | "dialogue" | "phrase">("learn");
   const [category, setCategory] = useState("all");
@@ -393,7 +492,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : basicPhrases6;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : basicPhrases9;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -1158,7 +1257,7 @@ export default function SentencePracticePage() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
-                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : "第1课语法"}
+                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : "Maus对话1"}
                 </h2>
                 <div className="text-sm text-gray-400">
                   {currentIndex + 1} / {currentPhrases.length}
@@ -1214,6 +1313,30 @@ export default function SentencePracticePage() {
                   }`}
                 >
                   第1课语法
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(7); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 7 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  第1课语法（2）
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(8); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 8 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  5级词汇（其它16）人的状态
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(9); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 9 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  Maus对话1
                 </button>
               </div>
 
