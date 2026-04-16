@@ -34,6 +34,18 @@ export default function GermanLearning() {
           >
             4️⃣ 📝 简单句子 →
           </Link>
+          <Link
+            href="/02-edu/001-language/select_question_2"
+            className="px-6 py-3 bg-orange-100 text-orange-700 rounded-full hover:bg-orange-200 transition font-medium"
+          >
+            5️⃣ 🔤 新 选择题 →
+          </Link>
+          <Link
+            href="/02-edu/001-language/spelling_test_2"
+            className="px-6 py-3 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition font-medium"
+          >
+            6️⃣ ✍️ 新拼写 →
+          </Link>
         </div>
       </div>
     </main>
