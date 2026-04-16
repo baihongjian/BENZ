@@ -90,34 +90,34 @@ const adjectives = [
   { id: 21, german: "fleißig", chinese: "勤奋的" },
 ];
 
-// 获取所有中文选项（用于生成干扰选项）
+// 获取所有选项
 const allChineseOptions = adjectives.map(a => a.chinese);
+const allGermanOptions = adjectives.map(a => a.german);
 
-// 生成4个选项（1个正确答案 + 3个干扰选项）
-function generateOptions(correctAnswer: string): string[] {
-  const options = [correctAnswer];
-  const wrongOptions = allChineseOptions.filter(o => o !== correctAnswer);
-
-  // 随机打乱并取3个
-  const shuffled = wrongOptions.sort(() => Math.random() - 0.5);
-  options.push(...shuffled.slice(0, 3));
-
-  // 再次打乱顺序
-  return options.sort(() => Math.random() - 0.5);
+// 生成选项（1个正确答案 + 3个干扰选项）
+function generateOptions(correctAnswer: string, options: string[]): string[] {
+  const pool = options.filter(o => o !== correctAnswer);
+  const shuffled = pool.sort(() => Math.random() - 0.5);
+  return [correctAnswer, ...shuffled.slice(0, 3)].sort(() => Math.random() - 0.5);
 }
 
 export default function SelectQuestion2() {
+  const [mode, setMode] = useState<'de2zh' | 'zh2de'>('de2zh');
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [optionsMap, setOptionsMap] = useState<Record<number, string[]>>({});
 
-  // 初始化选项
+  // 切换模式时重新初始化
   useEffect(() => {
     const map: Record<number, string[]> = {};
+    const optionList = mode === 'de2zh' ? allChineseOptions : allGermanOptions;
+    const correctKey = mode === 'de2zh' ? 'chinese' : 'german';
+
     adjectives.forEach(item => {
-      map[item.id] = generateOptions(item.chinese);
+      map[item.id] = generateOptions(item[correctKey as keyof typeof item] as string, optionList);
     });
     setOptionsMap(map);
-  }, []);
+    setAnswers({});
+  }, [mode]);
 
   const handleSelect = (id: number, answer: string, isCorrect: boolean) => {
     setAnswers(prev => ({ ...prev, [id]: answer }));
@@ -128,14 +128,14 @@ export default function SelectQuestion2() {
     const item = adjectives.find(a => a.id === itemId);
     if (!item) return '';
 
+    const correctAnswer = mode === 'de2zh' ? item.chinese : item.german;
     let baseClass = 'px-4 py-2 border rounded cursor-pointer transition-colors ';
 
-    // 选择后立即显示对错
     if (answers[itemId]) {
-      if (option === item.chinese) {
+      if (option === correctAnswer) {
         return baseClass + 'bg-green-100 border-green-500 text-green-700';
       }
-      if (answers[itemId] === option && option !== item.chinese) {
+      if (answers[itemId] === option && option !== correctAnswer) {
         return baseClass + 'bg-red-100 border-red-500 text-red-700';
       }
       return baseClass + 'bg-gray-50 border-gray-200 text-gray-400';
@@ -149,8 +149,22 @@ export default function SelectQuestion2() {
 
   const correctCount = Object.entries(answers).filter(([id, answer]) => {
     const item = adjectives.find(a => a.id === Number(id));
-    return item && answer === item.chinese;
+    if (!item) return false;
+    const correctAnswer = mode === 'de2zh' ? item.chinese : item.german;
+    return answer === correctAnswer;
   }).length;
+
+  const handleReset = () => {
+    setAnswers({});
+    const map: Record<number, string[]> = {};
+    const optionList = mode === 'de2zh' ? allChineseOptions : allGermanOptions;
+    const correctKey = mode === 'de2zh' ? 'chinese' : 'german';
+
+    adjectives.forEach(item => {
+      map[item.id] = generateOptions(item[correctKey as keyof typeof item] as string, optionList);
+    });
+    setOptionsMap(map);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -171,31 +185,61 @@ export default function SelectQuestion2() {
 
         {/* 答题区域 */}
         <div className="bg-white rounded-lg shadow p-6">
+          {/* 模式切换 */}
+          <div className="flex justify-center gap-4 mb-6">
+            <button
+              onClick={() => setMode('de2zh')}
+              className={`px-4 py-2 rounded-full ${
+                mode === 'de2zh'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              德→中
+            </button>
+            <button
+              onClick={() => setMode('zh2de')}
+              className={`px-4 py-2 rounded-full ${
+                mode === 'zh2de'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              中→德
+            </button>
+          </div>
+
           {/* 说明 */}
           <p className="text-gray-600 mb-6 text-center">
-            选择每个德语词语对应的中文含义
+            {mode === 'de2zh' ? '选择每个德语词语对应的中文含义' : '选择每个中文含义对应的德语词语'}
           </p>
 
           {/* 题目列表 */}
           <div className="space-y-6">
             {adjectives.map(item => (
               <div key={item.id} className="border-b pb-6 last:border-b-0">
-                {/* 德语词语 */}
+                {/* 题目 */}
                 <div className="flex items-center gap-4 mb-3">
-                  <button
-                    onClick={() => speak(item.german)}
-                    className="text-2xl font-bold text-blue-600 hover:text-blue-800 min-w-[120px] text-left"
-                  >
-                    {item.german} 🔊
-                  </button>
+                  {mode === 'de2zh' ? (
+                    <button
+                      onClick={() => speak(item.german)}
+                      className="text-2xl font-bold text-blue-600 hover:text-blue-800 min-w-[120px] text-left"
+                    >
+                      {item.german} 🔊
+                    </button>
+                  ) : (
+                    <span className="text-2xl font-bold text-gray-800 min-w-[120px]">
+                      {item.chinese}
+                    </span>
+                  )}
                   <span className="text-gray-400">→</span>
                   <span className="text-lg text-gray-600">
                     {answers[item.id] || '?'}
                   </span>
-                  {answers[item.id] === item.chinese && (
+                  {answers[item.id] && answers[item.id] === (mode === 'de2zh' ? item.chinese : item.german) && (
                     <span className="text-green-600">✓</span>
                   )}
-                  {answers[item.id] && answers[item.id] !== item.chinese && (
+                  {answers[item.id] && answers[item.id] !== (mode === 'de2zh' ? item.chinese : item.german) && (
                     <span className="text-red-600">✗</span>
                   )}
                 </div>
@@ -205,7 +249,7 @@ export default function SelectQuestion2() {
                   {optionsMap[item.id]?.map((option, idx) => (
                     <button
                       key={idx}
-                      onClick={() => handleSelect(item.id, option, option === item.chinese)}
+                      onClick={() => handleSelect(item.id, option, option === (mode === 'de2zh' ? item.chinese : item.german))}
                       className={getOptionClass(item.id, option)}
                     >
                       {option}
@@ -219,14 +263,7 @@ export default function SelectQuestion2() {
           {/* 底部操作 */}
           <div className="mt-8 pt-6 border-t flex justify-between items-center">
             <button
-              onClick={() => {
-                setAnswers({});
-                const map: Record<number, string[]> = {};
-                adjectives.forEach(item => {
-                  map[item.id] = generateOptions(item.chinese);
-                });
-                setOptionsMap(map);
-              }}
+              onClick={handleReset}
               className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50"
             >
               重置
