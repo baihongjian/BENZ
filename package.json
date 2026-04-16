@@ -9,7 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "cheerio": "^1.2.0",
+    "html2canvas": "^1.4.1",
+    "jsdom": "^28.1.0",
+    "jspdf": "^4.2.0",
+    "jspdf-font": "^1.0.7",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
