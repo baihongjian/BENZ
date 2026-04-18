@@ -484,6 +484,30 @@ const basicPhrases9: BasicPhrase[] = [
   { id: 43, english: "Yes, I am tired. Today was a long day.", german: "Ja, ich bin müde. Heute war ein langer Tag.", chinese: "是的，我很累，今天很漫长。" },
 ];
 
+// 5级词汇（其它17）物体的状态
+const basicPhrases10: BasicPhrase[] = [
+  { id: 1, english: "The house is big.", german: "Das Haus ist groß.", chinese: "这个房子很大。" },
+  { id: 2, english: "The dog is small.", german: "Der Hund ist klein.", chinese: "这只狗很小。" },
+  { id: 3, english: "The road is long.", german: "Der Weg ist lang.", chinese: "这条路很长。" },
+  { id: 4, english: "The movie is short.", german: "Der Film ist kurz.", chinese: "这部电影很短。" },
+  { id: 5, english: "The suitcase is heavy.", german: "Der Koffer ist schwer.", chinese: "这个行李很重。" },
+  { id: 6, english: "The task is easy.", german: "Die Aufgabe ist leicht.", chinese: "这个任务很简单。" },
+  { id: 7, english: "The park is far.", german: "Der Park ist weit.", chinese: "这个公园很广。" },
+  { id: 8, english: "The street is narrow.", german: "Die Straße ist eng.", chinese: "这条街很窄。" },
+  { id: 9, english: "The car is fast.", german: "Das Auto ist schnell.", chinese: "这辆车很快。" },
+  { id: 10, english: "The train is slow.", german: "Der Zug ist langsam.", chinese: "这列火车很慢。" },
+  { id: 11, english: "The city is beautiful.", german: "Die Stadt ist schön.", chinese: "这个城市很美。" },
+  { id: 12, english: "The phone is new.", german: "Das Handy ist neu.", chinese: "这个手机是新的。" },
+  { id: 13, english: "The mountain is high.", german: "Der Berg ist hoch.", chinese: "这座山很高。" },
+  { id: 14, english: "The bread is fresh.", german: "Das Brot ist frisch.", chinese: "这个面包很新鲜。" },
+  { id: 15, english: "The music is loud.", german: "Die Musik ist laut.", chinese: "音乐很吵。" },
+  { id: 16, english: "The child is cute.", german: "Das Kind ist süß.", chinese: "这个孩子很可爱。" },
+  { id: 17, english: "This is another idea.", german: "Das ist eine andere Idee.", chinese: "这是另一个想法。" },
+  { id: 18, english: "We are going now.", german: "Wir gehen gleich.", chinese: "我们马上走。" },
+  { id: 19, english: "The phone is broken.", german: "Das Handy ist kaputt.", chinese: "手机坏了。" },
+  { id: 20, english: "This is important.", german: "Das ist wichtig.", chinese: "这很重要。" },
+];
+
 export default function SentencePracticePage() {
   const [mode, setMode] = useState<"learn" | "quiz" | "dialogue" | "phrase">("learn");
   const [category, setCategory] = useState("all");
@@ -492,7 +516,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : basicPhrases9;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : basicPhrases10;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -1257,7 +1281,7 @@ export default function SentencePracticePage() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
-                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : "Maus对话1"}
+                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : "5级词汇（其它17）物体的状态"}
                 </h2>
                 <div className="text-sm text-gray-400">
                   {currentIndex + 1} / {currentPhrases.length}
@@ -1337,6 +1361,14 @@ export default function SentencePracticePage() {
                   }`}
                 >
                   Maus对话1
+                </button>
+                <button
+                  onClick={() => { setPhraseSet(10); setCurrentIndex(0); }}
+                  className={`px-4 py-2 rounded-full text-sm ${
+                    phraseSet === 10 ? "bg-amber-500 text-white" : "bg-gray-200"
+                  }`}
+                >
+                  5级词汇（其它17）物体的状态
                 </button>
               </div>
 

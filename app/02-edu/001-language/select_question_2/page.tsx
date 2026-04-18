@@ -65,7 +65,13 @@ const speak = async (text: string) => {
   speechSynthesis.speak(utterance);
 };
 
-// 德语形容词数据
+// 类别数据
+const categories = [
+  { id: 'adj', name: '人的状态' },
+  { id: 'state', name: '物体的状态' },
+];
+
+// 形容词的特性
 const adjectives = [
   { id: 1, german: "alt", chinese: "老的" },
   { id: 2, german: "jung", chinese: "年轻的" },
@@ -90,9 +96,42 @@ const adjectives = [
   { id: 21, german: "fleißig", chinese: "勤奋的" },
 ];
 
+// 物体的状态
+const states = [
+  { id: 101, german: "groß", chinese: "大的 / 高的" },
+  { id: 102, german: "klein", chinese: "小的" },
+  { id: 103, german: "lang", chinese: "长的" },
+  { id: 104, german: "kurz", chinese: "短的" },
+  { id: 105, german: "schwer", chinese: "重的 / 困难的" },
+  { id: 106, german: "leicht", chinese: "轻的 / 容易的" },
+  { id: 107, german: "weit", chinese: "远的 / 宽广的" },
+  { id: 108, german: "eng", chinese: "狭窄的" },
+  { id: 109, german: "schnell", chinese: "快的" },
+  { id: 110, german: "langsam", chinese: "慢的" },
+  { id: 111, german: "schön", chinese: "美丽的" },
+  { id: 112, german: "neu", chinese: "新的" },
+  { id: 113, german: "hoch", chinese: "高的" },
+  { id: 114, german: "frisch", chinese: "新鲜的" },
+  { id: 115, german: "laut", chinese: "大声的 / 吵的" },
+  { id: 116, german: "süß", chinese: "甜的 / 可爱的" },
+  { id: 117, german: "ander(e)", chinese: "其他的" },
+  { id: 118, german: "gleich", chinese: "一样的 / 马上" },
+  { id: 119, german: "kaputt", chinese: "坏的 / 破的" },
+  { id: 120, german: "wichtig", chinese: "重要的" },
+];
+
+// 根据类别获取数据
+function getDataByCategory(categoryId: string) {
+  if (categoryId === 'state') {
+    return states;
+  }
+  return adjectives;
+}
+
 // 获取所有选项
-const allChineseOptions = adjectives.map(a => a.chinese);
-const allGermanOptions = adjectives.map(a => a.german);
+function getAllOptions(data: typeof adjectives | typeof states, lang: 'german' | 'chinese') {
+  return data.map(a => a[lang]);
+}
 
 // 生成选项（1个正确答案 + 3个干扰选项）
 function generateOptions(correctAnswer: string, options: string[]): string[] {
@@ -102,22 +141,25 @@ function generateOptions(correctAnswer: string, options: string[]): string[] {
 }
 
 export default function SelectQuestion2() {
+  const [category, setCategory] = useState('adj');
   const [mode, setMode] = useState<'de2zh' | 'zh2de'>('de2zh');
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [optionsMap, setOptionsMap] = useState<Record<number, string[]>>({});
 
-  // 切换模式时重新初始化
+  const data = getDataByCategory(category);
+
+  // 切换类别或模式时重新初始化
   useEffect(() => {
     const map: Record<number, string[]> = {};
-    const optionList = mode === 'de2zh' ? allChineseOptions : allGermanOptions;
+    const optionList = getAllOptions(data, mode === 'de2zh' ? 'chinese' : 'german');
     const correctKey = mode === 'de2zh' ? 'chinese' : 'german';
 
-    adjectives.forEach(item => {
+    data.forEach(item => {
       map[item.id] = generateOptions(item[correctKey as keyof typeof item] as string, optionList);
     });
     setOptionsMap(map);
     setAnswers({});
-  }, [mode]);
+  }, [category, mode]);
 
   const handleSelect = (id: number, answer: string, isCorrect: boolean) => {
     setAnswers(prev => ({ ...prev, [id]: answer }));
@@ -125,7 +167,7 @@ export default function SelectQuestion2() {
   };
 
   const getOptionClass = (itemId: number, option: string) => {
-    const item = adjectives.find(a => a.id === itemId);
+    const item = data.find(a => a.id === itemId);
     if (!item) return '';
 
     const correctAnswer = mode === 'de2zh' ? item.chinese : item.german;
@@ -148,7 +190,7 @@ export default function SelectQuestion2() {
   };
 
   const correctCount = Object.entries(answers).filter(([id, answer]) => {
-    const item = adjectives.find(a => a.id === Number(id));
+    const item = data.find(a => a.id === Number(id));
     if (!item) return false;
     const correctAnswer = mode === 'de2zh' ? item.chinese : item.german;
     return answer === correctAnswer;
@@ -157,10 +199,10 @@ export default function SelectQuestion2() {
   const handleReset = () => {
     setAnswers({});
     const map: Record<number, string[]> = {};
-    const optionList = mode === 'de2zh' ? allChineseOptions : allGermanOptions;
+    const optionList = getAllOptions(data, mode === 'de2zh' ? 'chinese' : 'german');
     const correctKey = mode === 'de2zh' ? 'chinese' : 'german';
 
-    adjectives.forEach(item => {
+    data.forEach(item => {
       map[item.id] = generateOptions(item[correctKey as keyof typeof item] as string, optionList);
     });
     setOptionsMap(map);
@@ -178,13 +220,30 @@ export default function SelectQuestion2() {
             ← 返回
           </Link>
           <h1 className="text-xl font-bold text-gray-800">
-            德语形容词选择
+            德语选择
           </h1>
           <div className="w-16"></div>
         </div>
 
         {/* 答题区域 */}
         <div className="bg-white rounded-lg shadow p-6">
+          {/* 类别切换 */}
+          <div className="flex justify-center gap-4 mb-4">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setCategory(cat.id)}
+                className={`px-4 py-2 rounded-full ${
+                  category === cat.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
           {/* 模式切换 */}
           <div className="flex justify-center gap-4 mb-6">
             <button
@@ -216,19 +275,19 @@ export default function SelectQuestion2() {
 
           {/* 题目列表 */}
           <div className="space-y-6">
-            {adjectives.map(item => (
+            {data.map(item => (
               <div key={item.id} className="border-b pb-6 last:border-b-0">
                 {/* 题目 */}
                 <div className="flex items-center gap-4 mb-3">
                   {mode === 'de2zh' ? (
                     <button
                       onClick={() => speak(item.german)}
-                      className="text-2xl font-bold text-blue-600 hover:text-blue-800 min-w-[120px] text-left"
+                      className="text-2xl font-bold text-blue-600 hover:text-blue-800 min-w-[140px] text-left"
                     >
                       {item.german} 🔊
                     </button>
                   ) : (
-                    <span className="text-2xl font-bold text-gray-800 min-w-[120px]">
+                    <span className="text-2xl font-bold text-gray-800 min-w-[140px]">
                       {item.chinese}
                     </span>
                   )}
@@ -245,7 +304,7 @@ export default function SelectQuestion2() {
                 </div>
 
                 {/* 选项 */}
-                <div className="flex flex-wrap gap-2 ml-36">
+                <div className="flex flex-wrap gap-2 ml-40">
                   {optionsMap[item.id]?.map((option, idx) => (
                     <button
                       key={idx}
@@ -271,7 +330,7 @@ export default function SelectQuestion2() {
 
             <div className="text-lg">
               <span className="font-bold text-green-600">
-                正确: {correctCount}/{adjectives.length}
+                正确: {correctCount}/{data.length}
               </span>
             </div>
 

@@ -66,28 +66,58 @@ const speak = async (text: string) => {
 };
 
 // 德语形容词数据
-const adjectives = [
-  { id: 1, german: "alt", chinese: "老的" },
-  { id: 2, german: "jung", chinese: "年轻的" },
-  { id: 3, german: "arm", chinese: "贫穷的" },
-  { id: 4, german: "reich", chinese: "富有的" },
-  { id: 5, german: "frei", chinese: "自由的 / 空闲的" },
-  { id: 6, german: "traurig", chinese: "悲伤的" },
-  { id: 7, german: "glücklich", chinese: "快乐的 / 幸福的" },
-  { id: 8, german: "gesund", chinese: "健康的" },
-  { id: 9, german: "krank", chinese: "生病的" },
-  { id: 10, german: "schwach", chinese: "虚弱的 / 弱的" },
-  { id: 11, german: "stark", chinese: "强壮的 / 强的" },
-  { id: 12, german: "leise", chinese: "安静的 / 小声的" },
-  { id: 13, german: "müde", chinese: "疲倦的" },
-  { id: 14, german: "tot", chinese: "死的" },
-  { id: 15, german: "satt", chinese: "饱的" },
-  { id: 16, german: "freundlich", chinese: "友好的" },
-  { id: 17, german: "nett", chinese: "和蔼的 / 亲切的" },
-  { id: 18, german: "klug", chinese: "聪明的" },
-  { id: 19, german: "dumm", chinese: "愚蠢的" },
-  { id: 20, german: "faul", chinese: "懒的" },
-  { id: 21, german: "fleißig", chinese: "勤奋的" },
+const categories = [
+  {
+    name: "人物描述",
+    items: [
+      { id: 101, german: "alt", chinese: "老的" },
+      { id: 102, german: "jung", chinese: "年轻的" },
+      { id: 103, german: "arm", chinese: "贫穷的" },
+      { id: 104, german: "reich", chinese: "富有的" },
+      { id: 105, german: "frei", chinese: "自由的 / 空闲的" },
+      { id: 106, german: "traurig", chinese: "悲伤的" },
+      { id: 107, german: "glücklich", chinese: "快乐的 / 幸福的" },
+      { id: 108, german: "gesund", chinese: "健康的" },
+      { id: 109, german: "krank", chinese: "生病的" },
+      { id: 110, german: "schwach", chinese: "虚弱的 / 弱的" },
+      { id: 111, german: "stark", chinese: "强壮的 / 强的" },
+      { id: 112, german: "leise", chinese: "安静的 / 小声的" },
+      { id: 113, german: "müde", chinese: "疲倦的" },
+      { id: 114, german: "tot", chinese: "死的" },
+      { id: 115, german: "satt", chinese: "饱的" },
+      { id: 116, german: "freundlich", chinese: "友好的" },
+      { id: 117, german: "nett", chinese: "和蔼的 / 亲切的" },
+      { id: 118, german: "klug", chinese: "聪明的" },
+      { id: 119, german: "dumm", chinese: "愚蠢的" },
+      { id: 120, german: "faul", chinese: "懒的" },
+      { id: 121, german: "fleißig", chinese: "勤奋的" },
+    ],
+  },
+  {
+    name: "物体状态",
+    items: [
+      { id: 201, german: "groß", chinese: "大的 / 高的" },
+      { id: 202, german: "klein", chinese: "小的" },
+      { id: 203, german: "lang", chinese: "长的" },
+      { id: 204, german: "kurz", chinese: "短的" },
+      { id: 205, german: "schwer", chinese: "重的 / 困难的" },
+      { id: 206, german: "leicht", chinese: "轻的 / 容易的" },
+      { id: 207, german: "weit", chinese: "远的 / 宽广的" },
+      { id: 208, german: "eng", chinese: "狭窄的" },
+      { id: 209, german: "schnell", chinese: "快的" },
+      { id: 210, german: "langsam", chinese: "慢的" },
+      { id: 211, german: "schön", chinese: "美丽的" },
+      { id: 212, german: "neu", chinese: "新的" },
+      { id: 213, german: "hoch", chinese: "高的" },
+      { id: 214, german: "frisch", chinese: "新鲜的" },
+      { id: 215, german: "laut", chinese: "大声的 / 吵的" },
+      { id: 216, german: "süß", chinese: "甜的 / 可爱的" },
+      { id: 217, german: "ander(e)", chinese: "其他的" },
+      { id: 218, german: "gleich", chinese: "一样的 / 马上" },
+      { id: 219, german: "kaputt", chinese: "坏的 / 破的" },
+      { id: 220, german: "wichtig", chinese: "重要的" },
+    ],
+  },
 ];
 
 // 检查答案是否正确（忽略大小写）
@@ -96,16 +126,21 @@ function checkAnswer(input: string, correct: string): boolean {
 }
 
 export default function SpellingTest2() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("人物描述");
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [inputRefs, setInputRefs] = useState<Record<number, string>>({});
   const inputElems = useRef<Record<number, HTMLInputElement>>({});
+
+  // 获取当前类别的单词
+  const currentCategory = categories.find(c => c.name === selectedCategory);
+  const currentItems = currentCategory?.items || [];
 
   const handleInput = (id: number, value: string) => {
     setInputRefs(prev => ({ ...prev, [id]: value }));
   };
 
   const handleSubmit = (id: number) => {
-    const item = adjectives.find(a => a.id === id);
+    const item = currentItems.find(a => a.id === id);
     if (!item) return;
 
     const userInput = inputRefs[id] || '';
@@ -124,7 +159,7 @@ export default function SpellingTest2() {
   const getInputClass = (itemId: number) => {
     if (!answers[itemId]) return 'border-gray-300';
 
-    const item = adjectives.find(a => a.id === itemId);
+    const item = currentItems.find(a => a.id === itemId);
     if (!item) return 'border-gray-300';
 
     if (answers[itemId] === item.german) {
@@ -135,7 +170,7 @@ export default function SpellingTest2() {
   };
 
   const correctCount = Object.entries(answers).filter(([id, answer]) => {
-    const item = adjectives.find(a => a.id === Number(id));
+    const item = currentItems.find(a => a.id === Number(id));
     return item && checkAnswer(answer, item.german);
   }).length;
 
@@ -160,6 +195,27 @@ export default function SpellingTest2() {
 
         {/* 答题区域 */}
         <div className="bg-white rounded-lg shadow p-6">
+          {/* 类别选择 */}
+          <div className="flex justify-center gap-4 mb-6">
+            {categories.map(cat => (
+              <button
+                key={cat.name}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  setAnswers({});
+                  setInputRefs({});
+                }}
+                className={`px-4 py-2 rounded-full font-medium transition ${
+                  selectedCategory === cat.name
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
           {/* 说明 */}
           <p className="text-gray-600 mb-6 text-center">
             看中文含义，拼写德语单词
@@ -167,7 +223,7 @@ export default function SpellingTest2() {
 
           {/* 题目列表 */}
           <div className="space-y-6">
-            {adjectives.map(item => (
+            {currentItems.map(item => (
               <div key={item.id} className="border-b pb-6 last:border-b-0">
                 {/* 中文含义 */}
                 <div className="flex items-center gap-4 mb-3">
@@ -226,12 +282,12 @@ export default function SpellingTest2() {
               }}
               className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50"
             >
-              重置
+              重置当前
             </button>
 
             <div className="text-lg">
               <span className="font-bold text-green-600">
-                正确: {correctCount}/{totalAnswered > 0 ? totalAnswered : adjectives.length}
+                正确: {correctCount}/{totalAnswered > 0 ? totalAnswered : currentItems.length}
               </span>
             </div>
 
