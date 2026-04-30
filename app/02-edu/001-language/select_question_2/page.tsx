@@ -69,6 +69,10 @@ const speak = async (text: string) => {
 const categories = [
   { id: 'adj', name: '人的状态' },
   { id: 'state', name: '物体的状态' },
+  { id: 'place', name: '场所/空间/时' },
+  { id: 'mind', name: '思考/知识/发现/心/感情' },
+  { id: 'action', name: '移动/动作' },
+  { id: 'transport', name: '交通' },
 ];
 
 // 形容词的特性
@@ -120,16 +124,122 @@ const states = [
   { id: 120, german: "wichtig", chinese: "重要的" },
 ];
 
+// 场所/空间/时
+const places = [
+  { id: 201, german: "hier", chinese: "这里" },
+  { id: 202, german: "dort", chinese: "那里" },
+  { id: 203, german: "weg", chinese: "离开 / 不在了" },
+  { id: 204, german: "zurück", chinese: "回来 / 回去" },
+  { id: 205, german: "links", chinese: "左边" },
+  { id: 206, german: "rechts", chinese: "右边" },
+  { id: 207, german: "heute", chinese: "今天" },
+  { id: 208, german: "gestern", chinese: "昨天" },
+  { id: 209, german: "morgen", chinese: "明天 / 早上" },
+  { id: 210, german: "bald", chinese: "很快" },
+  { id: 211, german: "dann", chinese: "然后 / 那时" },
+  { id: 212, german: "gerade", chinese: "正在 / 刚刚" },
+  { id: 213, german: "jetzt", chinese: "现在" },
+  { id: 214, german: "einmal", chinese: "一次 / 曾经" },
+  { id: 215, german: "noch", chinese: "还 / 仍然" },
+  { id: 216, german: "schon", chinese: "已经" },
+  { id: 217, german: "später", chinese: "稍后" },
+  { id: 218, german: "früh", chinese: "早的" },
+  { id: 219, german: "spät", chinese: "晚的" },
+  { id: 220, german: "erst", chinese: "才 / 仅仅" },
+  { id: 221, german: "nächst(e)", chinese: "下一个" },
+  { id: 222, german: "letzt(e)", chinese: "上一个 / 最后一个" },
+];
+
+// 思考/知识/发现/心/感情
+const minds = [
+  { id: 301, german: "denken", chinese: "思考" },
+  { id: 302, german: "glauben", chinese: "相信 / 认为" },
+  { id: 303, german: "erzählen", chinese: "讲述" },
+  { id: 304, german: "kennen", chinese: "认识（人/地方）" },
+  { id: 305, german: "wissen", chinese: "知道（事实）" },
+  { id: 306, german: "finden", chinese: "觉得 / 找到" },
+  { id: 307, german: "vergessen", chinese: "忘记" },
+  { id: 308, german: "lieben", chinese: "爱" },
+  { id: 309, german: "freuen", chinese: "高兴" },
+  { id: 310, german: "danken", chinese: "感谢" },
+  { id: 311, german: "gefallen", chinese: "使喜欢" },
+  { id: 312, german: "sehen", chinese: "看见" },
+  { id: 313, german: "hören", chinese: "听见" },
+  { id: 314, german: "lachen", chinese: "笑" },
+  { id: 315, german: "weinen", chinese: "哭" },
+  { id: 316, german: "fühlen", chinese: "感觉" },
+];
+
+// 移动/动作
+const actions = [
+  { id: 401, german: "gehen", chinese: "走 / 去（步行）" },
+  { id: 402, german: "fahren", chinese: "乘车 / 行驶" },
+  { id: 403, german: "kommen", chinese: "来" },
+  { id: 404, german: "fliegen", chinese: "飞" },
+  { id: 405, german: "laufen", chinese: "跑 / 走（较快）" },
+  { id: 406, german: "schwimmen", chinese: "游泳" },
+  { id: 407, german: "reisen", chinese: "旅行" },
+  { id: 408, german: "abfahren", chinese: "出发" },
+  { id: 409, german: "ankommen", chinese: "到达" },
+  { id: 410, german: "aussteigen", chinese: "下车" },
+  { id: 411, german: "einsteigen", chinese: "上车" },
+  { id: 412, german: "machen", chinese: "做" },
+  { id: 413, german: "tun", chinese: "做" },
+  { id: 414, german: "stellen", chinese: "放（竖着）" },
+  { id: 415, german: "tragen", chinese: "搬 / 穿 / 拿" },
+  { id: 416, german: "legen", chinese: "放（平放）" },
+  { id: 417, german: "ziehen", chinese: "拉 / 搬动" },
+  { id: 418, german: "hängen", chinese: "挂着 / 挂" },
+  { id: 419, german: "halten", chinese: "停下 / 握住" },
+  { id: 420, german: "holen", chinese: "去取" },
+  { id: 421, german: "bringen", chinese: "带来" },
+  { id: 422, german: "öffnen", chinese: "打开" },
+  { id: 423, german: "schlagen", chinese: "打 / 敲" },
+  { id: 424, german: "schicken", chinese: "发送 / 寄" },
+];
+
+// 交通
+const transports = [
+  { id: 501, german: "der Zug", chinese: "火车" },
+  { id: 502, german: "die Straßenbahn", chinese: "有轨电车" },
+  { id: 503, german: "das Auto", chinese: "汽车" },
+  { id: 504, german: "der Wagen", chinese: "车辆 / 车厢" },
+  { id: 505, german: "das Taxi", chinese: "出租车" },
+  { id: 506, german: "der Bus", chinese: "公交车" },
+  { id: 507, german: "das Fahrrad", chinese: "自行车" },
+  { id: 508, german: "das Flugzeug", chinese: "飞机" },
+  { id: 509, german: "die Welt", chinese: "世界" },
+  { id: 510, german: "das Ausland", chinese: "国外" },
+  { id: 511, german: "die Heimat", chinese: "家乡 / 祖国" },
+  { id: 512, german: "Europa", chinese: "欧洲" },
+  { id: 513, german: "das Problem", chinese: "问题 / 难题" },
+  { id: 514, german: "die Sache", chinese: "事情 / 东西" },
+  { id: 515, german: "der Plan", chinese: "计划" },
+  { id: 516, german: "die Vorsicht", chinese: "小心 / 谨慎" },
+];
+
 // 根据类别获取数据
 function getDataByCategory(categoryId: string) {
   if (categoryId === 'state') {
     return states;
   }
+  if (categoryId === 'place') {
+    return places;
+  }
+  if (categoryId === 'mind') {
+    return minds;
+  }
+  if (categoryId === 'action') {
+    return actions;
+  }
+  if (categoryId === 'transport') {
+    return transports;
+  }
   return adjectives;
 }
 
 // 获取所有选项
-function getAllOptions(data: typeof adjectives | typeof states, lang: 'german' | 'chinese') {
+function getAllOptions(data: typeof adjectives | typeof states | typeof places | typeof minds | typeof actions | typeof transports, lang: 'german' | 'chinese') {
   return data.map(a => a[lang]);
 }
 

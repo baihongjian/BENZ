@@ -508,6 +508,190 @@ const basicPhrases10: BasicPhrase[] = [
   { id: 20, english: "This is important.", german: "Das ist wichtig.", chinese: "这很重要。" },
 ];
 
+// 第2课练习1（职业与业余活动）
+const basicPhrases11: BasicPhrase[] = [
+  { id: 1, english: "What is your profession?", german: "Was machen Sie beruflich?", chinese: "您或您们是做什么工作的？" },
+  { id: 2, english: "I write books professionally.", german: "Ich schreibe beruflich Bücher.", chinese: "我从事写书的工作。" },
+  { id: 3, english: "What are you doing now?", german: "Was machen Sie gerade?", chinese: "您或您们现在在做什么？" },
+  { id: 4, english: "I am playing piano now.", german: "Ich spiele gerade Klavier.", chinese: "我现在正在弹钢琴。" },
+  { id: 5, english: "What do you do in your free time?", german: "Was machen Sie in der Freizeit?", chinese: "您或您们业余时间做什么？" },
+  { id: 6, english: "We play basketball in our free time.", german: "Wir spielen in der Freizeit Basketball.", chinese: "我们在业余时间打篮球。" },
+  { id: 7, english: "What do you do in your free time?", german: "Was machen Sie in der Freizeit?", chinese: "您或您们业余时间做什么？" },
+  { id: 8, english: "I go to the museum in my free time.", german: "Ich gehe in der Freizeit ins Museum.", chinese: "我在业余时间去博物馆。" },
+  { id: 9, english: "What is your profession?", german: "Was machen Sie beruflich?", chinese: "您或您们是做什么工作的？" },
+  { id: 10, english: "I sell vegetables professionally.", german: "Ich verkaufe beruflich Gemüse.", chinese: "我从事卖蔬菜的工作。" },
+];
+
+// 第2课练习2（兴趣爱好）
+const basicPhrases12: BasicPhrase[] = [
+  { id: 1, english: "Do you often play the violin?", german: "Spielst du oft Geige?", chinese: "你经常拉小提琴吗？" },
+  { id: 2, english: "Yes, I often play the violin.", german: "Ja, ich spiele oft Geige.", chinese: "是���，我经常拉小提琴。" },
+  { id: 3, english: "No, I don't often play the violin.", german: "Nein, ich spiele nicht oft Geige.", chinese: "不，我不经常拉小提琴。" },
+  { id: 4, english: "Do you sing?", german: "Singen Sie?", chinese: "您唱歌吗？" },
+  { id: 5, english: "Yes, I sing.", german: "Ja, ich singe.", chinese: "是的，我唱歌。" },
+  { id: 6, english: "No, I don't sing.", german: "Nein, ich singe nicht.", chinese: "不，我不唱歌。" },
+  { id: 7, english: "Do you like reading novels?", german: "Lesen Sie gern Romane?", chinese: "您喜欢看小说吗？" },
+  { id: 8, english: "Yes, I like reading novels.", german: "Ja, ich lese gern Romane.", chinese: "是的，我喜欢看小说。" },
+  { id: 9, english: "No, I don't like reading novels.", german: "Nein, ich lese nicht gern Romane.", chinese: "不，我不喜欢看小说。" },
+  { id: 10, english: "Do you all like going to the cinema?", german: "Geht ihr gern ins Kino?", chinese: "你们喜欢去看电影吗？" },
+  { id: 11, english: "Yes, we like going to the cinema.", german: "Ja, wir gehen gern ins Kino.", chinese: "是的，我们喜欢去看电影。" },
+  { id: 12, english: "No, we don't like going to the cinema.", german: "Nein, wir gehen nicht gern ins Kino.", chinese: "不，我们不喜欢去看电影。" },
+  { id: 13, english: "Do you live in Potsdam?", german: "Wohnen Sie in Potsdam?", chinese: "您住在波茨坦吗？" },
+  { id: 14, english: "Yes, I live in Potsdam.", german: "Ja, ich wohne in Potsdam.", chinese: "是的，我住在波茨坦。" },
+  { id: 15, english: "No, I don't live in Potsdam.", german: "Nein, ich wohne nicht in Potsdam.", chinese: "不，我不住在波茨坦。" },
+];
+
+// 5级词汇19-场所/空间/时
+const basicPhrases19: BasicPhrase[] = [
+  { id: 1, english: "I am here.", german: "Ich bin hier.", chinese: "我在这里。" },
+  { id: 2, english: "The car is over there.", german: "Das Auto steht dort.", chinese: "那辆车停在那里。" },
+  { id: 3, english: "My friend is gone.", german: "Mein Freund ist weg.", chinese: "我的朋友离开了。" },
+  { id: 4, english: "I'll be back.", german: "Ich komme zurück.", chinese: "我会回来。" },
+  { id: 5, english: "The school is on the left.", german: "Die Schule ist links.", chinese: "学校在左边。" },
+  { id: 6, english: "The supermarket is on the right.", german: "Der Supermarkt ist rechts.", chinese: "超市在右边。" },
+  { id: 7, english: "I work today.", german: "Heute arbeite ich.", chinese: "我今天工作。" },
+  { id: 8, english: "I was at home yesterday.", german: "Gestern war ich zu Hause.", chinese: "我昨天在家。" },
+  { id: 9, english: "I learn German tomorrow.", german: "Morgen lerne ich Deutsch.", chinese: "我明天学习德语。" },
+  { id: 10, english: "I'm coming soon.", german: "Ich komme bald.", chinese: "我很快就来。" },
+  { id: 11, english: "I eat, then I sleep.", german: "Ich esse, dann schlafe ich.", chinese: "我吃饭，然后睡觉。" },
+  { id: 12, english: "I am learning German right now.", german: "Ich lerne gerade Deutsch.", chinese: "我正在学德语。" },
+  { id: 13, english: "I have time now.", german: "Ich habe jetzt Zeit.", chinese: "我现在有时间。" },
+  { id: 14, english: "I was once in Berlin.", german: "Ich war einmal in Berlin.", chinese: "我曾经去过柏林。" },
+  { id: 15, english: "I am still tired.", german: "Ich bin noch müde.", chinese: "我还很累。" },
+  { id: 16, english: "I am already done.", german: "Ich bin schon fertig.", chinese: "我已经完成了。" },
+  { id: 17, english: "See you later.", german: "Wir sehen uns später.", chinese: "我们稍后见。" },
+  { id: 18, english: "I get up early.", german: "Ich stehe früh auf.", chinese: "我早起。" },
+  { id: 19, english: "He comes home late.", german: "Er kommt spät nach Hause.", chinese: "他很晚回家。" },
+  { id: 20, english: "I come at eight o'clock.", german: "Ich komme erst um acht.", chinese: "我八点才来。" },
+  { id: 21, english: "Next week I have vacation.", german: "Nächste Woche habe ich Urlaub.", chinese: "下周我休假。" },
+  { id: 22, english: "Last week I was sick.", german: "Letzte Woche war ich krank.", chinese: "上周我生病了。" },
+];
+
+// 5级词汇12-思考/知识/发现/心/感情
+const basicPhrases13: BasicPhrase[] = [
+  { id: 1, english: "I am thinking about tomorrow.", german: "Ich denke an morgen.", chinese: "我在想着明天。" },
+  { id: 2, english: "I believe you.", german: "Ich glaube dir.", chinese: "我相信你。" },
+  { id: 3, english: "I tell a story.", german: "Ich erzähle eine Geschichte.", chinese: "我讲一个故事。" },
+  { id: 4, english: "I know Berlin.", german: "Ich kenne Berlin.", chinese: "我认识（了解）柏林。" },
+  { id: 5, english: "I already know that.", german: "Ich weiß das schon.", chinese: "我已经知道那个了。" },
+  { id: 6, english: "I think that is good.", german: "Ich finde das gut.", chinese: "我觉得那个很好。" },
+  { id: 7, english: "I often forget my key.", german: "Ich vergesse oft meinen Schlüssel.", chinese: "我经常忘记我的钥匙。" },
+  { id: 8, english: "I love music.", german: "Ich liebe Musik.", chinese: "我爱音乐。" },
+  { id: 9, english: "I am happy today.", german: "Ich freue mich heute.", chinese: "我今天很高兴。" },
+  { id: 10, english: "I thank you.", german: "Ich danke Ihnen.", chinese: "我感谢您。" },
+  { id: 11, english: "I like that.", german: "Das gefällt mir.", chinese: "我喜欢那个。（那个使我喜欢）" },
+  { id: 12, english: "I see a bird.", german: "Ich sehe einen Vogel.", chinese: "我看见一只鸟。" },
+  { id: 13, english: "I hear music.", german: "Ich höre Musik.", chinese: "我听音乐。" },
+  { id: 14, english: "I laugh loudly.", german: "Ich lache laut.", chinese: "我大声笑。" },
+  { id: 15, english: "I don't cry.", german: "Ich weine nicht.", chinese: "我不哭。" },
+  { id: 16, english: "I feel tired.", german: "Ich fühle mich müde.", chinese: "我感觉累了。" },
+];
+
+// 5级词汇15-移动/动作
+const basicPhrases14: BasicPhrase[] = [
+  { id: 1, english: "I go home.", german: "Ich gehe nach Hause.", chinese: "我走回家。" },
+  { id: 2, english: "I take the bus.", german: "Ich fahre mit dem Bus.", chinese: "我坐公交车。" },
+  { id: 3, english: "I come tomorrow.", german: "Ich komme morgen.", chinese: "我明天来。" },
+  { id: 4, english: "I fly to Berlin.", german: "Ich fliege nach Berlin.", chinese: "我飞去柏林。" },
+  { id: 5, english: "I run in the park.", german: "Ich laufe im Park.", chinese: "我在公园跑步。" },
+  { id: 6, english: "I swim in the lake.", german: "Ich schwimme im See.", chinese: "我在湖里游泳。" },
+  { id: 7, english: "I travel to Germany.", german: "Ich reise nach Deutschland.", chinese: "我去德国旅行。" },
+  { id: 8, english: "I depart at eight o'clock.", german: "Ich fahre um acht Uhr ab.", chinese: "我八点出发。" },
+  { id: 9, english: "I arrive at nine o'clock.", german: "Ich komme um neun Uhr an.", chinese: "我九点到达。" },
+  { id: 10, english: "I get off here.", german: "Ich steige hier aus.", chinese: "我在这里下车。" },
+  { id: 11, english: "I get on there.", german: "Ich steige dort ein.", chinese: "我在那里上车。" },
+  { id: 12, english: "I do my work.", german: "Ich mache meine Arbeit.", chinese: "我做我的工作。" },
+  { id: 13, english: "I do a lot today.", german: "Ich tue viel heute.", chinese: "我今天做很多事。" },
+  { id: 14, english: "I put the bottle on the table.", german: "Ich stelle die Flasche auf den Tisch.", chinese: "我把瓶子放到桌上（竖放）。" },
+  { id: 15, english: "I carry a bag.", german: "Ich trage eine Tasche.", chinese: "我拿着一个包。" },
+  { id: 16, english: "I put the book on the table.", german: "Ich lege das Buch auf den Tisch.", chinese: "我把书放在桌上（平放）。" },
+  { id: 17, english: "I pull the door.", german: "Ich ziehe die Tür.", chinese: "我拉门。" },
+  { id: 18, english: "I hang the picture on the wall.", german: "Ich hänge das Bild an die Wand.", chinese: "我把画挂到墙上。" },
+  { id: 19, english: "I hold the ball.", german: "Ich halte den Ball.", chinese: "我拿着球。" },
+  { id: 20, english: "I get coffee.", german: "Ich hole Kaffee.", chinese: "我去拿咖啡。" },
+  { id: 21, english: "I bring you water.", german: "Ich bringe dir Wasser.", chinese: "我给你带水来。" },
+  { id: 22, english: "I open the window.", german: "Ich öffne das Fenster.", chinese: "我打开窗户。" },
+  { id: 23, english: "I knock on the door.", german: "Ich schlage an die Tür.", chinese: "我敲门。" },
+  { id: 24, english: "I send a message.", german: "Ich schicke eine Nachricht.", chinese: "我发送一条消息。" },
+];
+
+// 5级词汇8-交通/其它
+const basicPhrases15: BasicPhrase[] = [
+  { id: 1, english: "The train is here.", german: "Der Zug ist da.", chinese: "火车到了。" },
+  { id: 2, english: "The tram is on time.", german: "Die Straßenbahn ist pünktlich.", chinese: "有轨电车很准时。" },
+  { id: 3, english: "The car is new.", german: "Das Auto ist neu.", chinese: "汽车是新的。" },
+  { id: 4, english: "This car is big.", german: "Der Wagen ist groß.", chinese: "这辆车很大。" },
+  { id: 5, english: "The taxi is coming.", german: "Das Taxi kommt.", chinese: "出租车来了。" },
+  { id: 6, english: "The bus is full.", german: "Der Bus ist voll.", chinese: "公交车满了。" },
+  { id: 7, english: "The bicycle is fast.", german: "Das Fahrrad ist schnell.", chinese: "自行车很快。" },
+  { id: 8, english: "The airplane is flying.", german: "Das Flugzeug fliegt.", chinese: "飞机在飞。" },
+  { id: 9, english: "The world is big.", german: "Die Welt ist groß.", chinese: "世界很大。" },
+  { id: 10, english: "Abroad is interesting.", german: "Das Ausland ist interessant.", chinese: "国外很有意思。" },
+  { id: 11, english: "The hometown is beautiful.", german: "Die Heimat ist schön.", chinese: "家乡很美。" },
+  { id: 12, english: "Europe is big.", german: "Europa ist groß.", chinese: "欧洲很大。" },
+  { id: 13, english: "The problem is difficult.", german: "Das Problem ist schwer.", chinese: "问题很难。" },
+  { id: 14, english: "The matter is important.", german: "Die Sache ist wichtig.", chinese: "事情很重要。" },
+  { id: 15, english: "The plan is good.", german: "Der Plan ist gut.", chinese: "计划很好。" },
+  { id: 16, english: "Caution is important.", german: "Die Vorsicht ist wichtig.", chinese: "小心谨慎很重要。" },
+];
+
+// 5级词汇8-交通/其它短文版
+const basicPhrases16: BasicPhrase[] = [
+  { id: 1, english: "I have a plan.", german: "Ich habe einen Plan.", chinese: "我有一个计划。" },
+  { id: 2, english: "The plan is a trip.", german: "Der Plan ist eine Reise.", chinese: "这个计划是一次旅行。" },
+  { id: 3, english: "I travel by train in Europe.", german: "Ich fahre mit dem Zug in Europa.", chinese: "我坐火车去欧洲。" },
+  { id: 4, english: "The tram drives in the city.", german: "Die Straßenbahn fährt in der Stadt.", chinese: "有轨电车在城市里行驶。" },
+  { id: 5, english: "The bus is also good.", german: "Der Bus ist auch gut.", chinese: "公交车也很好。" },
+  { id: 6, english: "Sometimes I take a taxi.", german: "Manchmal nehme ich das Taxi.", chinese: "有时候我坐出租车。" },
+  { id: 7, english: "My car stays at home.", german: "Mein Auto bleibt zu Hause.", chinese: "我的汽车留在家里。" },
+  { id: 8, english: "The bicycle is fast and practical.", german: "Das Fahrrad ist schnell und praktisch.", chinese: "自行车又快又方便。" },
+  { id: 9, english: "The airplane flies abroad.", german: "Das Flugzeug fliegt ins Ausland.", chinese: "飞机飞往国外。" },
+  { id: 10, english: "The world is big.", german: "Die Welt ist groß.", chinese: "世界很大。" },
+  { id: 11, english: "My hometown is beautiful.", german: "Meine Heimat ist schön.", chinese: "��的家乡很美。" },
+  { id: 12, english: "But abroad is also interesting.", german: "Aber das Ausland ist auch interessant.", chinese: "但是国外也很有意思。" },
+  { id: 13, english: "One problem is money.", german: "Ein Problem ist das Geld.", chinese: "一个问题是钱。" },
+  { id: 14, english: "The matter is not easy.", german: "Die Sache ist nicht leicht.", chinese: "这件事并不容易。" },
+  { id: 15, english: "Caution is important.", german: "Vorsicht ist wichtig.", chinese: "小心谨慎很重要。" },
+  { id: 16, english: "The car is already waiting.", german: "Der Wagen wartet schon.", chinese: "车辆已经在等着了。" },
+];
+
+// 5级词汇15-移动/动作短文版
+const basicPhrases17: BasicPhrase[] = [
+  { id: 1, english: "I get a box.", german: "Ich hole eine Kiste.", chinese: "我拿一个箱子。" },
+  { id: 2, english: "I carry it into the room.", german: "Ich trage sie ins Zimmer.", chinese: "我把它搬进房间。" },
+  { id: 3, english: "Then I put the box next to the table.", german: "Dann stelle ich die Kiste neben den Tisch.", chinese: "然后我把箱子放在桌子旁边。" },
+  { id: 4, english: "I put a book on it.", german: "Ich lege ein Buch darauf.", chinese: "我放一本书在上面。" },
+  { id: 5, english: "I open the window.", german: "Ich öffne das Fenster.", chinese: "我打开窗户。" },
+  { id: 6, english: "I hang a picture on the wall.", german: "Ich hänge ein Bild an die Wand.", chinese: "我把一幅画挂在墙上。" },
+  { id: 7, english: "My friend brings me a chair.", german: "Mein Freund bringt mir einen Stuhl.", chinese: "我的朋友给我带来一把椅子。" },
+  { id: 8, english: "We pull it to the table.", german: "Wir ziehen ihn zum Tisch.", chinese: "我们把它拉到桌子那里。" },
+  { id: 9, english: "I hold the lamp.", german: "Ich halte die Lampe.", chinese: "我拿着灯。" },
+  { id: 10, english: "He hammers a nail into the wall.", german: "Er schlägt einen Nagel in die Wand.", chinese: "他把一个钉子敲进墙里。" },
+  { id: 11, english: "I send a message to my mother.", german: "Ich schicke eine Nachricht an meine Mutter.", chinese: "我给我的妈妈发一条消息。" },
+];
+
+// 短语集列表（用于下拉选择）
+const phraseSetList = [
+  { id: 1, name: "基本フレーズ1" },
+  { id: 2, name: "基本フレーズ2" },
+  { id: 3, name: "购物用语" },
+  { id: 4, name: "IT德语" },
+  { id: 5, name: "IT德语(礼貌体)" },
+  { id: 6, name: "第1课语法" },
+  { id: 7, name: "第1课语法（2）" },
+  { id: 8, name: "5级词汇（其它16）人的状态" },
+  { id: 9, name: "Maus对话1" },
+  { id: 10, name: "5级词汇（其它17）物体的状态" },
+  { id: 11, name: "第2课练习1" },
+  { id: 12, name: "第2课练习2" },
+  { id: 13, name: "5级词汇12" },
+  { id: 14, name: "5级词汇15" },
+  { id: 15, name: "5级词汇8" },
+  { id: 16, name: "5级词汇8短文版" },
+  { id: 17, name: "5级词汇15短文版" },
+  { id: 19, name: "5级词汇19" },
+];
+
 export default function SentencePracticePage() {
   const [mode, setMode] = useState<"learn" | "quiz" | "dialogue" | "phrase">("learn");
   const [category, setCategory] = useState("all");
@@ -516,7 +700,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : basicPhrases10;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : basicPhrases19;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -598,6 +782,8 @@ export default function SentencePracticePage() {
     let voiceName: string;
     if (lang === "zh") {
       voiceName = "zh-CN-XiaoxiaoNeural";
+    } else if (lang === "en") {
+      voiceName = voiceType === "male" ? "en-US-JennyNeural" : "en-US-AriaNeural";
     } else {
       voiceName = voiceType === "male" ? "de-DE-ConradNeural" : "de-DE-KatjaNeural";
     }
@@ -1281,7 +1467,7 @@ export default function SentencePracticePage() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
-                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : "5级词汇（其它17）物体的状态"}
+                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : phraseSet === 10 ? "5级词汇（其它17）物体的状态" : phraseSet === 11 ? "第2课练习1" : phraseSet === 12 ? "第2课练习2" : phraseSet === 13 ? "5级词汇12" : phraseSet === 14 ? "5级词汇15" : phraseSet === 15 ? "5级词汇8-交通/其它" : phraseSet === 16 ? "5级词汇8短文版" : phraseSet === 17 ? "5级词汇15短文版" : "5级词汇19-场所/空间/时"}
                 </h2>
                 <div className="text-sm text-gray-400">
                   {currentIndex + 1} / {currentPhrases.length}
@@ -1289,87 +1475,18 @@ export default function SentencePracticePage() {
               </div>
 
               {/* 切换短语集 */}
-              <div className="flex justify-center gap-2 mb-4">
-                <button
-                  onClick={() => { setPhraseSet(1); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 1 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
+              <div className="flex justify-center mb-4">
+                <select
+                  value={phraseSet}
+                  onChange={(e) => { setPhraseSet(Number(e.target.value)); setCurrentIndex(0); }}
+                  className="px-4 py-2 rounded-full text-sm bg-amber-500 text-white border-none cursor-pointer"
                 >
-                  基本フレーズ1
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(2); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 2 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  基本フレーズ2
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(3); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 3 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  购物用语
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(4); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 4 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  IT德语
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(5); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 5 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  IT德语(礼貌体)
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(6); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 6 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  第1课语法
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(7); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 7 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  第1课语法（2）
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(8); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 8 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  5级词汇（其它16）人的状态
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(9); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 9 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  Maus对话1
-                </button>
-                <button
-                  onClick={() => { setPhraseSet(10); setCurrentIndex(0); }}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    phraseSet === 10 ? "bg-amber-500 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  5级词汇（其它17）物体的状态
-                </button>
+                  {phraseSetList.map((item) => (
+                    <option key={item.id} value={item.id} className="bg-white text-gray-800">
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* 自动朗读按钮 */}
@@ -1386,19 +1503,25 @@ export default function SentencePracticePage() {
                           element.scrollIntoView({ behavior: "smooth", block: "center" });
                         }
                       }, 50);
-                      // 先读男声
+                      // 先读德语男声
                       await speak(currentPhrases[i].german, "male");
                       await new Promise(resolve => setTimeout(resolve, 1000));
-                      // 再读女声
+                      // 读德语女声
                       await speak(currentPhrases[i].german, "female");
-                      await new Promise(resolve => setTimeout(resolve, 3000));
+                      await new Promise(resolve => setTimeout(resolve, 1500));
+                      // 读英文
+                      await speak(currentPhrases[i].english, "female", "en");
+                      await new Promise(resolve => setTimeout(resolve, 1500));
+                      // 读中文
+                      await speak(currentPhrases[i].chinese, "female", "zh");
+                      await new Promise(resolve => setTimeout(resolve, 2000));
                     }
                     setIsPlaying(false);
                   }}
                   disabled={isPlaying}
                   className="px-6 py-2 bg-amber-500 text-white rounded-full hover:bg-amber-600 disabled:opacity-50"
                 >
-                  {isPlaying ? "🔊 朗读中..." : "🔊 朗读全部"}
+                  {isPlaying ? "🔊 朗读中..." : "🔊 朗读全部(德英中)"}
                 </button>
               </div>
 
@@ -1439,6 +1562,12 @@ export default function SentencePracticePage() {
                         className="px-2 py-1 bg-pink-100 text-pink-700 rounded text-sm hover:bg-pink-200"
                       >
                         🔊 女声
+                      </button>
+                      <button
+                        onClick={() => speak(phrase.english, "female", "en")}
+                        className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm hover:bg-purple-200"
+                      >
+                        🔊 英文
                       </button>
                       <button
                         onClick={() => speak(phrase.chinese, "female", "zh")}
