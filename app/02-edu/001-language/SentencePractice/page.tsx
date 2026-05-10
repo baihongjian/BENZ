@@ -670,6 +670,95 @@ const basicPhrases17: BasicPhrase[] = [
   { id: 11, english: "I send a message to my mother.", german: "Ich schicke eine Nachricht an meine Mutter.", chinese: "我给我的妈妈发一条消息。" },
 ];
 
+// 5级词汇4-建筑对话版
+const basicPhrases18: BasicPhrase[] = [
+  { id: 1, english: "Hello! Are you new in the city?", german: "Hallo! Bist du neu in der Stadt?", chinese: "你好！你是刚来这个城市吗？" },
+  { id: 2, english: "Yes, I am new here.", german: "Ja, ich bin neu hier.", chinese: "是的，我是新来的。" },
+  { id: 3, english: "Do you come from a village?", german: "Kommst du aus einem Dorf?", chinese: "你来自一个村庄吗？" },
+  { id: 4, english: "Yes, I come from a small village.", german: "Ja, ich komme aus einem kleinen Dorf.", chinese: "是的，我来自一个小村庄。" },
+  { id: 5, english: "I show you the city.", german: "Ich zeige dir die Stadt.", chinese: "我带你看看这座城市。" },
+  { id: 6, english: "We walk on the street.", german: "Wir gehen auf der Straße.", chinese: "我们走在街道上。" },
+  { id: 7, english: "Okay!", german: "Okay!", chinese: "好的！" },
+  { id: 8, english: "The path is beautiful.", german: "Der Weg ist schön.", chinese: "这条小路很漂亮。" },
+  { id: 9, english: "There is the train station.", german: "Dort ist der Bahnhof.", chinese: "那边是火车站。" },
+  { id: 10, english: "Ah, and what is the building next to it?", german: "Ah, und was ist das Gebäude daneben?", chinese: "啊，那旁边的建筑是什么？" },
+  { id: 11, english: "That is the town hall.", german: "Das ist das Rathaus.", chinese: "那是市政厅。" },
+  { id: 12, english: "And there is a church.", german: "Und da ist eine Kirche.", chinese: "那边是一座教堂。" },
+  { id: 13, english: "I also see the police.", german: "Ich sehe auch die Polizei.", chinese: "我也看到了警察局。" },
+  { id: 14, english: "Now we go to the bank.", german: "Jetzt gehen wir zur Bank.", chinese: "现在我们去银行。" },
+  { id: 15, english: "I need money.", german: "Ich brauche Geld.", chinese: "我需要钱。" },
+  { id: 16, english: "After that we go to the department store.", german: "Danach gehen wir ins Kaufhaus.", chinese: "之后我们去百货商店。" },
+  { id: 17, english: "Are there many shops there?", german: "Gibt es dort viele Geschäfte?", chinese: "那里有很多商店吗？" },
+  { id: 18, english: "Yes, very many!", german: "Ja, sehr viele!", chinese: "是的，非常多！" },
+  { id: 19, english: "And where is a hotel?", german: "Und wo ist ein Hotel?", chinese: "那哪里有酒店？" },
+  { id: 20, english: "The hotel is at the square in the center of the city.", german: "Das Hotel ist am Platz in der Mitte der Stadt.", chinese: "酒店在城市中心的广场上。" },
+  { id: 21, english: "Is there a restaurant there?", german: "Gibt es dort ein Restaurant?", chinese: "那里有餐厅吗？" },
+  { id: 22, english: "Yes, there is a restaurant in the hotel.", german: "Ja, im Hotel gibt es ein Restaurant.", chinese: "是的，酒店里有餐厅。" },
+  { id: 23, english: "Great! I am hungry.", german: "Super! Ich habe Hunger.", chinese: "太好了！我饿了。" },
+  { id: 24, english: "We eat there and buy a gift.", german: "Wir essen dort und kaufen ein Geschenk.", chinese: "我们在那里吃饭并买一个礼物。" },
+  { id: 25, english: "Do we pay with Euro?", german: "Bezahlen wir mit Euro?", chinese: "我们用欧元付款吗？" },
+  { id: 26, english: "Yes, of course!", german: "Ja, natürlich!", chinese: "当然！" },
+];
+
+// DU FINDEST MICH NICHT! (1.1)
+const basicPhrases20: BasicPhrase[] = [
+  { id: 1, english: "A coffee, a croissant with jam - fresh from the bakery...", german: "Ein Kaffee, ein Croissant mit Marmelade - frisch von der Bäckerei...", chinese: "一杯咖啡，一个带果酱的羊角面包——刚从面包店来的……" },
+  { id: 2, english: "It is Tuesday morning, 11 o'clock, and I am taking a short break.", german: "Es ist Dienstagvormittag, 11 Uhr, und ich mache eine kleine Pause.", chinese: "现在是星期二上午11点，我做一个小的休息。" },
+  { id: 3, english: "I sit in the sun and have breakfast.", german: "Ich sitze in der Sonne und frühstücke.", chinese: "我坐在太阳下，吃早餐。" },
+  { id: 4, english: "Life is beautiful!", german: "Das Leben ist schön!", chinese: "生活是美好的！" },
+  { id: 5, english: "But then the mail comes and I receive this letter:", german: "Aber dann kommt die Post und ich bekomme diesen Brief:", chinese: "但是然后邮局来了，我收到这封信：" },
+  { id: 6, english: "I did it!", german: "Ich habe es getan!", chinese: "我做了它！" },
+  { id: 7, english: "I have murdered a person.", german: "Ich habe einen Menschen ermordet.", chinese: "我杀了一个人。" },
+  { id: 8, english: "Nobody saw me, nobody heard.", german: "Keiner hat mich gesehen, keiner gehört.", chinese: "没有人看见我，没有人听见。" },
+  { id: 9, english: "The police also don't know anything.", german: "Auch die Polizei weiß nichts.", chinese: "警察也什么都不知道。" },
+  { id: 10, english: "And you, Fender?", german: "Und du, Fender?", chinese: "还有你，Fender？" },
+  { id: 11, english: "Are you really that good?", german: "Bist du wirklich so gut?", chinese: "你真的那么厉害吗？" },
+  { id: 12, english: "Faster than the police?", german: "Schneller als die Polizei?", chinese: "比警察更快？" },
+  { id: 13, english: "Do you find me?", german: "Findest du mich?", chinese: "你能找到我吗？" },
+  { id: 14, english: "Best regards, the murderer", german: "Viele Grüße, der Mörder", chinese: "致意，凶手" },
+  { id: 15, english: "What is that?", german: "Was ist das?", chinese: "这是什么？" },
+  { id: 16, english: "Should that be funny?", german: "Soll das lustig sein?", chinese: "这应该是好笑的吗？" },
+  { id: 17, english: "Who is writing to me?", german: "Wer schreibt mir da?", chinese: "是谁给我写信？" },
+  { id: 18, english: "Really a murderer?", german: "Wirklich ein Mörder?", chinese: "真的是一个凶手吗？" },
+  { id: 19, english: "I can't believe that.", german: "Das kann ich nicht glauben.", chinese: "这个我不能相信。" },
+  { id: 20, english: "And why me?", german: "Und warum ich?", chinese: "那为什么是我？" },
+  { id: 21, english: "Why is he writing to me specifically?", german: "Warum schreibt er gerade mir?", chinese: "为什么他正好写给我？" },
+  { id: 22, english: "My coffee is getting slowly cold.", german: "Mein Kaffee wird langsam kalt.", chinese: "我的咖啡慢慢变冷。" },
+  { id: 23, english: "I also don't want to eat my croissant anymore.", german: "Auch mein Croissant will ich nicht mehr essen.", chinese: "我的羊角面包我也不想再吃了。" },
+  { id: 24, english: "I read the letter again.", german: "Ich lese den Brief noch einmal.", chinese: "我再读一遍这封信。" },
+  { id: 25, english: "But I find nothing.", german: "Aber ich finde nichts.", chinese: "但是我什么也没有找到。" },
+  { id: 26, english: "No name, no date, no answer to the questions Who and Why", german: "Kein Name, kein Datum, keine Antwort auf die Fragen Wer und Warum.", chinese: "没有名字，没有日期，没有对谁和为什么的回答。" },
+];
+
+// 5级词汇14-状态/状况（1）
+const basicPhrases21: BasicPhrase[] = [
+  { id: 1, english: "I live in Japan now.", german: "Ich wohne jetzt in Japan.", chinese: "我住在日本。" },
+  { id: 2, english: "Today I stay at home.", german: "Heute bleibe ich zu Hause.", chinese: "今天我待在家里。" },
+  { id: 3, english: "I sit at the table.", german: "Ich sitze am Tisch.", chinese: "我坐在桌边。" },
+  { id: 4, english: "I need coffee.", german: "Ich brauche Kaffee.", chinese: "我需要咖啡。" },
+  { id: 5, english: "After that I lie on the sofa.", german: "Danach liege ich auf dem Sofa.", chinese: "之后我躺在沙发上。" },
+  { id: 6, english: "I sleep for ten minutes.", german: "Ich schlafe zehn Minuten.", chinese: "我睡了十分钟。" },
+  { id: 7, english: "I stand up.", german: "Ich stehe auf.", chinese: "我站起来。" },
+  { id: 8, english: "I sing.", german: "Ich singe.", chinese: "我唱歌。" },
+  { id: 9, english: "I play guitar.", german: "Ich spiele Gitarre.", chinese: "我弹吉他。" },
+  { id: 10, english: "The guitar belongs to my father.", german: "Die Gitarre gehört meinem Vater.", chinese: "这把吉他属于我父亲。" },
+  { id: 11, english: "My dog is still alive.", german: "Mein Hund lebt noch.", chinese: "我的狗还活着。" },
+  { id: 12, english: "But he is dying soon.", german: "Aber er stirbt bald.", chinese: "但是它快死了。" },
+];
+
+// 物主冠词总结
+const basicPhrases22: BasicPhrase[] = [
+  { id: 1, english: "This is my mobile phone.", german: "Das ist mein Handy.", chinese: "这是我的手机。" },
+  { id: 2, english: "Where is your book?", german: "Wo ist dein Buch?", chinese: "你的书在哪？" },
+  { id: 3, english: "His car is new.", german: "Sein Auto ist neu.", chinese: "男的他的车是新的。" },
+  { id: 4, english: "Her dog is cute.", german: "Ihr Hund ist süß.", chinese: "女的她的狗很可爱。" },
+  { id: 5, english: "The dog is looking for its food.", german: "Der Hund sucht sein Essen.", chinese: "狗在找物的它的食物。" },
+  { id: 6, english: "Our teacher is nice.", german: "Unser Lehrer ist nett.", chinese: "我们老师很好。" },
+  { id: 7, english: "Your school is big.", german: "Eure Schule ist groß.", chinese: "你们学校很大。" },
+  { id: 8, english: "Their house is beautiful.", german: "Ihr Haus ist schön.", chinese: "他们的房子很漂亮。" },
+  { id: 9, english: "Is that your suitcase?", german: "Ist das Ihr Koffer?", chinese: "这是您的行李箱吗？" },
+];
+
 // 短语集列表（用于下拉选择）
 const phraseSetList = [
   { id: 1, name: "基本フレーズ1" },
@@ -689,7 +778,11 @@ const phraseSetList = [
   { id: 15, name: "5级词汇8" },
   { id: 16, name: "5级词汇8短文版" },
   { id: 17, name: "5级词汇15短文版" },
+  { id: 18, name: "5级词汇4-建筑" },
   { id: 19, name: "5级词汇19" },
+  { id: 20, name: "DU FINDEST MICH NICHT!(1.1)" },
+  { id: 21, name: "5级词汇14-状态/状况" },
+  { id: 22, name: "物主冠词总结" },
 ];
 
 export default function SentencePracticePage() {
@@ -700,7 +793,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : basicPhrases19;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : basicPhrases19;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -1467,7 +1560,7 @@ export default function SentencePracticePage() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
-                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : phraseSet === 10 ? "5级词汇（其它17）物体的状态" : phraseSet === 11 ? "第2课练习1" : phraseSet === 12 ? "第2课练习2" : phraseSet === 13 ? "5级词汇12" : phraseSet === 14 ? "5级词汇15" : phraseSet === 15 ? "5级词汇8-交通/其它" : phraseSet === 16 ? "5级词汇8短文版" : phraseSet === 17 ? "5级词汇15短文版" : "5级词汇19-场所/空间/时"}
+                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : phraseSet === 10 ? "5级词汇（其它17）物体的状态" : phraseSet === 11 ? "第2课练习1" : phraseSet === 12 ? "第2课练习2" : phraseSet === 13 ? "5级词汇12" : phraseSet === 14 ? "5级词汇15" : phraseSet === 15 ? "5级词汇8-交通/其它" : phraseSet === 16 ? "5级词汇8短文版" : phraseSet === 17 ? "5级词汇15短文版" : phraseSet === 18 ? "5级词汇4-建筑" : phraseSet === 20 ? "DU FINDEST MICH NICHT!(1.1)" : phraseSet === 21 ? "5级词汇14-状态/状况（1）" : phraseSet === 22 ? "物主冠词总结" : "5级词汇19-场所/空间/时"}
                 </h2>
                 <div className="text-sm text-gray-400">
                   {currentIndex + 1} / {currentPhrases.length}

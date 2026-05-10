@@ -216,6 +216,43 @@ const categories = [
       { id: 616, german: "die Vorsicht", chinese: "小心 / 谨慎" },
     ],
   },
+  {
+    name: "建筑/地点",
+    items: [
+      { id: 701, german: "die Stadt", chinese: "城市" },
+      { id: 702, german: "das Dorf", chinese: "村庄" },
+      { id: 703, german: "die Straße", chinese: "街道" },
+      { id: 704, german: "der Weg", chinese: "路 / 小路" },
+      { id: 705, german: "der Bahnhof", chinese: "火车站" },
+      { id: 706, german: "das Rathaus", chinese: "市政厅" },
+      { id: 707, german: "die Kirche", chinese: "教堂" },
+      { id: 708, german: "die Polizei", chinese: "警察（机构）" },
+      { id: 709, german: "die Bank", chinese: "银行" },
+      { id: 710, german: "das Kaufhaus", chinese: "百货商店" },
+      { id: 711, german: "das Geschäft", chinese: "商店 / 生意" },
+      { id: 712, german: "das Hotel", chinese: "酒店" },
+      { id: 713, german: "das Restaurant", chinese: "餐厅" },
+      { id: 714, german: "der Platz", chinese: "广场 / 地方" },
+      { id: 715, german: "die Mitte", chinese: "中间" },
+      { id: 716, german: "das Geld", chinese: "钱" },
+      { id: 717, german: "der Euro", chinese: "欧元" },
+      { id: 718, german: "das Geschenk", chinese: "礼物" },
+    ],
+  },
+  {
+    name: "物主代词",
+    items: [
+      { id: 801, german: "mein", chinese: "我的" },
+      { id: 802, german: "dein", chinese: "你的" },
+      { id: 803, german: "sein", chinese: "他的" },
+      { id: 804, german: "ihr", chinese: "她的" },
+      { id: 805, german: "sein", chinese: "它的" },
+      { id: 806, german: "unser", chinese: "我们的" },
+      { id: 807, german: "euer", chinese: "你们的" },
+      { id: 808, german: "ihr", chinese: "他们的/她们的/它们的" },
+      { id: 809, german: "Ihr", chinese: "您的；您们的" },
+    ],
+  },
 ];
 
 // 检查答案是否正确（忽略大小写）

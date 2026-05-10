@@ -73,6 +73,8 @@ const categories = [
   { id: 'mind', name: '思考/知识/发现/心/感情' },
   { id: 'action', name: '移动/动作' },
   { id: 'transport', name: '交通' },
+  { id: 'building', name: '建筑' },
+  { id: 'possessive', name: '物主代词' },
 ];
 
 // 形容词的特性
@@ -218,6 +220,41 @@ const transports = [
   { id: 516, german: "die Vorsicht", chinese: "小心 / 谨慎" },
 ];
 
+// 建筑
+const buildings = [
+  { id: 601, german: "die Stadt", chinese: "城市" },
+  { id: 602, german: "das Dorf", chinese: "村庄" },
+  { id: 603, german: "die Straße", chinese: "街道" },
+  { id: 604, german: "der Weg", chinese: "路 / 小路" },
+  { id: 605, german: "der Bahnhof", chinese: "火车站" },
+  { id: 606, german: "das Rathaus", chinese: "市政厅" },
+  { id: 607, german: "die Kirche", chinese: "教堂" },
+  { id: 608, german: "die Polizei", chinese: "警察（机构）" },
+  { id: 609, german: "die Bank", chinese: "银行" },
+  { id: 610, german: "das Kaufhaus", chinese: "百货商店" },
+  { id: 611, german: "das Geschäft", chinese: "商店 / 生意" },
+  { id: 612, german: "das Hotel", chinese: "酒店" },
+  { id: 613, german: "das Restaurant", chinese: "餐厅" },
+  { id: 614, german: "der Platz", chinese: "广场 / 地方" },
+  { id: 615, german: "die Mitte", chinese: "中间" },
+  { id: 616, german: "das Geld", chinese: "钱" },
+  { id: 617, german: "der Euro", chinese: "欧元" },
+  { id: 618, german: "das Geschenk", chinese: "礼物" },
+];
+
+// 物主代词
+const possessives = [
+  { id: 701, german: "mein", chinese: "我的" },
+  { id: 702, german: "dein", chinese: "你的" },
+  { id: 703, german: "sein", chinese: "他的" },
+  { id: 704, german: "ihr", chinese: "她的" },
+  { id: 705, german: "sein", chinese: "它的" },
+  { id: 706, german: "unser", chinese: "我们的" },
+  { id: 707, german: "euer", chinese: "你们的" },
+  { id: 708, german: "ihr", chinese: "他们的/她们的/它们的" },
+  { id: 709, german: "Ihr", chinese: "您的；您们的" },
+];
+
 // 根据类别获取数据
 function getDataByCategory(categoryId: string) {
   if (categoryId === 'state') {
@@ -235,11 +272,17 @@ function getDataByCategory(categoryId: string) {
   if (categoryId === 'transport') {
     return transports;
   }
+  if (categoryId === 'building') {
+    return buildings;
+  }
+  if (categoryId === 'possessive') {
+    return possessives;
+  }
   return adjectives;
 }
 
 // 获取所有选项
-function getAllOptions(data: typeof adjectives | typeof states | typeof places | typeof minds | typeof actions | typeof transports, lang: 'german' | 'chinese') {
+function getAllOptions(data: typeof adjectives | typeof states | typeof places | typeof minds | typeof actions | typeof transports | typeof buildings | typeof possessives, lang: 'german' | 'chinese') {
   return data.map(a => a[lang]);
 }
 
