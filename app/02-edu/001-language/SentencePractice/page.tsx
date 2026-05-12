@@ -759,6 +759,76 @@ const basicPhrases22: BasicPhrase[] = [
   { id: 9, english: "Is that your suitcase?", german: "Ist das Ihr Koffer?", chinese: "这是您的行李箱吗？" },
 ];
 
+// 人称代词4格
+const basicPhrases23: BasicPhrase[] = [
+  { id: 1, english: "He sees me.", german: "Er sieht mich.", chinese: "他看见我。" },
+  { id: 2, english: "I know you.", german: "Ich kenne dich.", chinese: "我认识你。" },
+  { id: 3, english: "I love him.", german: "Ich liebe ihn.", chinese: "我爱他。（男性他）" },
+  { id: 4, english: "Do you know her?", german: "Kennst du sie?", chinese: "你认识她吗？（女性她）" },
+  { id: 5, english: "I have it.", german: "Ich habe es.", chinese: "我有它（中性它）。" },
+  { id: 6, english: "He visits us.", german: "Er besucht uns.", chinese: "他拜访我们。" },
+  { id: 7, english: "I hear you all.", german: "Ich höre euch.", chinese: "我听见你们。" },
+  { id: 8, english: "I see them.", german: "Ich sehe sie.", chinese: "我看见他们。" },
+  { id: 9, english: "I understand you (formal).", german: "Ich verstehe Sie.", chinese: "我理解您。" },
+];
+
+// 代词和物主冠词小结1
+const basicPhrases24: BasicPhrase[] = [
+  // 主格（1格）
+  { id: 1, english: "I (nominative)", german: "ich", chinese: "1格，我" },
+  { id: 2, english: "you (nominative)", german: "du", chinese: "1格，你" },
+  { id: 3, english: "he (nominative)", german: "er", chinese: "1格，男的他" },
+  { id: 4, english: "she (nominative)", german: "sie", chinese: "1格，女的她" },
+  { id: 5, english: "it (nominative)", german: "es", chinese: "1格，物的它" },
+  { id: 6, english: "we (nominative)", german: "wir", chinese: "1格，我们" },
+  { id: 7, english: "you all (nominative)", german: "ihr", chinese: "1格，你们" },
+  { id: 8, english: "they (nominative)", german: "sie", chinese: "1格，他们/她们" },
+  { id: 9, english: "you formal (nominative)", german: "Sie", chinese: "1格，您/您们" },
+  // 宾格（4格）
+  { id: 10, english: "I (accusative)", german: "mich", chinese: "4格，我" },
+  { id: 11, english: "you (accusative)", german: "dich", chinese: "4格，你" },
+  { id: 12, english: "him (accusative)", german: "ihn", chinese: "4格，男的他" },
+  { id: 13, english: "her (accusative)", german: "sie", chinese: "4格，女的她" },
+  { id: 14, english: "it (accusative)", german: "es", chinese: "4格，物的它" },
+  { id: 15, english: "us (accusative)", german: "uns", chinese: "4格，我们" },
+  { id: 16, english: "you all (accusative)", german: "euch", chinese: "4格，你们" },
+  { id: 17, english: "them (accusative)", german: "sie", chinese: "4格，他们/她们" },
+  { id: 18, english: "you formal (accusative)", german: "Sie", chinese: "4格，您/您们" },
+  // 物主冠词
+  { id: 19, english: "my", german: "mein", chinese: "我的" },
+  { id: 20, english: "your", german: "dein", chinese: "你的" },
+  { id: 21, english: "his", german: "sein", chinese: "男的他的" },
+  { id: 22, english: "her", german: "ihr", chinese: "女的她的" },
+  { id: 23, english: "its", german: "sein", chinese: "物的它的" },
+  { id: 24, english: "our", german: "unser", chinese: "我们的" },
+  { id: 25, english: "your (plural)", german: "euer", chinese: "你们的" },
+  { id: 26, english: "their", german: "ihr", chinese: "他们的" },
+  { id: 27, english: "your formal", german: "Ihr", chinese: "您的；您们的" },
+];
+
+// 人称代词3格
+const basicPhrases25: BasicPhrase[] = [
+  { id: 1, english: "He gives me a book.", german: "Er gibt mir ein Buch.", chinese: "他给我一本书。" },
+  { id: 2, english: "I help you.", german: "Ich helfe dir.", chinese: "我帮助你。" },
+  { id: 3, english: "I write him an email.", german: "Ich schreibe ihm eine E-Mail.", chinese: "我给男的他写邮件。" },
+  { id: 4, english: "I thank her.", german: "Ich danke ihr.", chinese: "我感谢女的她。" },
+  { id: 5, english: "The child gives it water.", german: "Das Kind gibt ihm Wasser.", chinese: "那孩子给物的它水。" },
+  { id: 6, english: "The teacher explains grammar to us.", german: "Der Lehrer erklärt uns die Grammatik.", chinese: "老师给我们讲解语法。" },
+  { id: 7, english: "I show you all my mobile phone.", german: "Ich zeige euch mein Handy.", chinese: "我给你们看我的手机。" },
+  { id: 8, english: "I wish them good luck.", german: "Ich wünsche ihnen viel Glück.", chinese: "我祝他们好运。" },
+  { id: 9, english: "Can I help you (formal)?", german: "Kann ich Ihnen helfen?", chinese: "我可以帮助您吗？" },
+  // 3格代词
+  { id: 10, english: "me (dative)", german: "mir", chinese: "三格，我" },
+  { id: 11, english: "you (dative)", german: "dir", chinese: "你" },
+  { id: 12, english: "him (dative)", german: "ihm", chinese: "男的他" },
+  { id: 13, english: "her (dative)", german: "ihr", chinese: "女的她" },
+  { id: 14, english: "it (dative)", german: "ihm", chinese: "物的它" },
+  { id: 15, english: "us (dative)", german: "uns", chinese: "我们" },
+  { id: 16, english: "you all (dative)", german: "euch", chinese: "你们" },
+  { id: 17, english: "them (dative)", german: "ihnen", chinese: "他们/她们" },
+  { id: 18, english: "you formal (dative)", german: "Ihnen", chinese: "您（敬语）" },
+];
+
 // 短语集列表（用于下拉选择）
 const phraseSetList = [
   { id: 1, name: "基本フレーズ1" },
@@ -783,6 +853,9 @@ const phraseSetList = [
   { id: 20, name: "DU FINDEST MICH NICHT!(1.1)" },
   { id: 21, name: "5级词汇14-状态/状况" },
   { id: 22, name: "物主冠词总结" },
+  { id: 23, name: "人称代词4格" },
+  { id: 24, name: "代词和物主冠词小结1" },
+  { id: 25, name: "人称代词3格" },
 ];
 
 export default function SentencePracticePage() {
@@ -793,7 +866,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : basicPhrases19;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : phraseSet === 23 ? basicPhrases23 : phraseSet === 24 ? basicPhrases24 : phraseSet === 25 ? basicPhrases25 : basicPhrases19;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -1560,7 +1633,7 @@ export default function SentencePracticePage() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
-                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : phraseSet === 10 ? "5级词汇（其它17）物体的状态" : phraseSet === 11 ? "第2课练习1" : phraseSet === 12 ? "第2课练习2" : phraseSet === 13 ? "5级词汇12" : phraseSet === 14 ? "5级词汇15" : phraseSet === 15 ? "5级词汇8-交通/其它" : phraseSet === 16 ? "5级词汇8短文版" : phraseSet === 17 ? "5级词汇15短文版" : phraseSet === 18 ? "5级词汇4-建筑" : phraseSet === 20 ? "DU FINDEST MICH NICHT!(1.1)" : phraseSet === 21 ? "5级词汇14-状态/状况（1）" : phraseSet === 22 ? "物主冠词总结" : "5级词汇19-场所/空间/时"}
+                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : phraseSet === 10 ? "5级词汇（其它17）物体的状态" : phraseSet === 11 ? "第2课练习1" : phraseSet === 12 ? "第2课练习2" : phraseSet === 13 ? "5级词汇12" : phraseSet === 14 ? "5级词汇15" : phraseSet === 15 ? "5级词汇8-交通/其它" : phraseSet === 16 ? "5级词汇8短文版" : phraseSet === 17 ? "5级词汇15短文版" : phraseSet === 18 ? "5级词汇4-建筑" : phraseSet === 20 ? "DU FINDEST MICH NICHT!(1.1)" : phraseSet === 21 ? "5级词汇14-状态/状况（1）" : phraseSet === 22 ? "物主冠词总结" : phraseSet === 23 ? "人称代词4格" : phraseSet === 24 ? "代词和物主冠词小结1" : phraseSet === 25 ? "人称代词3格" : "5级词汇19-场所/空间/时"}
                 </h2>
                 <div className="text-sm text-gray-400">
                   {currentIndex + 1} / {currentPhrases.length}
