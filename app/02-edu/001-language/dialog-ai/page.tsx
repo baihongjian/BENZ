@@ -192,7 +192,11 @@ export default function DialoguebungPage() {
                     : 'bg-gray-100 text-gray-800'
                 }`}
               >
-                <p className="whitespace-pre-wrap">{showContent ? msg.content : '⋯⋯'}</p>
+                <p className="whitespace-pre-wrap">
+                  {msg.role === 'user' || msg.type === 'grammarCheck' || showContent
+                    ? msg.content
+                    : '⋯⋯'}
+                </p>
                 {/* 只有 reply 类型显示朗读按钮 */}
                 {msg.role === 'assistant' && msg.type === 'reply' && (
                   <div className="flex gap-2 mt-2">
