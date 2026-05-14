@@ -829,6 +829,42 @@ const basicPhrases25: BasicPhrase[] = [
   { id: 18, english: "you formal (dative)", german: "Ihnen", chinese: "您（敬语）" },
 ];
 
+// 人的状态形容词-消极的
+const basicPhrases26: BasicPhrase[] = [
+  { id: 1, english: "Mr. Müller is very old.", german: "Herr Müller ist sehr alt.", chinese: "穆勒先生很老。" },
+  { id: 2, english: "He is very poor.", german: "Er ist sehr arm.", chinese: "他非常贫穷。" },
+  { id: 3, english: "He is often sick.", german: "Er ist oft krank.", chinese: "他经常生病。" },
+  { id: 4, english: "He is very weak.", german: "Er ist sehr schwach.", chinese: "他非常虚弱。" },
+  { id: 5, english: "He is often tired.", german: "Er ist oft müde.", chinese: "他经常疲倦。" },
+  { id: 6, english: "His dog is often hungry.", german: "Sein Hund ist oft hungrig.", chinese: "他的狗经常饿。" },
+  { id: 7, english: "His dog is dead.", german: "Sein Hund ist tot.", chinese: "他的狗死了。" },
+  { id: 8, english: "He is very sad.", german: "Er ist sehr traurig.", chinese: "他非常悲伤。" },
+  { id: 9, english: "He is also busy.", german: "Er ist auch besetzt.", chinese: "他也没有空。" },
+  { id: 10, english: "He is also very mean.", german: "Er ist auch sehr gemein.", chinese: "他也非常刻薄。" },
+  { id: 11, english: "He is very unfriendly.", german: "Er ist sehr unfreundlich.", chinese: "他非常不友好。" },
+  { id: 12, english: "His voice is very loud.", german: "Seine Stimme ist sehr laut.", chinese: "他的声音很大。" },
+  { id: 13, english: "He is also stupid.", german: "Er ist auch dumm.", chinese: "他也很笨。" },
+  { id: 14, english: "He is also lazy.", german: "Er ist auch faul.", chinese: "他也很懒。" },
+];
+
+// 人的状态形容词-积极的
+const basicPhrases27: BasicPhrase[] = [
+  { id: 1, english: "Mr. Thomas is young.", german: "Herr Thomas ist jung.", chinese: "穆勒先生很年轻。" },
+  { id: 2, english: "He is very rich.", german: "Er ist sehr reich.", chinese: "他非常富有。" },
+  { id: 3, english: "He is very happy.", german: "Er ist sehr glücklich.", chinese: "他非常快乐。" },
+  { id: 4, english: "He is healthy.", german: "Er ist gesund.", chinese: "他很健康。" },
+  { id: 5, english: "He is very strong.", german: "Er ist sehr stark.", chinese: "他非常强壮。" },
+  { id: 6, english: "He speaks very quietly.", german: "Er spricht sehr leise.", chinese: "他说话很小声。" },
+  { id: 7, english: "His dog is still alive.", german: "Sein Hund ist noch lebendig.", chinese: "他的狗还活着。" },
+  { id: 8, english: "He is very smart.", german: "Er ist sehr klug.", chinese: "他非常聪明。" },
+  { id: 9, english: "He is very hardworking.", german: "Er ist sehr fleißig.", chinese: "他非常勤奋。" },
+  { id: 10, english: "He is very friendly.", german: "Er ist sehr freundlich.", chinese: "他非常友好。" },
+  { id: 11, english: "He is very nice.", german: "Er ist sehr nett.", chinese: "他人很好。" },
+  { id: 12, english: "He is free today.", german: "Er ist heute frei.", chinese: "他今天有空。" },
+  { id: 13, english: "He is awake now.", german: "Er ist jetzt wach.", chinese: "他现在很清醒。" },
+  { id: 14, english: "He is already full.", german: "Er ist schon satt.", chinese: "他已经吃饱了。" },
+];
+
 // 短语集列表（用于下拉选择）
 const phraseSetList = [
   { id: 1, name: "基本フレーズ1" },
@@ -856,6 +892,8 @@ const phraseSetList = [
   { id: 23, name: "人称代词4格" },
   { id: 24, name: "代词和物主冠词小结1" },
   { id: 25, name: "人称代词3格" },
+  { id: 26, name: "人的状态形容词-消极的" },
+  { id: 27, name: "人的状态形容词-积极的" },
 ];
 
 export default function SentencePracticePage() {
@@ -866,7 +904,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : phraseSet === 23 ? basicPhrases23 : phraseSet === 24 ? basicPhrases24 : phraseSet === 25 ? basicPhrases25 : basicPhrases19;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : phraseSet === 23 ? basicPhrases23 : phraseSet === 24 ? basicPhrases24 : phraseSet === 25 ? basicPhrases25 : phraseSet === 26 ? basicPhrases26 : phraseSet === 27 ? basicPhrases27 : basicPhrases19;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
@@ -1633,7 +1671,7 @@ export default function SentencePracticePage() {
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-800">
-                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : phraseSet === 10 ? "5级词汇（其它17）物体的状态" : phraseSet === 11 ? "第2课练习1" : phraseSet === 12 ? "第2课练习2" : phraseSet === 13 ? "5级词汇12" : phraseSet === 14 ? "5级词汇15" : phraseSet === 15 ? "5级词汇8-交通/其它" : phraseSet === 16 ? "5级词汇8短文版" : phraseSet === 17 ? "5级词汇15短文版" : phraseSet === 18 ? "5级词汇4-建筑" : phraseSet === 20 ? "DU FINDEST MICH NICHT!(1.1)" : phraseSet === 21 ? "5级词汇14-状态/状况（1）" : phraseSet === 22 ? "物主冠词总结" : phraseSet === 23 ? "人称代词4格" : phraseSet === 24 ? "代词和物主冠词小结1" : phraseSet === 25 ? "人称代词3格" : "5级词汇19-场所/空间/时"}
+                  {phraseSet === 1 ? "基本フレーズ1" : phraseSet === 2 ? "基本フレーズ2" : phraseSet === 3 ? "购物用语" : phraseSet === 4 ? "IT德语" : phraseSet === 5 ? "IT德语(礼貌体)" : phraseSet === 6 ? "第1课语法" : phraseSet === 7 ? "第1课语法（2）" : phraseSet === 8 ? "5级词汇（其它16）人的状态" : phraseSet === 9 ? "Maus对话1" : phraseSet === 10 ? "5级词汇（其它17）物体的状态" : phraseSet === 11 ? "第2课练习1" : phraseSet === 12 ? "第2课练习2" : phraseSet === 13 ? "5级词汇12" : phraseSet === 14 ? "5级词汇15" : phraseSet === 15 ? "5级词汇8-交通/其它" : phraseSet === 16 ? "5级词汇8短文版" : phraseSet === 17 ? "5级词汇15短文版" : phraseSet === 18 ? "5级词汇4-建筑" : phraseSet === 20 ? "DU FINDEST MICH NICHT!(1.1)" : phraseSet === 21 ? "5级词汇14-状态/状况（1）" : phraseSet === 22 ? "物主冠词总结" : phraseSet === 23 ? "人称代词4格" : phraseSet === 24 ? "代词和物主冠词小结1" : phraseSet === 25 ? "人称代词3格" : phraseSet === 26 ? "人的状态形容词-消极的" : phraseSet === 27 ? "人的状态形容词-积极的" : "5级词汇19-场所/空间/时"}
                 </h2>
                 <div className="text-sm text-gray-400">
                   {currentIndex + 1} / {currentPhrases.length}
