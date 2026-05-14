@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  type?: 'grammarCheck' | 'reply';
 }
 
 export default function DialoguebungPage() {
@@ -24,7 +25,6 @@ export default function DialoguebungPage() {
   const speak = async (text: string) => {
     if (!useTTS) return;
     try {
-      // 计算语速：直接使用设置值
       const rateValue = ttsSpeed.toFixed(2).replace(/\.?0+$/, '');
       const response = await fetch('http://localhost:8000/tts', {
         method: 'POST',
@@ -47,7 +47,6 @@ export default function DialoguebungPage() {
     }
   };
 
-  // 提取德语部分用于朗读
   const extractGerman = (content: string) => {
     const match = content.match(/德语：([\s\S]*?)(?=中文：|$)/);
     return match ? match[1].trim() : content;
@@ -72,13 +71,34 @@ export default function DialoguebungPage() {
 
       const data = await response.json();
 
-      if (data.reply) {
-        const germanText = extractGerman(data.reply);
-        setMessages([...newMessages, { role: 'assistant', content: data.reply }]);
-        // 自动朗读德语回复
-        if (useTTS) {
-          setTimeout(() => speak(germanText), 500);
+      if (data.grammarCheck || data.reply) {
+        const assistantMessages: Message[] = [];
+
+        // 添加语法检查结果（不朗读）
+        if (data.grammarCheck) {
+          assistantMessages.push({
+            role: 'assistant',
+            content: data.grammarCheck,
+            type: 'grammarCheck'
+          });
         }
+
+        // 添加对话回复（可以朗读）
+        if (data.reply) {
+          assistantMessages.push({
+            role: 'assistant',
+            content: data.reply,
+            type: 'reply'
+          });
+
+          // 自动朗读德语回复
+          if (useTTS) {
+            const germanText = extractGerman(data.reply);
+            setTimeout(() => speak(germanText), 500);
+          }
+        }
+
+        setMessages([...newMessages, ...assistantMessages]);
       } else {
         alert(data.error || '发送失败');
       }
@@ -154,7 +174,7 @@ export default function DialoguebungPage() {
           {messages.length === 0 && (
             <div className="text-center text-gray-500 py-10">
               <p className="text-lg mb-2">你好！我是你的德语老师。</p>
-              <p>请用德语、中文或英文和我聊天，我会用德语���复你。</p>
+              <p>请用德语、中文或英文和我聊天，我会用德语回复你。</p>
               <p className="text-sm mt-4">试着说一句德语吧，例如：</p>
               <p className="text-sm text-blue-600">Hallo, wie geht es dir?</p>
             </div>
@@ -173,7 +193,8 @@ export default function DialoguebungPage() {
                 }`}
               >
                 <p className="whitespace-pre-wrap">{showContent ? msg.content : '⋯⋯'}</p>
-                {msg.role === 'assistant' && (
+                {/* 只有 reply 类型显示朗读按钮 */}
+                {msg.role === 'assistant' && msg.type === 'reply' && (
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={() => speak(extractGerman(msg.content))}
