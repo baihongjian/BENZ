@@ -1,5 +1,5 @@
 /**
- * API 路由：DeepSeek 德语语法检查 + 对话回复
+ * API 路由：DeepSeek 德语对话练习 - 支持多种场景
  */
 
 export const dynamic = 'force-dynamic';
@@ -7,10 +7,38 @@ export const dynamic = 'force-dynamic';
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
 const API_KEY = process.env.DEEPSEEK_API_KEY;
 
+// 场景定义
+const SCENES = {
+  teacher: {
+    name: '德语老师',
+    systemPrompt: '你是一位友好的德语老师，帮助学生学习德语。请用德语回复学生（德语部分限制在10个单词以内），然后在下一行提供中文翻译。如果学生用中文或英文提问，你也用相应的语言回复。请保持回复简洁，适合初学者理解。格式：\n德语：...\n中文：...'
+  },
+  ticket: {
+    name: '火车站工作人员',
+    systemPrompt: `你是一位德国火车站的工作人员，帮助乘客购票。请用德语礼貌体（Sie）对对话（简单词汇，10个词以内），然后提供中文翻译。
+
+礼貌体动词形式：
+- haben → haben Sie
+- möchten → möchten Sie
+- fahren → fahren
+- brauchen → brauchen Sie
+- 是 → Sind Sie / Haben Sie
+
+场景：乘客来买火车票，你需要询问：
+1. 目的地（目的地 / Wohin fahren Sie? / Ziel）
+2. 出发时间（时间 / Wann möchten Sie fahren? / Uhrzeit）
+3. 单程还是往返（单程 Einfach / 往返 Hin und zurück）
+
+请保持对话简洁，适合德语初学者。格式：
+德语：...
+中文：...`
+  }
+};
+
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { messages } = body;
+    const { messages, mode = 'teacher' } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return Response.json({ error: '缺少消息' }, { status: 400 });
@@ -19,6 +47,9 @@ export async function POST(request) {
     if (!API_KEY) {
       return Response.json({ error: 'API 密钥未配置' }, { status: 500 });
     }
+
+    // 获取场景配置
+    const sceneConfig = SCENES[mode] || SCENES.teacher;
 
     // 获取用户最后一条消息
     const lastUserMessage = messages[messages.length - 1]?.content || '';
@@ -30,6 +61,7 @@ export async function POST(request) {
     let grammarCheck = '';
     let reply = '';
 
+    // 两种模式都进行语法检查
     if (isGerman && lastUserMessage.length > 2) {
       // 语法检查
       const checkMessages = [
@@ -70,68 +102,38 @@ export async function POST(request) {
         const checkData = await checkResponse.json();
         grammarCheck = checkData.choices?.[0]?.message?.content || '';
       }
-
-      // 对话回复
-      const chatMessages = [
-        {
-          role: 'system',
-          content: '你是一位友好的德语老师，帮助学生学习德语。请用德语回复学生（德语部分限制在10个单词以内），然后在下一行提供中文翻译。如果学生用中文或英文提问，你也用相应的语言回复。请保持回复简洁，适合初学者理解。格式：\n德语：...\n中文：...'
-        },
-        ...messages
-      ];
-
-      const chatResponse = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: chatMessages,
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
-      });
-
-      if (chatResponse.ok) {
-        const chatData = await chatResponse.json();
-        reply = chatData.choices?.[0]?.message?.content || '';
-      }
     }
 
-    // 如果不是德语，只返回对话回复
-    if (!isGerman) {
-      const chatMessages = [
-        {
-          role: 'system',
-          content: '你是一位友好的德语老师，帮助学生学习德语。请用德语回复学生（德语部分限制在10个单词以内），然后在下一行提供中文翻译。如果学生用中文或英文提问，你也用相应的语言回复。请保持回复简洁，适合初学者理解。格式：\n德语：...\n中文：...'
-        },
-        ...messages
-      ];
+    // 对话回复
+    const chatMessages = [
+      {
+        role: 'system',
+        content: sceneConfig.systemPrompt
+      },
+      ...messages
+    ];
 
-      const chatResponse = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: chatMessages,
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
-      });
+    const chatResponse = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: chatMessages,
+        temperature: 0.7,
+        max_tokens: 1000,
+      }),
+    });
 
-      if (chatResponse.ok) {
-        const chatData = await chatResponse.json();
-        reply = chatData.choices?.[0]?.message?.content || '';
-      }
+    if (chatResponse.ok) {
+      const chatData = await chatResponse.json();
+      reply = chatData.choices?.[0]?.message?.content || '';
     }
 
-    // 如果都不是德语，提示输入德语
-    if (!grammarCheck && !reply) {
+    // 如果没有回复，提示
+    if (!reply) {
       reply = '德语：Bitte schreibe einen deutschen Satz.\n中文：请写一句德语。';
     }
 

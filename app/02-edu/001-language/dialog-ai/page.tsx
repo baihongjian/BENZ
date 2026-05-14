@@ -8,6 +8,11 @@ interface Message {
   type?: 'grammarCheck' | 'reply';
 }
 
+const MODES = [
+  { id: 'teacher', name: '德语老师' },
+  { id: 'ticket', name: '火车站购票' }
+];
+
 export default function DialoguebungPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -15,6 +20,7 @@ export default function DialoguebungPage() {
   const [useTTS, setUseTTS] = useState(true);
   const [showContent, setShowContent] = useState(true);
   const [ttsSpeed, setTtsSpeed] = useState(0.80);
+  const [mode, setMode] = useState('teacher');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -66,7 +72,7 @@ export default function DialoguebungPage() {
       const response = await fetch('/api/02-edu/001-language/dialog-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, mode }),
       });
 
       const data = await response.json();
@@ -121,6 +127,12 @@ export default function DialoguebungPage() {
     inputRef.current?.focus();
   };
 
+  const changeMode = (newMode: string) => {
+    setMode(newMode);
+    setMessages([]);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
@@ -134,6 +146,22 @@ export default function DialoguebungPage() {
             >
               新对话
             </button>
+          </div>
+          {/* 模式选择 */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => changeMode(m.id)}
+                className={`px-3 py-1 rounded text-sm ${
+                  mode === m.id
+                    ? 'bg-white text-blue-600 font-bold'
+                    : 'bg-blue-700 text-white hover:bg-blue-800'
+                }`}
+              >
+                {m.name}
+              </button>
+            ))}
           </div>
           <div className="flex flex-wrap gap-4 text-sm">
             <label className="flex items-center gap-2">
