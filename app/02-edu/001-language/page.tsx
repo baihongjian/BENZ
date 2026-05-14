@@ -46,6 +46,12 @@ export default function GermanLearning() {
           >
             6️⃣ ✍️ 新拼写 →
           </Link>
+          <Link
+            href="/02-edu/001-language/dialog-ai"
+            className="px-6 py-3 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition font-medium"
+          >
+            7️⃣ 💬 AI 对话 →
+          </Link>
         </div>
       </div>
     </main>
