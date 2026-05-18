@@ -865,6 +865,42 @@ const basicPhrases27: BasicPhrase[] = [
   { id: 14, english: "He is already full.", german: "Er ist schon satt.", chinese: "他已经吃饱了。" },
 ];
 
+// A1介词1 - 时间/工具介词
+const basicPhrases28: BasicPhrase[] = [
+  { id: 1, english: "I come at 8 PM.", german: "Ich komme um 20 Uhr.", chinese: "我晚上8点来。" },
+  { id: 2, english: "I work on Monday.", german: "Ich arbeite am Montag.", chinese: "我周一工作。" },
+  { id: 3, english: "We go to Berlin on the weekend.", german: "Wir fahren am Wochenende nach Berlin.", chinese: "我们周末去柏林。" },
+  { id: 4, english: "His birthday is on May 3.", german: "Er hat Geburtstag am 3. Mai.", chinese: "他5月3日生日。" },
+  { id: 5, english: "I travel to Germany in August.", german: "Ich reise im August nach Deutschland.", chinese: "我8月去德国。" },
+  { id: 6, english: "We swim in summer.", german: "Wir schwimmen im Sommer.", chinese: "我们夏天游泳。" },
+  { id: 7, english: "He was born in the year 2000.", german: "Er wurde im Jahr 2000 geboren.", chinese: "他2000年出生。" },
+  { id: 8, english: "We meet in summer on Saturday at 6 PM.", german: "Wir treffen uns im Sommer am Samstag um 18 Uhr.", chinese: "我们夏天周六18点见面。" },
+  { id: 9, english: "I go by bus.", german: "Ich fahre mit dem Bus.", chinese: "我坐公交车去。" },
+  { id: 10, english: "We go to Berlin by train.", german: "Wir fahren mit dem Zug nach Berlin.", chinese: "我们坐火车去柏林。" },
+  { id: 11, english: "She goes to work by subway.", german: "Sie fährt mit der U-Bahn zur Arbeit.", chinese: "她坐地铁上班。" },
+];
+
+// A1介词2 - 更多介词用法
+const basicPhrases29: BasicPhrase[] = [
+  { id: 1, english: "Before work.", german: "Vor der Arbeit.", chinese: "上班前" },
+  { id: 2, english: "After work.", german: "Nach der Arbeit.", chinese: "下班后" },
+  { id: 3, english: "Before sleep.", german: "Vor dem Schlafen.", chinese: "睡觉前" },
+  { id: 4, english: "After class.", german: "Nach dem Unterricht.", chinese: "下课后" },
+  { id: 5, english: "Before vacation.", german: "Vor dem Urlaub.", chinese: "放假前" },
+  { id: 6, english: "After the weekend.", german: "Nach dem Wochenende.", chinese: "周末后" },
+  { id: 7, english: "I am at the doctor.", german: "Ich bin beim Arzt.", chinese: "我在医生那里。" },
+  { id: 8, english: "I go to the doctor.", german: "Ich gehe zum Arzt.", chinese: "我去医生那里" },
+  { id: 9, english: "I am near the school.", german: "Ich bin bei der Schule.", chinese: "我在学校附近" },
+  { id: 10, english: "I go to the school.", german: "Ich gehe zur Schule.", chinese: "我去学校那里" },
+  { id: 11, english: "We go to the cinema.", german: "Wir gehen ins Kino.", chinese: "我们去电影院。" },
+  { id: 12, english: "We go to the cinema (direction).", german: "Wir gehen zum Kino.", chinese: "我们去电影院那边。" },
+  { id: 13, english: "I come from Berlin.", german: "Ich komme aus Berlin.", chinese: "我来自柏林" },
+  { id: 14, english: "We are in the cinema.", german: "Wir sind im Kino.", chinese: "我们在电影院" },
+  { id: 15, english: "We go to Berlin.", german: "Ich fahre nach Berlin.", chinese: "我们去柏林" },
+  { id: 16, english: "I am at the school.", german: "Ich bin in der Schule.", chinese: "我在学校" },
+  { id: 17, english: "The phone is on the table.", german: "Das Handy liegt auf dem Tisch.", chinese: "手机在桌子上。" },
+];
+
 // 短语集列表（用于下拉选择）
 const phraseSetList = [
   { id: 1, name: "基本フレーズ1" },
@@ -894,6 +930,8 @@ const phraseSetList = [
   { id: 25, name: "人称代词3格" },
   { id: 26, name: "人的状态形容词-消极的" },
   { id: 27, name: "人的状态形容词-积极的" },
+  { id: 28, name: "A1介词1" },
+  { id: 29, name: "A1介词2" },
 ];
 
 export default function SentencePracticePage() {
@@ -904,7 +942,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : phraseSet === 23 ? basicPhrases23 : phraseSet === 24 ? basicPhrases24 : phraseSet === 25 ? basicPhrases25 : phraseSet === 26 ? basicPhrases26 : phraseSet === 27 ? basicPhrases27 : basicPhrases19;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : phraseSet === 23 ? basicPhrases23 : phraseSet === 24 ? basicPhrases24 : phraseSet === 25 ? basicPhrases25 : phraseSet === 26 ? basicPhrases26 : phraseSet === 27 ? basicPhrases27 : phraseSet === 28 ? basicPhrases28 : phraseSet === 29 ? basicPhrases29 : basicPhrases19;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 
