@@ -32,24 +32,33 @@ export default function DialoguebungPage() {
     if (!useTTS) return;
     try {
       const rateValue = ttsSpeed.toFixed(2).replace(/\.?0+$/, '');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const response = await fetch('http://localhost:8000/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           text,
           voice: 'de-DE-KatjaNeural',
           rate: rateValue
-        }),
+        })
       });
+
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         if (data.audio) {
           const audio = new Audio(data.audio);
-          audio.play();
+          audio.onerror = () => {}; // 忽略音频错误
+          audio.play().catch(() => {});
         }
       }
     } catch (err) {
-      console.error('TTS error:', err);
+      // 静默处理TTS错误，不影响用户
+      console.log('TTS不可用');
     }
   };
 
@@ -106,10 +115,11 @@ export default function DialoguebungPage() {
 
         setMessages([...newMessages, ...assistantMessages]);
       } else {
-        alert(data.error || '发送失败');
+        setMessages([...newMessages, { role: 'assistant', content: data.error || '发送失败，请重试' }]);
       }
     } catch (err) {
-      alert('发送失败: ' + err);
+      // 显示错误消息而不是弹窗
+      setMessages([...newMessages, { role: 'assistant', content: '网络错误，请重试' }]);
     } finally {
       setLoading(false);
     }
@@ -190,7 +200,7 @@ export default function DialoguebungPage() {
                 className="px-2 py-1 rounded text-blue-800"
               >
                 <option value={0.50}>很慢</option>
-                <option value={0.80} selected>慢</option>
+                <option value={0.80}>慢</option>
                 <option value={1}>正常</option>
               </select>
             </label>
