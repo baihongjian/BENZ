@@ -106,13 +106,13 @@ export async function POST(request) {
       }
     }
 
-    // 对话回复
+    // 对话回复 - 只包含用户消息和对话回复，过滤掉语法检查消息
     const chatMessages = [
       {
         role: 'system',
         content: sceneConfig.systemPrompt
       },
-      ...messages
+      ...messages.filter(m => m.role === 'user' || m.type !== 'grammarCheck')
     ];
 
     const chatResponse = await fetch(DEEPSEEK_API_URL, {

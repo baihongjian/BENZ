@@ -227,12 +227,19 @@ export default function DialoguebungPage() {
                 className={`max-w-[80%] rounded-lg p-3 ${
                   msg.role === 'user'
                     ? 'bg-blue-500 text-white'
+                    : msg.type === 'grammarCheck'
+                    ? 'bg-yellow-50 text-yellow-800 border border-yellow-200'
                     : 'bg-gray-100 text-gray-800'
                 }`}
               >
+                {msg.type === 'grammarCheck' && (
+                  <div className="text-xs text-yellow-600 mb-1 font-bold">📝 语法检查</div>
+                )}
                 <p className="whitespace-pre-wrap">
-                  {msg.role === 'user' || msg.type === 'grammarCheck' || showContent
+                  {msg.role === 'user'  || showContent
                     ? msg.content
+                    : msg.type === 'grammarCheck'
+                    ? '📝 语法检查'
                     : '⋯⋯'}
                 </p>
                 {/* 只有 reply 类型显示朗读按钮 */}
