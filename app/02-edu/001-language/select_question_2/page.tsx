@@ -75,6 +75,11 @@ const categories = [
   { id: 'transport', name: '交通' },
   { id: 'building', name: '建筑' },
   { id: 'possessive', name: '物主代词' },
+  { id: 'face', name: '人的脸部' },
+  { id: 'family', name: '家族词汇' },
+  { id: 'level5w1', name: '5级第1周' },
+  { id: 'level5w2', name: '5级第2周' },
+  { id: 'level5w3', name: '5级第3周' },
 ];
 
 // 形容词的特性
@@ -255,6 +260,227 @@ const possessives = [
   { id: 709, german: "Ihr", chinese: "您的；您们的" },
 ];
 
+// 人的脸部
+const faces = [
+  { id: 801, german: "das Gesicht", chinese: "脸" },
+  { id: 802, german: "das Haar", chinese: "头发" },
+  { id: 803, german: "das Auge", chinese: "眼睛" },
+  { id: 804, german: "die Nase", chinese: "鼻子" },
+  { id: 805, german: "das Ohr", chinese: "耳朵" },
+  { id: 806, german: "der Mund", chinese: "嘴巴" },
+  { id: 807, german: "die Zunge", chinese: "舌头" },
+  { id: 808, german: "die Lippe", chinese: "嘴唇" },
+  { id: 809, german: "der Zahn", chinese: "牙齿" },
+];
+
+// 家族词汇
+const families = [
+  { id: 901, german: "die Familie", chinese: "家庭" },
+  { id: 902, german: "die Großeltern", chinese: "（外）祖父母" },
+  { id: 903, german: "der Großvater", chinese: "（外）祖父" },
+  { id: 904, german: "die Großmutter", chinese: "（外）祖母" },
+  { id: 905, german: "die Eltern", chinese: "父母" },
+  { id: 906, german: "der Vater", chinese: "父亲" },
+  { id: 907, german: "die Mutter", chinese: "母亲" },
+  { id: 908, german: "der Sohn", chinese: "儿子" },
+  { id: 909, german: "die Tochter", chinese: "女儿" },
+  { id: 910, german: "die Geschwister", chinese: "兄弟姐妹" },
+  { id: 911, german: "der Bruder", chinese: "兄弟" },
+  { id: 912, german: "die Schwester", chinese: "姐妹" },
+  { id: 913, german: "die Tante", chinese: "阿姨；姑妈；舅妈" },
+  { id: 914, german: "der Onkel", chinese: "叔叔；舅舅；姑父" },
+  { id: 915, german: "der Cousin", chinese: "堂兄弟；表兄弟" },
+  { id: 916, german: "die Cousine", chinese: "堂姐妹；表姐妹" },
+];
+
+// 5级第1周词汇
+const level5w1 = [
+  { id: 1001, german: "der Bruder", chinese: "兄弟" },
+  { id: 1002, german: "die Schwester", chinese: "姐妹" },
+  { id: 1003, german: "der Arzt", chinese: "医生" },
+  { id: 1004, german: "Deutschland", chinese: "德国" },
+  { id: 1005, german: "das Brot", chinese: "面包" },
+  { id: 1006, german: "der Käse", chinese: "奶酪" },
+  { id: 1007, german: "die Schokolade", chinese: "巧克力" },
+  { id: 1008, german: "die Eltern", chinese: "父母" },
+  { id: 1009, german: "der Sohn", chinese: "儿子" },
+  { id: 1010, german: "der Beruf", chinese: "职业" },
+  { id: 1011, german: "Deutsch", chinese: "德语（语言）" },
+  { id: 1012, german: "das Brötchen", chinese: "小面包" },
+  { id: 1013, german: "der Kuchen", chinese: "蛋糕" },
+  { id: 1014, german: "die Suppe", chinese: "汤" },
+  { id: 1015, german: "die Familie", chinese: "家庭" },
+  { id: 1016, german: "die Tochter", chinese: "女儿" },
+  { id: 1017, german: "die Firma", chinese: "公司" },
+  { id: 1018, german: "Japan", chinese: "日本" },
+  { id: 1019, german: "die Butter", chinese: "黄油" },
+  { id: 1020, german: "die Marmelade", chinese: "果酱" },
+  { id: 1021, german: "die Wurst", chinese: "香肠" },
+  { id: 1022, german: "die Frau", chinese: "女人/妻子" },
+  { id: 1023, german: "der Vater", chinese: "父亲" },
+  { id: 1024, german: "der Lehrer", chinese: "老师" },
+  { id: 1025, german: "Japanisch", chinese: "日语（语言）" },
+  { id: 1026, german: "das Ei", chinese: "鸡蛋" },
+  { id: 1027, german: "das Öl", chinese: "油" },
+  { id: 1028, german: "der Zucker", chinese: "糖" },
+  { id: 1029, german: "die Geschwister", chinese: "兄弟姐妹" },
+  { id: 1030, german: "die Tante", chinese: "阿姨/姑妈/舅妈" },
+  { id: 1031, german: "der Professor", chinese: "教授" },
+  { id: 1032, german: "Österreich", chinese: "奥地利" },
+  { id: 1033, german: "das Essen", chinese: "食物/饭" },
+  { id: 1034, german: "der Reis", chinese: "米饭" },
+  { id: 1035, german: "der Hunger", chinese: "饥饿" },
+  { id: 1036, german: "das Kind", chinese: "孩子" },
+  { id: 1037, german: "der Onkel", chinese: "叔叔/舅舅/姑父" },
+  { id: 1038, german: "die Hausfrau", chinese: "家庭主妇" },
+  { id: 1039, german: "die Schweiz", chinese: "瑞士" },
+  { id: 1040, german: "der Essig", chinese: "醋" },
+  { id: 1041, german: "der Salat", chinese: "沙拉" },
+  { id: 1042, german: "der Pfeffer", chinese: "胡椒" },
+  { id: 1043, german: "der Mann", chinese: "男人/丈夫" },
+  { id: 1044, german: "das Mädchen", chinese: "女孩" },
+  { id: 1045, german: "der Schüler", chinese: "学生" },
+  { id: 1046, german: "der Japaner", chinese: "日本人" },
+  { id: 1047, german: "der Fisch", chinese: "鱼" },
+  { id: 1048, german: "das Salz", chinese: "盐" },
+  { id: 1049, german: "die Sahne", chinese: "奶油" },
+  { id: 1050, german: "die Mutter", chinese: "母亲" },
+  { id: 1051, german: "der Junge", chinese: "男孩" },
+  { id: 1052, german: "der Student", chinese: "大学生" },
+  { id: 1053, german: "das Ausland", chinese: "国外" },
+  { id: 1054, german: "das Fleisch", chinese: "肉" },
+  { id: 1055, german: "der Schinken", chinese: "火腿" },
+  { id: 1056, german: "das Frühstück", chinese: "早餐" },
+];
+
+// 5级第2周词汇
+const level5w2 = [
+  { id: 2001, german: "das Bier", chinese: "啤酒" },
+  { id: 2002, german: "die Pflanze", chinese: "植物" },
+  { id: 2003, german: "der Berg", chinese: "山" },
+  { id: 2004, german: "das Wetter", chinese: "天气" },
+  { id: 2005, german: "die Kirche", chinese: "教堂" },
+  { id: 2006, german: "die Bäckerei", chinese: "面包店" },
+  { id: 2007, german: "die Bahn", chinese: "火车/轨道" },
+  { id: 2008, german: "der Kaffee", chinese: "咖啡" },
+  { id: 2009, german: "der Baum", chinese: "树" },
+  { id: 2010, german: "das Feld", chinese: "田地/领域" },
+  { id: 2011, german: "der Wind", chinese: "风" },
+  { id: 2012, german: "das Krankenhaus", chinese: "医院" },
+  { id: 2013, german: "das Geschäft", chinese: "商店/生意" },
+  { id: 2014, german: "der Zug", chinese: "火车" },
+  { id: 2015, german: "die Milch", chinese: "牛奶" },
+  { id: 2016, german: "die Blume", chinese: "花" },
+  { id: 2017, german: "der Wald", chinese: "森林" },
+  { id: 2018, german: "der Regen", chinese: "雨" },
+  { id: 2019, german: "die Polizei", chinese: "警察（机构）" },
+  { id: 2020, german: "das Kaufhaus", chinese: "百货商店" },
+  { id: 2021, german: "der Bahnhof", chinese: "火车站" },
+  { id: 2022, german: "der Saft", chinese: "果汁" },
+  { id: 2023, german: "das Tier", chinese: "动物" },
+  { id: 2024, german: "das Meer", chinese: "海/海洋" },
+  { id: 2025, german: "der Schnee", chinese: "雪" },
+  { id: 2026, german: "die Post", chinese: "邮局/邮件" },
+  { id: 2027, german: "das Kino", chinese: "电影院" },
+  { id: 2028, german: "die Haltestelle", chinese: "车站" },
+  { id: 2029, german: "der Tee", chinese: "茶" },
+  { id: 2030, german: "der Hund", chinese: "狗" },
+  { id: 2031, german: "der See", chinese: "湖" },
+  { id: 2032, german: "die Luft", chinese: "空气" },
+  { id: 2033, german: "das Rathaus", chinese: "市政厅" },
+  { id: 2034, german: "der Markt", chinese: "市场" },
+  { id: 2035, german: "der Fahrplan", chinese: "时刻表" },
+  { id: 2036, german: "das Wasser", chinese: "水" },
+  { id: 2037, german: "die Katze", chinese: "猫" },
+  { id: 2038, german: "der Fluss", chinese: "河" },
+  { id: 2039, german: "die Sonne", chinese: "太阳" },
+  { id: 2040, german: "die Stadt", chinese: "城市" },
+  { id: 2041, german: "der Park", chinese: "公园" },
+  { id: 2042, german: "die Abfahrt", chinese: "出发/出发时间" },
+  { id: 2043, german: "der Wein", chinese: "葡萄酒" },
+  { id: 2044, german: "der Vogel", chinese: "鸟" },
+  { id: 2045, german: "der Himmel", chinese: "天空" },
+  { id: 2046, german: "der Stern", chinese: "星星" },
+  { id: 2047, german: "die Straße", chinese: "街道" },
+  { id: 2048, german: "das Hotel", chinese: "酒店" },
+  { id: 2049, german: "die Ankunft", chinese: "到达/到达时间" },
+  { id: 2050, german: "der Durst", chinese: "口渴" },
+  { id: 2051, german: "das Pferd", chinese: "马" },
+  { id: 2052, german: "die Natur", chinese: "自然" },
+  { id: 2053, german: "der Mond", chinese: "月亮" },
+  { id: 2054, german: "der Platz", chinese: "广场/地方" },
+  { id: 2055, german: "das Schloss", chinese: "城堡/宫殿" },
+  { id: 2056, german: "die Fahrkarte", chinese: "车票" },
+];
+
+// 5级第3周词汇
+const level5w3 = [
+  { id: 3001, german: "das Auto", chinese: "汽车" },
+  { id: 3002, german: "das Bad", chinese: "浴室/厕所" },
+  { id: 3003, german: "die Küche", chinese: "厨房" },
+  { id: 3004, german: "der Tisch", chinese: "桌子" },
+  { id: 3005, german: "das Bild", chinese: "图片" },
+  { id: 3006, german: "der Fußball", chinese: "足球" },
+  { id: 3007, german: "die Frage", chinese: "问题" },
+  { id: 3008, german: "der Wagen", chinese: "车/车厢" },
+  { id: 3009, german: "das Bett", chinese: "床" },
+  { id: 3010, german: "der Kühlschrank", chinese: "冰箱" },
+  { id: 3011, german: "die Toilette", chinese: "厕所" },
+  { id: 3012, german: "der Brief", chinese: "信" },
+  { id: 3013, german: "die Geige", chinese: "小提琴" },
+  { id: 3014, german: "der Geburtstag", chinese: "生日" },
+  { id: 3015, german: "das Taxi", chinese: "出租车" },
+  { id: 3016, german: "die Dusche", chinese: "淋浴" },
+  { id: 3017, german: "der Schlüssel", chinese: "钥匙" },
+  { id: 3018, german: "die Tür", chinese: "门" },
+  { id: 3019, german: "das Buch", chinese: "书" },
+  { id: 3020, german: "das Klavier", chinese: "钢琴" },
+  { id: 3021, german: "das Geld", chinese: "钱" },
+  { id: 3022, german: "der Bus", chinese: "公交车" },
+  { id: 3023, german: "das Fenster", chinese: "窗户" },
+  { id: 3024, german: "das Regal", chinese: "架子" },
+  { id: 3025, german: "die Uhr", chinese: "钟/表" },
+  { id: 3026, german: "das Heft", chinese: "本子" },
+  { id: 3027, german: "das Museum", chinese: "博物馆" },
+  { id: 3028, german: "die Liebe", chinese: "爱" },
+  { id: 3029, german: "das Fahrrad", chinese: "自行车" },
+  { id: 3030, german: "der Fernseher", chinese: "电视机" },
+  { id: 3031, german: "der Schrank", chinese: "柜子" },
+  { id: 3032, german: "die Wand", chinese: "墙" },
+  { id: 3033, german: "die Karte", chinese: "卡片/地图" },
+  { id: 3034, german: "die Oper", chinese: "歌剧" },
+  { id: 3035, german: "der Freund", chinese: "朋友" },
+  { id: 3036, german: "die Autobahn", chinese: "高速公路" },
+  { id: 3037, german: "der Garten", chinese: "花园" },
+  { id: 3038, german: "der Spiegel", chinese: "镜子" },
+  { id: 3039, german: "die Waschmaschine", chinese: "洗衣机" },
+  { id: 3040, german: "das Papier", chinese: "纸" },
+  { id: 3041, german: "die Reise", chinese: "旅行" },
+  { id: 3042, german: "der Name", chinese: "名字" },
+  { id: 3043, german: "das Flugzeug", chinese: "飞机" },
+  { id: 3044, german: "das Haus", chinese: "房子" },
+  { id: 3045, german: "der Stuhl", chinese: "椅子" },
+  { id: 3046, german: "die Wohnung", chinese: "公寓" },
+  { id: 3047, german: "der Stift", chinese: "笔" },
+  { id: 3048, german: "das Theater", chinese: "剧院" },
+  { id: 3049, german: "der Schmerz", chinese: "疼痛" },
+  { id: 3050, german: "das Schiff", chinese: "船" },
+  { id: 3051, german: "die Heizung", chinese: "暖气/加热" },
+  { id: 3052, german: "das Telefon", chinese: "电话" },
+  { id: 3053, german: "das Zimmer", chinese: "房间" },
+  { id: 3054, german: "das Wörterbuch", chinese: "词典" },
+  { id: 3055, german: "der Urlaub", chinese: "假期" },
+  { id: 3056, german: "die Sprache", chinese: "语言" },
+  { id: 3057, german: "die Zeit", chinese: "时间" },
+  { id: 3058, german: "der Anfang", chinese: "开始" },
+  { id: 3059, german: "das Ende", chinese: "结束" },
+  { id: 3060, german: "das Wort", chinese: "词/单词" },
+  { id: 3061, german: "die Zeitung", chinese: "报纸" },
+  { id: 3062, german: "die Schule", chinese: "学校" },
+  { id: 3063, german: "die Universität", chinese: "大学" },
+  { id: 3064, german: "der Unterricht", chinese: "课/课程" },
+];
+
 // 根据类别获取数据
 function getDataByCategory(categoryId: string) {
   if (categoryId === 'state') {
@@ -278,11 +504,26 @@ function getDataByCategory(categoryId: string) {
   if (categoryId === 'possessive') {
     return possessives;
   }
+  if (categoryId === 'face') {
+    return faces;
+  }
+  if (categoryId === 'family') {
+    return families;
+  }
+  if (categoryId === 'level5w1') {
+    return level5w1;
+  }
+  if (categoryId === 'level5w2') {
+    return level5w2;
+  }
+  if (categoryId === 'level5w3') {
+    return level5w3;
+  }
   return adjectives;
 }
 
 // 获取所有选项
-function getAllOptions(data: typeof adjectives | typeof states | typeof places | typeof minds | typeof actions | typeof transports | typeof buildings | typeof possessives, lang: 'german' | 'chinese') {
+function getAllOptions(data: typeof adjectives | typeof states | typeof places | typeof minds | typeof actions | typeof transports | typeof buildings | typeof possessives | typeof faces | typeof families | typeof level5w1 | typeof level5w2 | typeof level5w3, lang: 'german' | 'chinese') {
   return data.map(a => a[lang]);
 }
 

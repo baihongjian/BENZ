@@ -901,6 +901,22 @@ const basicPhrases29: BasicPhrase[] = [
   { id: 17, english: "The phone is on the table.", german: "Das Handy liegt auf dem Tisch.", chinese: "手机在桌子上。" },
 ];
 
+// 情态动词
+const basicPhrases30: BasicPhrase[] = [
+  { id: 1, english: "I can go to work today.", german: "Ich kann heute arbeiten gehen.", chinese: "我今天能去工作。" },
+  { id: 2, english: "I must start at eight.", german: "Ich muss um acht anfangen.", chinese: "我必须八点开始。" },
+  { id: 3, english: "I want to work well today.", german: "Ich will heute gut arbeiten.", chinese: "我今天想好好工作。" },
+  { id: 4, english: "I would like a coffee.", german: "Ich möchte einen Kaffee trinken.", chinese: "我想喝一杯咖啡。" },
+  { id: 5, english: "I may go out during break.", german: "Ich darf in Pause rausgehen.", chinese: "我在休息时可以出去。" },
+  { id: 6, english: "I should write a report.", german: "Ich soll einen Bericht schreiben.", chinese: "我应该写一份报告。" },
+  { id: 7, english: "könen - can", german: "kann, kannst, kann, können, könnt, können", chinese: "我，你，他他他，我们，你们，他他他们" },
+  { id: 8, english: "müssen - must", german: "muss, musst, muss, müssen, müsst, müssen", chinese: "我，你，他他他，我们，你们，他他他们" },
+  { id: 9, english: "wollen - want", german: "will, willst, will, wollen, wollt, wollen", chinese: "我，你，他他他，我们，你们，他他他们" },
+  { id: 10, english: "möchten - would like", german: "möchte, möchtest, möchte, möchten, möchtet, möchten", chinese: "我，你，他他他，我们，你们，他他他们" },
+  { id: 11, english: "dürfen - may", german: "darf, darfst, darf, dürfen, dürft, dürfen", chinese: "我，你，他他他，我们，你们，他他他们" },
+  { id: 12, english: "sollen - should", german: "soll, sollst, soll, sollen, sollt, sollen", chinese: "我，你，他他他，我们，你们，他他他们" },
+];
+
 // 短语集列表（用于下拉选择）
 const phraseSetList = [
   { id: 1, name: "基本フレーズ1" },
@@ -932,6 +948,7 @@ const phraseSetList = [
   { id: 27, name: "人的状态形容词-积极的" },
   { id: 28, name: "A1介词1" },
   { id: 29, name: "A1介词2" },
+  { id: 30, name: "情态动词" },
 ];
 
 export default function SentencePracticePage() {
@@ -942,7 +959,7 @@ export default function SentencePracticePage() {
   const phraseListRef = useRef<HTMLDivElement>(null);
 
   // 选择当前短语集
-  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : phraseSet === 23 ? basicPhrases23 : phraseSet === 24 ? basicPhrases24 : phraseSet === 25 ? basicPhrases25 : phraseSet === 26 ? basicPhrases26 : phraseSet === 27 ? basicPhrases27 : phraseSet === 28 ? basicPhrases28 : phraseSet === 29 ? basicPhrases29 : basicPhrases19;
+  const currentPhrases = phraseSet === 1 ? basicPhrases : phraseSet === 2 ? basicPhrases2 : phraseSet === 3 ? basicPhrases3 : phraseSet === 4 ? basicPhrases4 : phraseSet === 5 ? basicPhrases5 : phraseSet === 6 ? basicPhrases6 : phraseSet === 7 ? basicPhrases7 : phraseSet === 8 ? basicPhrases8 : phraseSet === 9 ? basicPhrases9 : phraseSet === 10 ? basicPhrases10 : phraseSet === 11 ? basicPhrases11 : phraseSet === 12 ? basicPhrases12 : phraseSet === 13 ? basicPhrases13 : phraseSet === 14 ? basicPhrases14 : phraseSet === 15 ? basicPhrases15 : phraseSet === 16 ? basicPhrases16 : phraseSet === 17 ? basicPhrases17 : phraseSet === 18 ? basicPhrases18 : phraseSet === 20 ? basicPhrases20 : phraseSet === 21 ? basicPhrases21 : phraseSet === 22 ? basicPhrases22 : phraseSet === 23 ? basicPhrases23 : phraseSet === 24 ? basicPhrases24 : phraseSet === 25 ? basicPhrases25 : phraseSet === 26 ? basicPhrases26 : phraseSet === 27 ? basicPhrases27 : phraseSet === 28 ? basicPhrases28 : phraseSet === 29 ? basicPhrases29 : phraseSet === 30 ? basicPhrases30 : basicPhrases19;
   const [showChinese, setShowChinese] = useState(true);
   const [showPronunciation, setShowPronunciation] = useState(true);
 

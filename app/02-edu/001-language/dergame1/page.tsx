@@ -2,33 +2,46 @@
 
 import { useState, useEffect } from 'react';
 
-// 脸部单词
-const bodyWords = [
-  { word: "Gesicht", article: "das", chinese: "脸", emoji: "😊" },
-  { word: "Haar", article: "das", chinese: "头发", emoji: "💇" },
-  { word: "Auge", article: "das", chinese: "眼睛", emoji: "👁️" },
-  { word: "Nase", article: "die", chinese: "鼻子", emoji: "👃" },
-  { word: "Ohr", article: "das", chinese: "耳朵", emoji: "👂" },
-  { word: "Mund", article: "der", chinese: "嘴巴", emoji: "👄" },
-  { word: "Zunge", article: "die", chinese: "舌头", emoji: "👅" },
-  { word: "Lippe", article: "die", chinese: "嘴唇", emoji: "💋" },
-  { word: "Zahn", article: "der", chinese: "牙齿", emoji: "🦷" },
-];
+// 各类别单词数据
+const categories = {
+  Gesicht: [
+    { word: "Gesicht", article: "das", chinese: "脸", emoji: "😊" },
+    { word: "Haar", article: "das", chinese: "头发", emoji: "💇" },
+    { word: "Auge", article: "das", chinese: "眼睛", emoji: "👁️" },
+    { word: "Nase", article: "die", chinese: "鼻子", emoji: "👃" },
+    { word: "Ohr", article: "das", chinese: "耳朵", emoji: "👂" },
+    { word: "Mund", article: "der", chinese: "嘴巴", emoji: "👄" },
+    { word: "Zunge", article: "die", chinese: "舌头", emoji: "👅" },
+    { word: "Lippe", article: "die", chinese: "嘴唇", emoji: "💋" },
+    { word: "Zahn", article: "der", chinese: "牙齿", emoji: "🦷" },
+  ],
+  Getränke: [
+    { word: "Milch", article: "die", chinese: "牛奶", emoji: "🥛" },
+    { word: "Bier", article: "das", chinese: "啤酒", emoji: "🍺" },
+    { word: "Wein", article: "der", chinese: "葡萄酒", emoji: "🍷" },
+    { word: "Kaffee", article: "der", chinese: "咖啡", emoji: "☕" },
+    { word: "Tee", article: "der", chinese: "茶", emoji: "🍵" },
+    { word: "Saft", article: "der", chinese: "果汁", emoji: "🧃" },
+    { word: "Getränk", article: "das", chinese: "饮料", emoji: "🥤" },
+  ],
+  Obst: [
+    { word: "Apfel", article: "der", chinese: "苹果", emoji: "🍎" },
+    { word: "Banane", article: "die", chinese: "香蕉", emoji: "🍌" },
+    { word: "Orange", article: "die", chinese: "橙子", emoji: "🍊" },
+    { word: "Traube", article: "die", chinese: "葡萄", emoji: "🍇" },
+    { word: "Erdbeere", article: "die", chinese: "草莓", emoji: "🍓" },
+    { word: "Kirsche", article: "die", chinese: "樱桃", emoji: "🍒" },
+    { word: "Obst", article: "das", chinese: "水果", emoji: "🫐" },
+  ],
+};
 
-// 游戏模式
-type GameMode = 'article' | 'de2zh' | 'zh2de';
-
-const gameModes: { id: GameMode; name: string; desc: string }[] = [
-  { id: 'article', name: '词性', desc: '德语→冠词' },
-  { id: 'de2zh', name: '德译中', desc: '德语→中文' },
-  { id: 'zh2de', name: '中译德', desc: '中文→德语' },
-];
+const categoryNames = Object.keys(categories);
+type WordType = typeof categories.Gesicht[number];
 
 export default function SortingGamePage() {
-  const [words, setWords] = useState<typeof bodyWords>([]);
-  const [gameMode, setGameMode] = useState<GameMode>('article');
+  const [words, setWords] = useState<WordType[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState(categoryNames[0]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [shuffledOptions, setShuffledOptions] = useState<Record<string, { answer: string; label: string; color: string }[]>>({});
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [score, setScore] = useState({ correct: 0, wrong: 0 });
   const [timeLeft, setTimeLeft] = useState(60);
@@ -38,61 +51,15 @@ export default function SortingGamePage() {
 
   // 初始化游戏
   const initGame = () => {
-    const shuffled = [...bodyWords].sort(() => Math.random() - 0.5);
+    const currentWords = categories[selectedCategory as keyof typeof categories];
+    const shuffled = [...currentWords].sort(() => Math.random() - 0.5);
     setWords(shuffled);
     setSelectedIndex(-1);
-    setShuffledOptions({});
     setAnswers({});
     setScore({ correct: 0, wrong: 0 });
     setTimeLeft(useTimer ? 60 : 0);
     setGameActive(true);
     setShowError(false);
-  };
-
-  // 生成并保存打乱的选项
-  const generateOptions = (word: typeof bodyWords[0]) => {
-    if (gameMode === 'article') {
-      return [
-        { answer: 'der', label: 'der', color: 'bg-blue-100 border-blue-500 text-blue-500' },
-        { answer: 'das', label: 'das', color: 'bg-green-100 border-green-500 text-green-500' },
-        { answer: 'die', label: 'die', color: 'bg-pink-100 border-pink-500 text-pink-500' },
-      ].sort(() => Math.random() - 0.5);
-    }
-
-    const correctAnswer = gameMode === 'de2zh' ? word.chinese : word.word;
-    const wordIndex = bodyWords.findIndex(w => w.word === word.word);
-    const wrongIndices = [(wordIndex + 1) % 9, (wordIndex + 3) % 9].filter(i => i !== wordIndex);
-
-    const options = [
-      { answer: correctAnswer, label: correctAnswer, isCorrect: true },
-      ...wrongIndices.map(i => ({
-        answer: gameMode === 'de2zh' ? bodyWords[i].chinese : bodyWords[i].word,
-        label: gameMode === 'de2zh' ? bodyWords[i].chinese : bodyWords[i].word,
-        isCorrect: false,
-      })),
-    ].sort(() => Math.random() - 0.5);
-
-    return options.map((opt, i) => ({
-      answer: opt.answer,
-      label: opt.label + (i === 0 ? ' (J)' : i === 1 ? ' (K)' : ' (L)'),
-      color: 'bg-yellow-100 border-yellow-500 text-yellow-700',
-    }));
-  };
-
-  // 获取当前选项
-  const getCurrentOptions = (): { answer: string; label: string; color: string }[] => {
-    if (!currentWord) return [];
-    if (answers[currentWord.word]) return []; // 已回答的不需要
-
-    // 如果已有缓存使用缓存
-    if (shuffledOptions[currentWord.word]) {
-      return shuffledOptions[currentWord.word];
-    }
-
-    // 生成新选项并缓存
-    const newOptions = generateOptions(currentWord);
-    setShuffledOptions(prev => ({ ...prev, [currentWord.word]: newOptions }));
-    return newOptions;
   };
 
   // 获取当前选中的单词
@@ -138,18 +105,7 @@ export default function SortingGamePage() {
     if (!currentWord) return;
     if (answers[currentWord.word]) return; // 已经答过
 
-    let isCorrect = false;
-    if (gameMode === 'article') {
-      isCorrect = currentWord.article === answer;
-    } else if (gameMode === 'de2zh') {
-      isCorrect = currentWord.chinese === answer;
-    } else if (gameMode === 'zh2de') {
-      isCorrect = currentWord.word === answer;
-    }
-
-    // 调试信息
-    console.log('选择:', answer, '单词:', currentWord.word, '正确:', currentWord.article || currentWord.chinese || currentWord.word, '是否正确:', isCorrect);
-    console.log('选项:', getCurrentOptions().map(o => o.answer));
+    const isCorrect = currentWord.article === answer;
 
     if (isCorrect) {
       playSound(true);
@@ -193,7 +149,6 @@ export default function SortingGamePage() {
     setSelectedIndex(index);
   };
 
-  // 生成选项 - 保持稳定
   // 键盘快捷键
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -227,48 +182,41 @@ export default function SortingGamePage() {
       // 如果没有选中单词，按J/K/L无效
       if (!currentWord) return;
 
-      const opts = getCurrentOptions();
-      if (key === 'j' && opts[0]) {
-        handleAnswer(opts[0].answer);
-      } else if (key === 'k' && opts[1]) {
-        handleAnswer(opts[1].answer);
-      } else if (key === 'l' && opts[2]) {
-        handleAnswer(opts[2].answer);
+      if (key === 'j') {
+        handleAnswer('der');
+      } else if (key === 'k') {
+        handleAnswer('das');
+      } else if (key === 'l') {
+        handleAnswer('die');
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [gameActive, selectedIndex, currentWord, answers, words, gameMode, shuffledOptions]);
+  }, [gameActive, selectedIndex, currentWord, answers, words]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-purple-600 text-white p-4 rounded-lg mb-4">
-          <h1 className="text-2xl font-bold mb-2">🧬 脸部单词 - 练习</h1>
-
-          {/* 模式选择 */}
-          <div className="flex gap-2 mb-2">
-            {gameModes.map((mode) => (
-              <button
-                key={mode.id}
-                onClick={() => { setGameMode(mode.id); setGameActive(false); setWords([]); setAnswers({}); setScore({ correct: 0, wrong: 0 }); }}
-                className={`px-3 py-1 rounded-lg text-sm ${
-                  gameMode === mode.id ? 'bg-white text-purple-600 font-bold' : 'bg-purple-700 hover:bg-purple-600'
-                }`}
-              >
-                {mode.name}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-4 mb-2">
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setWords([]);
+                setGameActive(false);
+              }}
+              className="text-lg font-bold bg-white text-purple-600 px-3 py-1 rounded"
+            >
+              {categoryNames.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <h1 className="text-2xl font-bold">词性分类</h1>
           </div>
-
-          {/* 提示 */}
-          <p className="text-sm">
-            {gameMode === 'article' && '→ 左右键选择单词，J=der, K=das, L=die'}
-            {gameMode === 'de2zh' && '→ 左右键选择单词，选择正确的中文'}
-            {gameMode === 'zh2de' && '→ 左右键选择单词，选择正确的德语'}
-          </p>
+          <p className="text-sm">→ 左右键选择单词，J=der, K=das, L=die</p>
         </div>
 
         {/* 计分板 */}
@@ -310,10 +258,7 @@ export default function SortingGamePage() {
           {words.map((word, index) => {
             const answer = answers[word.word];
             const isSelected = selectedIndex === index;
-            // 根据游戏模式判断正确与否
-            const isCorrect = answer === word.article ||
-              (gameMode === 'de2zh' && answer === word.chinese) ||
-              (gameMode === 'zh2de' && answer === word.word);
+            const isCorrect = answer === word.article;
             const isAnswered = !!answer;
 
             return (
@@ -350,58 +295,14 @@ export default function SortingGamePage() {
         {/* 当前单词操作区 */}
         {currentWord && gameActive && (
           <div className="text-center bg-white p-6 rounded-2xl shadow-lg">
-            {/* 词性模式 */}
-            {gameMode === 'article' && (
-              <>
-                <div className="text-4xl mb-2">{currentWord.emoji}</div>
-                <div className="text-4xl font-bold mb-2">{currentWord.word}</div>
-                <div className="text-gray-500 text-xl mb-4">{currentWord.chinese}</div>
-                <div className="flex gap-4 justify-center">
-                  <button onClick={() => handleAnswer('der')} className="bg-blue-100 border-4 border-blue-500 px-6 py-3 rounded-xl text-2xl font-bold text-blue-500">der (J)</button>
-                  <button onClick={() => handleAnswer('das')} className="bg-green-100 border-4 border-green-500 px-6 py-3 rounded-xl text-2xl font-bold text-green-500">das (K)</button>
-                  <button onClick={() => handleAnswer('die')} className="bg-pink-100 border-4 border-pink-500 px-6 py-3 rounded-xl text-2xl font-bold text-pink-500">die (L)</button>
-                </div>
-              </>
-            )}
-
-            {/* 德译中模式 */}
-            {gameMode === 'de2zh' && (
-              <>
-                <div className="text-4xl mb-2">{currentWord.emoji}</div>
-                <div className="text-4xl font-bold mb-2">{currentWord.word}</div>
-                <div className="text-gray-500 text-xl mb-4">{currentWord.article}</div>
-                <div className="flex gap-4 justify-center">
-                  {getCurrentOptions().map((opt, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleAnswer(opt.answer)}
-                      className={`border-4 px-6 py-3 rounded-xl text-2xl font-bold ${opt.color}`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* 中译德模式 */}
-            {gameMode === 'zh2de' && (
-              <>
-                <div className="text-4xl mb-2">{currentWord.emoji}</div>
-                <div className="text-4xl font-bold mb-2">{currentWord.chinese}</div>
-                <div className="flex gap-4 justify-center">
-                  {getCurrentOptions().map((opt, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleAnswer(opt.answer)}
-                      className={`border-4 px-6 py-3 rounded-xl text-2xl font-bold ${opt.color}`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            <div className="text-4xl mb-2">{currentWord.emoji}</div>
+            <div className="text-4xl font-bold mb-2">{currentWord.word}</div>
+            <div className="text-gray-500 text-xl mb-4">{currentWord.chinese}</div>
+            <div className="flex gap-4 justify-center">
+              <button onClick={() => handleAnswer('der')} className="bg-blue-100 border-4 border-blue-500 px-6 py-3 rounded-xl text-2xl font-bold text-blue-500">der (J)</button>
+              <button onClick={() => handleAnswer('das')} className="bg-green-100 border-4 border-green-500 px-6 py-3 rounded-xl text-2xl font-bold text-green-500">das (K)</button>
+              <button onClick={() => handleAnswer('die')} className="bg-pink-100 border-4 border-pink-500 px-6 py-3 rounded-xl text-2xl font-bold text-pink-500">die (L)</button>
+            </div>
           </div>
         )}
 
